@@ -1,0 +1,513 @@
+# PRD: AI წრე — Community Platform
+
+## 1. Overview
+
+**AI წრე** (AI Circle) is a Skool.com-style community platform for the Georgian Tech/AI/Automation niche. Built on the existing Next.js 15 SaaS starter, it combines a community discussion feed, a structured course classroom, gamification (points/levels/leaderboard), member profiles, global search, notifications, and an admin dashboard — all in Georgian language.
+
+**Platform type:** Single community (not multi-tenant)
+**Target audience:** Georgian-speaking tech enthusiasts, AI practitioners, automation learners
+**Deployment:** Railway.com
+**Language:** Georgian only (UI, emails, error messages)
+
+---
+
+## 2. Monetization Model
+
+**Freemium with one paid tier via Stripe. Currency: GEL (Georgian Lari).**
+
+| | Free | Paid (₾XX/month — price TBD) |
+|---|---|---|
+| View community posts | Unlimited | Unlimited |
+| Comment on posts | Yes | Yes |
+| Create posts | No | Yes |
+| Like posts/comments | No | Yes |
+| View course list | Yes | Yes |
+| Access all courses | No | Yes |
+| View leaderboard | Yes | Yes |
+| Participate in leaderboard | No | Yes |
+| Member directory | Yes | Yes |
+
+**Cancellation behavior:** Grace period — access continues until billing period ends, then auto-downgrade to free tier. Stripe handles this via `cancel_at_period_end`.
+
+---
+
+## 3. User Roles & Permissions
+
+Three roles, independent of subscription tier:
+
+| Permission | Admin | Moderator | Member |
+|---|---|---|---|
+| Manage community settings | Yes | No | No |
+| Create/edit/delete courses | Yes | No | No |
+| Manage categories | Yes | No | No |
+| Change user roles | Yes | No | No |
+| View admin analytics | Yes | No | No |
+| Pin/unpin posts | Yes | Yes | No |
+| Delete any post/comment | Yes | Yes | No |
+| Create posts (if paid) | Yes | Yes | Yes |
+| Comment (all users) | Yes | Yes | Yes |
+| Like posts/comments (if paid) | Yes | Yes | Yes |
+
+---
+
+## 4. Features
+
+### 4.1 Public Landing Page (Skool-style About Page)
+
+The `/` route is a public community about page visible to anyone:
+
+- Community name, logo, cover image
+- Description text (Markdown, set by admin)
+- Member count, online member count, admin count
+- Admin avatar and name
+- Featured links (set by admin)
+- "გაწევრიანება" (Join) CTA button leading to sign-up
+- Pricing summary (Free vs Paid)
+
+### 4.2 Community Feed
+
+The main content hub at `/community`:
+
+**Posts:**
+- Title + content (text with basic Markdown)
+- Image attachments (multiple, uploaded to S3)
+- Link embeds (URL with auto-fetched OG metadata: title, description, image)
+- Admin-defined categories — each post belongs to one category
+- Pinned posts appear at the top of the feed (admin/moderator can pin)
+- Like count, comment count, author info, relative timestamp
+
+**Categories:**
+- Admin creates categories (e.g., "შესავალი", "კითხვა-პასუხი", "რესურსები", "პროექტები")
+- Each category has a name, slug, description, color, and sort order
+- Horizontal scrollable filter bar at the top of the feed
+- "ყველა კატეგორია" (All) option shows all posts
+
+**Comments:**
+- Threaded (one level of replies — comments can have child comments)
+- Like count per comment
+- Author info and relative timestamp
+- Soft-deletable by author, moderator, or admin
+
+**Feed behavior:**
+- Paginated with infinite scroll (cursor-based pagination using composite `(createdAt, id)` cursor)
+- Pinned posts always at top regardless of pagination
+- Free users see all posts but cannot create posts or like (comment is allowed)
+- SWR with `revalidateOnFocus: true` for freshness
+
+### 4.3 Classroom (Courses)
+
+Structured course system at `/classroom`:
+
+**Hierarchy:** Course → Sections → Lessons
+
+**Course:**
+- Title, slug, description, thumbnail image
+- `isPaid` boolean — `false` = free for all users, `true` = paid-only
+- Published/draft status
+- Sort order for manual ordering
+- Total lesson count (denormalized)
+
+**Section:**
+- Title, sort order
+- Groups related lessons within a course
+
+**Lesson:**
+- Title, description (Markdown)
+- Embedded video (YouTube or Vimeo URL — parsed and rendered as responsive iframe)
+- Additional text content/notes (Markdown)
+- File attachments (uploaded to S3 — PDFs, templates, etc.)
+- Estimated duration in seconds
+- Sort order within section
+
+**Progress tracking:**
+- Auto-mark: lesson marked as viewed when user scrolls to bottom (Intersection Observer)
+- Manual toggle: "დასრულებულად მონიშვნა" button to mark complete/incomplete
+- Progress stored per user per lesson in `courseProgress` table
+- Course overview shows progress bar (completed lessons / total lessons)
+- Completed lessons show checkmark in the lesson sidebar
+
+**Access control:**
+- Course listing page shows all courses; paid-only courses display a "ფასიანი" (Paid) lock badge
+- Attempting to access a paid-only course as a free user shows an upgrade prompt
+- Lesson attachments downloadable only by paid users (for paid courses)
+
+**Course detail page layout:**
+- Left sidebar: collapsible sections with lesson list and completion checkmarks
+- Main area: currently selected lesson's video + content + attachments
+
+### 4.4 Member Profiles & Directory
+
+**Profile fields:**
+- Avatar (uploaded to S3)
+- Name
+- Bio (text)
+- Location
+- Social links: website, Facebook, LinkedIn, Twitter/X
+- Join date
+- Online status (green dot if `lastSeenAt` within last 5 minutes)
+- Level badge (1-9)
+- Total points
+
+**Member directory** at `/members`:
+- Grid of member cards showing avatar, name, level badge, online indicator
+- Search by name
+- Filter by level
+- Sorted by most recently online
+
+**Public profile page** at `/members/[userId]`:
+- Full profile info
+- Recent posts by this member
+- Level and points display
+
+### 4.5 Gamification
+
+**Points:**
+- +1 point when someone likes your post
+- +1 point when someone likes your comment
+- -1 point when a like is removed
+- Points floor at 0 (never negative)
+- All point changes logged in `pointEvents` table for audit
+
+**Levels (1-9):**
+
+| Level | Points Required |
+|---|---|
+| 1 | 0 |
+| 2 | 10 |
+| 3 | 30 |
+| 4 | 70 |
+| 5 | 150 |
+| 6 | 300 |
+| 7 | 600 |
+| 8 | 1200 |
+| 9 | 2500 |
+
+Level auto-updates when points change. Level-up triggers a notification.
+
+**Leaderboard** at `/leaderboard`:
+- Three tabs: 7-day, 30-day, all-time
+- Ranked list: position, avatar, name, level badge, points in period
+- 7-day and 30-day are calculated from `pointEvents` table with date filter
+- All-time reads directly from `users.points`
+- Top 50 members displayed
+- Free users can view but not fully participate — they can comment but cannot create posts or like, so they earn limited points (only from likes received on their comments by paid users)
+
+### 4.6 Global Search
+
+Accessible via search bar in header and Cmd+K shortcut:
+
+- Search across posts, courses, and members simultaneously
+- Results displayed in tabbed view (პოსტები / კურსები / წევრები)
+- Posts and courses use PostgreSQL full-text search with `tsvector` + GIN indexes
+  - Using `'simple'` dictionary (Georgian not supported by Snowball stemmers; `simple` tokenizes on whitespace which works for any language)
+- Member search uses `ILIKE` on name (small dataset, adequate performance)
+- Debounced input (300ms) to reduce queries
+- Search results page at `/search?q=...`
+
+### 4.7 Notifications
+
+**In-app:**
+- Bell icon in header with unread count badge
+- Dropdown showing 10 most recent notifications
+- Full notifications page at `/notifications` with pagination
+- Mark individual or all as read
+
+**Notification triggers:**
+- Someone liked your post
+- Someone liked your comment
+- Someone commented on your post
+- Someone replied to your comment
+- You leveled up
+- New course published (all members)
+- Admin announcement
+
+**Email (via Mailgun):**
+- Welcome email on sign-up
+- Subscription confirmation
+- Subscription cancellation / downgrade notice
+- Email sent flag tracked per notification (`isEmailSent`)
+- Fire-and-forget (doesn't block server action response)
+
+**Notification batching:** Same-type notifications are grouped within a 15-minute window. For example, if 5 people like your post within 15 minutes, a single notification reads "5 people liked your post" instead of sending 5 separate notifications.
+
+**Polling:** SWR polls `/api/notifications/count` every 30 seconds for unread badge.
+
+### 4.8 Admin Dashboard
+
+Protected routes under `/admin` (admin role only):
+
+**Analytics page:**
+- Member growth (new signups per day/week/month)
+- Engagement metrics (posts, comments, likes per period)
+- Revenue tracking (from Stripe API)
+- Popular content ranking (most liked/commented posts)
+- Active member count
+
+**Member management:**
+- View all members with role, plan, join date, points
+- Change user roles (admin/moderator/member)
+- View subscription status
+
+**Content management:**
+- Post moderation (view all, delete, pin/unpin)
+- Category CRUD (create, edit, delete, reorder)
+- Course management (create, edit, publish/unpublish, manage sections/lessons)
+
+**Community settings:**
+- Edit community name, description, about page content
+- Upload/change logo and cover image
+
+### 4.9 User Settings
+
+At `/settings` with sidebar nav:
+
+- **Profile:** Edit avatar, name, bio, location, social links
+- **Account:** Change email, change password
+- **Billing:** View current plan, manage subscription (redirects to Stripe Customer Portal)
+
+---
+
+## 5. Technical Architecture
+
+### 5.1 Existing Code Reuse
+
+| Component | Current State | Reuse Strategy |
+|---|---|---|
+| JWT auth (`lib/auth/session.ts`) | Email/password, httpOnly cookies, 24h expiry | Reuse as-is. Extend JWT payload to include `role`. |
+| Server action wrappers (`lib/auth/middleware.ts`) | `validatedAction`, `validatedActionWithUser`, `withTeam` | Reuse first two. Replace `withTeam` with new `validatedActionWithAdmin` and `validatedActionWithPaidUser`. |
+| Drizzle ORM (`lib/db/`) | Schema, migrations, query helpers | Extend schema with all new tables. Keep migration workflow. |
+| Stripe (`lib/payments/stripe.ts`) | Team-based checkout, webhook, portal | **Refactor to user-based billing.** Move subscription data from `teams` table to new `subscriptions` table. |
+| shadcn/ui (`components/ui/`) | 7 components (Button, Card, Input, Label, Avatar, RadioGroup, DropdownMenu) | Keep all. Add ~14 more components (Dialog, Tabs, Select, Textarea, Badge, Tooltip, Progress, Sheet, Separator, Skeleton, Table, Popover, Command, ScrollArea). |
+| SWR pattern (root layout) | Prefetches `/api/user` and `/api/team` | Extend to prefetch community settings and notification count. |
+| Next.js middleware (`middleware.ts`) | Protects `/dashboard`, refreshes JWT | Update protected route list. Add admin route check. Add `lastSeenAt` update for online status. |
+| Activity logging | `activityLogs` table with enum types | Extend with community-specific activity types. |
+
+### 5.2 What Changes Fundamentally
+
+**Team → Single Community model:** The starter uses `teams`/`teamMembers` for multi-tenant workspaces. Since this is a single community, we drop the multi-team model. All users belong to one community. The `teams` and `teamMembers` tables will be dropped via a database migration (not just left unused). The `communitySettings` table (single row) replaces the community-level config.
+
+**Stripe billing entity:** Moves from team-level to user-level. New `subscriptions` table linked to `users` replaces the Stripe fields on `teams`.
+
+### 5.3 Database Schema (New Tables)
+
+**Modified:** `users` — add profile fields (avatarUrl, bio, location, social URLs), gamification fields (points, level), online status (lastSeenAt), Stripe customer ID
+
+**New tables:**
+- `subscriptions` — userId, stripeSubscriptionId, stripeProductId, stripePriceId, status (active/canceled/past_due), priceAmountGel (for audit), currentPeriodStart, currentPeriodEnd, cancelAtPeriodEnd
+- `communitySettings` — single row: name, description, aboutContent, logoUrl, coverImageUrl, adminUserId
+- `categories` — name, slug, description, color, sortOrder
+- `posts` — authorId, categoryId, title, content, isPinned, likesCount, commentsCount, search_vector (tsvector)
+- `postImages` — postId, url, altText, sortOrder
+- `postLinks` — postId, url, title, description, imageUrl (OG data)
+- `comments` — postId, authorId, parentId (self-ref for threading), content, likesCount
+- `postLikes` — userId, postId; unique constraint on (userId, postId), FK cascade deletes
+- `commentLikes` — userId, commentId; unique constraint on (userId, commentId), FK cascade deletes
+- `courses` — title, slug, description, thumbnailUrl, isPaid (boolean), isPublished, sortOrder, totalLessons, search_vector
+- `courseSections` — courseId, title, sortOrder
+- `lessons` — sectionId, courseId, title, description, videoUrl, videoProvider, content, sortOrder, durationSeconds
+- `lessonAttachments` — lessonId, fileName, fileUrl, fileSizeBytes, mimeType
+- `courseProgress` — userId, courseId, lessonId, completed, completedAt; unique on (userId, lessonId)
+- `notifications` — userId, type, title, body, linkUrl, actorId, isRead, isEmailSent
+- `pointEvents` — userId (recipient), points (+1/-1), reason, sourceUserId (liker), sourceType, sourceId
+
+**Full-text search:** Added via raw SQL migration (tsvector columns + GIN indexes + triggers on `posts` and `courses` tables using `'simple'` dictionary).
+
+### 5.4 Route Structure
+
+```
+app/
+  (public)/                          # Public pages (no auth)
+    page.tsx                         # Skool-style About/landing page
+    pricing/page.tsx                 # Pricing (Free vs Paid)
+
+  (auth)/                            # Auth pages
+    sign-in/page.tsx
+    sign-up/page.tsx
+
+  (app)/                             # Authenticated app shell
+    layout.tsx                       # Header + sidebar + notification bell
+    community/
+      page.tsx                       # Feed (category filter, pinned, infinite scroll)
+      new/page.tsx                   # Create post (paid only)
+      [postId]/page.tsx              # Post detail + comments
+      [postId]/edit/page.tsx         # Edit post
+    classroom/
+      page.tsx                       # Course grid
+      [courseSlug]/page.tsx          # Course overview + section/lesson sidebar
+      [courseSlug]/[lessonId]/page.tsx # Lesson viewer
+    members/
+      page.tsx                       # Member directory grid
+      [userId]/page.tsx              # Member profile
+    leaderboard/page.tsx             # 7d / 30d / all-time tabs
+    search/page.tsx                  # Global search results
+    notifications/page.tsx           # All notifications
+    settings/
+      profile/page.tsx
+      account/page.tsx
+      billing/page.tsx
+    admin/
+      page.tsx                       # Analytics dashboard
+      members/page.tsx               # Member management
+      posts/page.tsx                 # Post moderation
+      categories/page.tsx            # Category CRUD
+      courses/page.tsx               # Course list
+      courses/new/page.tsx           # Create course
+      courses/[courseId]/page.tsx     # Edit course + sections + lessons
+      community-settings/page.tsx    # Community config
+
+  api/
+    user/route.ts                    # GET current user (extended)
+    community/route.ts               # GET community settings (public)
+    notifications/route.ts           # GET notifications
+    notifications/count/route.ts     # GET unread count (polled)
+    search/route.ts                  # GET search results
+    upload/route.ts                  # POST presigned S3 upload URL
+    stripe/webhook/route.ts          # Stripe events (refactored)
+    stripe/checkout/route.ts         # Checkout redirect (refactored)
+```
+
+### 5.5 Key Technical Decisions
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| Search engine | PostgreSQL full-text search (`simple` dictionary) | No external dependency. Georgian not supported by Snowball stemmers; `simple` tokenizer works adequately. Upgrade path: `pg_trgm` for fuzzy matching. |
+| Real-time | SWR polling (30s for notifications, revalidateOnFocus for feed) | Minimal real-time requirements. Avoids WebSocket infrastructure complexity on Railway. |
+| Online status | `lastSeenAt` updated in Next.js middleware on GET requests | Piggybacks on existing JWT refresh logic. User "online" if seen within 5 minutes. |
+| File storage | AWS S3 with presigned upload URLs | Client uploads directly to S3. Keys: `avatars/{userId}/`, `posts/{postId}/`, `courses/{courseId}/`. Limits: 5MB images, 50MB attachments. |
+| Video | Embed-only (YouTube/Vimeo iframe) | No storage/transcoding costs. `VideoEmbed` component parses URL and renders responsive iframe. |
+| Georgian UI | Simple `lib/i18n/ka.ts` flat dictionary with `t()` function | No i18n framework needed for single-language. Export typed keys for safety. |
+| Font | Noto Sans Georgian (Google Fonts via `next/font`) | Replaces Manrope. Best Georgian font with good web rendering. |
+| Email | Mailgun | User's choice. `lib/email/mailgun.ts` wrapper. Fire-and-forget sending. |
+| Markdown rendering | `react-markdown` + `rehype-sanitize` | For post content and lesson notes. Sanitized to prevent XSS. |
+| Online status debounce | Only write `lastSeenAt` if stale (>1 min old) | Avoids a DB write on every single request. |
+| Denormalized counts | Atomic SQL `INCREMENT`/`DECREMENT` operations | Not read-then-write. Prevents race conditions on likesCount/commentsCount. |
+| OG metadata fetch | Server-side with 3s timeout | Block private IP ranges (10.x, 172.16-31.x, 192.168.x) for SSRF protection. 1MB response limit, max 3 redirects. |
+| S3 uploads | Allowlist MIME types (image/jpeg, image/png, image/webp, application/pdf) | Validate server-side before generating presigned URL. Presigned URL expires in 5 minutes. |
+| Image optimization | `next/image` with S3 loader from Phase 1 | Avoids deferring image optimization to final polish phase. |
+| Currency | GEL (Georgian Lari) via Stripe | Single currency for Georgian market. |
+
+### 5.6 New Dependencies
+
+```
+@aws-sdk/client-s3, @aws-sdk/s3-request-presigner  — S3 uploads
+mailgun.js, form-data                                — Email
+react-markdown, rehype-sanitize                      — Markdown rendering
+date-fns                                             — Georgian locale date formatting
+```
+
+### 5.7 New Environment Variables
+
+```
+AWS_S3_BUCKET, AWS_S3_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+MAILGUN_API_KEY, MAILGUN_DOMAIN, MAILGUN_FROM
+```
+
+(Existing: POSTGRES_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, BASE_URL, AUTH_SECRET)
+
+### 5.8 Admin Bootstrap
+
+`pnpm db:seed` creates the initial admin user. Alternatively, the first registered user is auto-assigned the admin role. **Chosen approach: first registered user is auto-assigned admin.** This avoids requiring seed data in production and is the simplest onboarding path. `pnpm db:seed` remains available for development/testing with a known admin account.
+
+### 5.9 Security Baseline
+
+These security measures are implemented from Phase 1 (not deferred to Phase 6):
+
+- **Auth rate limiting:** Login and signup endpoints rate-limited from Phase 1
+- **S3 upload validation:** MIME type allowlisting (image/jpeg, image/png, image/webp, application/pdf) validated server-side before generating presigned URLs
+- **OG fetch SSRF protection:** Block private IP ranges (10.x, 172.16-31.x, 192.168.x), 3s timeout, 1MB limit, max 3 redirects
+- **Markdown sanitization:** `rehype-sanitize` applied on all user-generated Markdown content
+
+### 5.10 Testing Strategy
+
+Testing approach to be defined separately. This section will cover unit tests, integration tests, and E2E testing strategy once the approach is discussed and decided.
+
+---
+
+## 6. Implementation Phases
+
+### Phase 1: Foundation
+- Schema refactoring (modify `users`, create `subscriptions`, `communitySettings`, `categories`; drop `teams` and `teamMembers`)
+- Auth changes (remove team dependency from sign-up, update JWT with role, new middleware wrappers)
+- Rate limiting for auth endpoints (login, signup)
+- Admin bootstrap (first registered user auto-assigned admin role)
+- Georgian i18n setup (`lib/i18n/ka.ts`, Noto Sans Georgian font, `lang="ka"`)
+- App shell (header, sidebar nav, responsive layout)
+- Stripe refactoring (user-based billing, updated webhook, pricing section — Free vs Paid)
+- S3 integration (`lib/storage/s3.ts`, `/api/upload`, avatar upload component)
+- `next/image` S3 loader setup
+- Public landing page (Skool-style about page)
+
+### Phase 2: Community Feed
+- Posts, postImages, postLinks, comments, postLikes, commentLikes tables
+- Category management (admin CRUD + filter UI)
+- Post creation (form with Markdown, image upload, link embed with OG fetch)
+- Feed page (infinite scroll, category filter, pinned posts)
+- Post detail page (images, links, threaded comments)
+- Like/unlike (posts + comments, optimistic UI)
+- Moderation (pin/delete by admin/moderator)
+
+### Phase 3: Gamification & Profiles
+- Points system (award/revoke on like/unlike, transactional)
+- Level calculation + auto-update + level-up notification
+- Leaderboard page (7d/30d/all-time)
+- Member profiles (full profile page, profile editing)
+- Member directory (grid, search, level filter)
+- Online status (lastSeenAt in middleware, green dot)
+
+### Phase 4: Classroom
+- Courses, courseSections, lessons, lessonAttachments, courseProgress tables
+- Admin course builder (CRUD for courses, sections, lessons)
+- Course listing (grid with progress bars, paid lock badges)
+- Course detail + lesson sidebar
+- Lesson viewer (video embed, Markdown content, attachments)
+- Progress tracking (auto-mark via Intersection Observer + manual toggle)
+- Paid-tier access gating
+
+### Phase 5: Notifications, Search, Admin Dashboard
+- Notifications table + creation logic on all triggers
+- Notification bell (SWR polling) + dropdown + full page
+- Email notifications (Mailgun integration)
+- Global search (tsvector setup, search API, search page, Cmd+K)
+- Admin analytics dashboard (growth, engagement, revenue)
+- Admin member management + post moderation + community settings
+
+### Phase 6: Polish & Deploy
+- Railway deployment (Dockerfile/nixpacks, PostgreSQL addon, env vars, custom domain)
+- Performance (query optimization, indexes, Suspense boundaries)
+- SEO (meta tags, OG for shared links, robots.txt, sitemap)
+- Error handling (Georgian error messages, error boundaries, 404 page)
+
+---
+
+## 7. Key Files to Modify
+
+| File | Changes |
+|---|---|
+| `lib/db/schema.ts` | Add all new tables, modify users table, add relations |
+| `lib/auth/middleware.ts` | Add `validatedActionWithAdmin`, `validatedActionWithPaidUser` wrappers |
+| `middleware.ts` | Update protected routes, add admin check, add lastSeenAt update |
+| `lib/payments/stripe.ts` | Refactor from team-based to user-based subscriptions |
+| `app/layout.tsx` | Georgian lang, Noto Sans Georgian font, extended SWR fallback |
+| `app/(login)/actions.ts` | Remove team creation from sign-up flow |
+
+## 8. New Files to Create
+
+| File | Purpose |
+|---|---|
+| `lib/i18n/ka.ts` | Georgian translation dictionary + `t()` function |
+| `lib/storage/s3.ts` | S3 client, presigned URL generation, public URL helper |
+| `lib/email/mailgun.ts` | Mailgun client wrapper |
+| `lib/email/templates.ts` | Georgian email templates |
+| `lib/access.ts` | `isPaidUser()`, `canAccessCourse()`, `canCreatePost()`, `canLike()`, role checks |
+| `app/(app)/layout.tsx` | Authenticated app shell with header + sidebar |
+| `app/(app)/community/actions.ts` | createPost, updatePost, deletePost, likePost, createComment, likeComment |
+| `app/(app)/classroom/actions.ts` | markLessonComplete, markLessonIncomplete |
+| `app/(app)/admin/actions.ts` | All admin server actions |
+| `app/api/upload/route.ts` | Presigned S3 upload URL endpoint |
+| `app/api/notifications/count/route.ts` | Unread notification count endpoint |
+| `app/api/search/route.ts` | Global search endpoint |
+| `components/community/` | post-card, post-form, comment-list, category-filter, like-button |
+| `components/classroom/` | course-card, lesson-sidebar, video-embed, progress-bar |
+| `components/members/` | member-card, level-badge, online-indicator |
+| `components/layout/` | app-header, app-sidebar, mobile-nav |
+| `components/shared/` | avatar-upload, image-upload, pagination, search-bar, time-ago |
