@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Lock, BookOpen } from 'lucide-react';
 import type { Course } from '@/lib/db/schema';
 
@@ -21,10 +22,13 @@ export function CourseCard({ course }: { course: CourseWithProgress }) {
         {/* Thumbnail */}
         <div className="relative aspect-video bg-gray-100">
           {course.thumbnailUrl ? (
-            <img
+            <Image
               src={course.thumbnailUrl}
               alt={course.title}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              unoptimized
             />
           ) : (
             <div className="flex h-full items-center justify-center">

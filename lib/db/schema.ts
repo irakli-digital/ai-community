@@ -12,32 +12,41 @@ import {
 import { relations, sql } from 'drizzle-orm';
 
 // ─── Users ──────────────────────────────────────────────────────────────────
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 100 }),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  role: varchar('role', { length: 20 }).notNull().default('member'),
-  // Profile fields
-  avatarUrl: text('avatar_url'),
-  bio: text('bio'),
-  location: varchar('location', { length: 200 }),
-  websiteUrl: text('website_url'),
-  facebookUrl: text('facebook_url'),
-  linkedinUrl: text('linkedin_url'),
-  twitterUrl: text('twitter_url'),
-  // Gamification
-  points: integer('points').notNull().default(0),
-  level: integer('level').notNull().default(1),
-  // Online status
-  lastSeenAt: timestamp('last_seen_at'),
-  // Stripe
-  stripeCustomerId: text('stripe_customer_id').unique(),
-  // Timestamps
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  deletedAt: timestamp('deleted_at'),
-});
+export const users = pgTable(
+  'users',
+  {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 100 }),
+    email: varchar('email', { length: 255 }).notNull().unique(),
+    passwordHash: text('password_hash').notNull(),
+    role: varchar('role', { length: 20 }).notNull().default('member'),
+    // Profile fields
+    avatarUrl: text('avatar_url'),
+    bio: text('bio'),
+    location: varchar('location', { length: 200 }),
+    websiteUrl: text('website_url'),
+    facebookUrl: text('facebook_url'),
+    linkedinUrl: text('linkedin_url'),
+    twitterUrl: text('twitter_url'),
+    // Gamification
+    points: integer('points').notNull().default(0),
+    level: integer('level').notNull().default(1),
+    // Online status
+    lastSeenAt: timestamp('last_seen_at'),
+    // Stripe
+    stripeCustomerId: text('stripe_customer_id').unique(),
+    // Timestamps
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at'),
+  },
+  (table) => [
+    index('users_last_seen_at_idx').on(table.lastSeenAt),
+    index('users_points_idx').on(table.points),
+    index('users_level_idx').on(table.level),
+    index('users_deleted_at_idx').on(table.deletedAt),
+  ]
+);
 
 // ─── Subscriptions (user-based billing) ─────────────────────────────────────
 export const subscriptions = pgTable('subscriptions', {
