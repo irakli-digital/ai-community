@@ -1,39 +1,41 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
-import { Manrope } from 'next/font/google';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
+import { Noto_Sans_Georgian } from 'next/font/google';
+import { getUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 
 export const metadata: Metadata = {
-  title: 'Next.js SaaS Starter',
-  description: 'Get started quickly with Next.js, Postgres, and Stripe.'
+  title: 'AI წრე — ქართული AI/ტექ საზოგადოება',
+  description:
+    'AI წრე — ქართული ტექნოლოგიური საზოგადოება. ისწავლე AI, ავტომატიზაცია და ტექნოლოგიები.',
 };
 
 export const viewport: Viewport = {
-  maximumScale: 1
+  maximumScale: 1,
 };
 
-const manrope = Manrope({ subsets: ['latin'] });
+const notoSansGeorgian = Noto_Sans_Georgian({
+  subsets: ['georgian', 'latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+});
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <html
-      lang="en"
-      className={`bg-white dark:bg-gray-950 text-black dark:text-white ${manrope.className}`}
+      lang="ka"
+      className={`bg-white dark:bg-gray-950 text-black dark:text-white ${notoSansGeorgian.className}`}
     >
       <body className="min-h-[100dvh] bg-gray-50">
         <SWRConfig
           value={{
             fallback: {
-              // We do NOT await here
-              // Only components that read this data will suspend
               '/api/user': getUser(),
-              '/api/team': getTeamForUser()
-            }
+            },
           }}
         >
           {children}
