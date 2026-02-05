@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Bell,
   Search,
   Menu,
   LogOut,
@@ -25,6 +24,7 @@ import { signOut } from '@/app/(login)/actions';
 import { User } from '@/lib/db/schema';
 import { t } from '@/lib/i18n/ka';
 import useSWR, { mutate } from 'swr';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -77,11 +77,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" asChild className="relative">
-            <Link href="/notifications">
-              <Bell className="h-5 w-5 text-gray-500" />
-            </Link>
-          </Button>
+          <NotificationBell />
 
           {user && (
             <DropdownMenu>
