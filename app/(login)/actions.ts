@@ -166,7 +166,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   ]);
 
   // Fire-and-forget welcome email
-  sendEmailAsync(welcomeEmail({ email: createdUser.email }));
+  const emailTemplate = welcomeEmail({ email: createdUser.email });
+  sendEmailAsync({ to: createdUser.email, ...emailTemplate });
 
   const redirectTo = formData.get('redirect') as string | null;
   if (redirectTo === 'checkout') {

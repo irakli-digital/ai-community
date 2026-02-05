@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,14 @@ const tabs: { key: SearchTab; label: string }[] = [
 ];
 
 export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-gray-500">იტვირთება...</div>}>
+      <SearchPageInner />
+    </Suspense>
+  );
+}
+
+function SearchPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';

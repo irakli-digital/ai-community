@@ -161,8 +161,9 @@ export async function handleSubscriptionChange(
     }
   } else if (status === 'canceled' || status === 'unpaid') {
     // Send cancellation email
-    const periodEnd = subscription.current_period_end
-      ? new Date(subscription.current_period_end * 1000).toLocaleDateString('ka-GE')
+    const periodEndTimestamp = item?.current_period_end;
+    const periodEnd = periodEndTimestamp
+      ? new Date(periodEndTimestamp * 1000).toLocaleDateString('ka-GE')
       : undefined;
     const template = subscriptionCancellationEmail({
       name: user.name || undefined,
