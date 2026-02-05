@@ -16,8 +16,19 @@ import {
   subscriptionCancellationEmail,
 } from '@/lib/email/templates';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil',
+function getStripeClient() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not set. Stripe features are unavailable.');
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-04-30.basil',
+  });
+}
+
+export const stripe = new Proxy({} as Stripe, {
+  get(_, prop) {
+    return (getStripeClient() as any)[prop];
+  },
 });
 
 export async function createCheckoutSession({
@@ -181,6 +192,7 @@ export async function handleSubscriptionChange(
 }
 
 export async function getStripePrices() {
+  if (!process.env.STRIPE_SECRET_KEY) return [];
   const prices = await stripe.prices.list({
     expand: ['data.product'],
     active: true,
@@ -199,6 +211,7 @@ export async function getStripePrices() {
 }
 
 export async function getStripeProducts() {
+  if (!process.env.STRIPE_SECRET_KEY) return [];
   const products = await stripe.products.list({
     active: true,
     expand: ['data.default_price'],
