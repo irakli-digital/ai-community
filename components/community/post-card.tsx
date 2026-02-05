@@ -7,6 +7,7 @@ import type { FeedPost } from '@/lib/db/community-queries';
 import { formatDistanceToNow } from 'date-fns';
 import { ka } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { LevelBadge } from '@/components/members/level-badge';
 
 interface PostCardProps {
   post: FeedPost;
@@ -43,9 +44,12 @@ export function PostCard({ post, onLike, canLike }: PostCardProps) {
             )}
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900">
-              {post.author.name ?? 'მომხმარებელი'}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <Link href={`/members/${post.author.id}`} className="text-sm font-medium text-gray-900 hover:underline">
+                {post.author.name ?? 'მომხმარებელი'}
+              </Link>
+              <LevelBadge level={post.author.level} size="sm" />
+            </div>
             <p className="text-xs text-gray-500">{timeAgo}</p>
           </div>
         </div>

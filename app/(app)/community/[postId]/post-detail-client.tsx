@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ka } from 'date-fns/locale';
 import type { PostDetail, CommentWithAuthor } from '@/lib/db/community-queries';
+import { LevelBadge } from '@/components/members/level-badge';
 import {
   likePost,
   unlikePost,
@@ -96,9 +97,10 @@ function CommentItem({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-900">
+            <Link href={`/members/${comment.author.id}`} className="text-sm font-medium text-gray-900 hover:underline">
               {comment.author.name ?? 'მომხმარებელი'}
-            </span>
+            </Link>
+            <LevelBadge level={comment.author.level} size="sm" />
             <span className="text-xs text-gray-400">{timeAgo}</span>
           </div>
           <div className="mt-1 text-sm text-gray-700">
@@ -268,9 +270,12 @@ export function PostDetailClient({
               )}
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">
-                {post.author.name ?? 'მომხმარებელი'}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <Link href={`/members/${post.author.id}`} className="text-sm font-medium text-gray-900 hover:underline">
+                  {post.author.name ?? 'მომხმარებელი'}
+                </Link>
+                <LevelBadge level={post.author.level} size="sm" />
+              </div>
               <p className="text-xs text-gray-500">{timeAgo}</p>
             </div>
           </div>

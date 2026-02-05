@@ -36,6 +36,7 @@ export type FeedPost = {
     id: number;
     name: string | null;
     avatarUrl: string | null;
+    level: number;
   };
   category: {
     id: number;
@@ -87,6 +88,7 @@ export async function getFeedPosts(params: {
       authorId: posts.authorId,
       authorName: users.name,
       authorAvatar: users.avatarUrl,
+      authorLevel: users.level,
       catId: categories.id,
       catName: categories.name,
       catColor: categories.color,
@@ -130,6 +132,7 @@ export async function getFeedPosts(params: {
       id: r.authorId,
       name: r.authorName,
       avatarUrl: r.authorAvatar,
+      level: r.authorLevel,
     },
     category: r.catId
       ? { id: r.catId, name: r.catName!, color: r.catColor! }
@@ -172,6 +175,7 @@ export async function getPinnedPosts(params: {
       authorId: posts.authorId,
       authorName: users.name,
       authorAvatar: users.avatarUrl,
+      authorLevel: users.level,
       catId: categories.id,
       catName: categories.name,
       catColor: categories.color,
@@ -210,6 +214,7 @@ export async function getPinnedPosts(params: {
       id: r.authorId,
       name: r.authorName,
       avatarUrl: r.authorAvatar,
+      level: r.authorLevel,
     },
     category: r.catId
       ? { id: r.catId, name: r.catName!, color: r.catColor! }
@@ -248,6 +253,7 @@ export async function getPostById(
       authorId: posts.authorId,
       authorName: users.name,
       authorAvatar: users.avatarUrl,
+      authorLevel: users.level,
       catId: categories.id,
       catName: categories.name,
       catColor: categories.color,
@@ -298,6 +304,7 @@ export async function getPostById(
       id: r.authorId,
       name: r.authorName,
       avatarUrl: r.authorAvatar,
+      level: r.authorLevel,
     },
     category: r.catId
       ? { id: r.catId, name: r.catName!, color: r.catColor! }
@@ -332,6 +339,7 @@ export type CommentWithAuthor = {
     id: number;
     name: string | null;
     avatarUrl: string | null;
+    level: number;
   };
   liked: boolean;
   replies: CommentWithAuthor[];
@@ -352,6 +360,7 @@ export async function getPostComments(
       authorId: comments.authorId,
       authorName: users.name,
       authorAvatar: users.avatarUrl,
+      authorLevel: users.level,
     })
     .from(comments)
     .innerJoin(users, eq(comments.authorId, users.id))
@@ -386,6 +395,7 @@ export async function getPostComments(
       id: r.authorId,
       name: r.authorName,
       avatarUrl: r.authorAvatar,
+      level: r.authorLevel,
     },
     liked: likedCommentIds.has(r.id),
     replies: [] as CommentWithAuthor[],
