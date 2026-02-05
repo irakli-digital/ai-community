@@ -25,12 +25,28 @@ import { User } from '@/lib/db/schema';
 import { t } from '@/lib/i18n/ka';
 import useSWR, { mutate } from 'swr';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { SearchModal } from '@/components/search/search-modal';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+import { useEffect } from 'react';
 
 export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const { data: user } = useSWR<User>('/api/user', fetcher);
   const router = useRouter();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Cmd+K shortcut
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   async function handleSignOut() {
     await signOut();
@@ -47,6 +63,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
     : user?.email?.[0]?.toUpperCase() || '?';
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Left: mobile menu + logo */}
@@ -71,10 +88,8 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
 
         {/* Right: search, notifications, user menu */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/search">
-              <Search className="h-5 w-5 text-gray-500" />
-            </Link>
+          <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
+            <Search className="h-5 w-5 text-gray-500" />
           </Button>
 
           <NotificationBell />
@@ -128,5 +143,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
         </div>
       </div>
     </header>
+    <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }
