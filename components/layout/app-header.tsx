@@ -97,7 +97,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="user-menu">
                   <Avatar className="h-9 w-9">
                     <AvatarImage src={user.avatarUrl || undefined} alt={user.name || ''} />
                     <AvatarFallback className="bg-orange-100 text-orange-700 text-sm font-medium">
@@ -133,7 +133,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut}>
+                <DropdownMenuItem className="cursor-pointer" onClick={handleSignOut} data-testid="sign-out">
                   <LogOut className="mr-2 h-4 w-4" />
                   {t('auth.signOut')}
                 </DropdownMenuItem>
