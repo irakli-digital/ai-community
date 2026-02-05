@@ -2,14 +2,16 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
 
-const protectedRoutes = '/dashboard';
+const protectedRoutes = ['/community', '/classroom', '/members', '/leaderboard', '/settings', '/notifications', '/search'];
+const adminRoutes = ['/admin'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
-  const isProtectedRoute = pathname.startsWith(protectedRoutes);
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
-  if (isProtectedRoute && !sessionCookie) {
+  if ((isProtectedRoute || isAdminRoute) && !sessionCookie) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
@@ -18,23 +20,29 @@ export async function middleware(request: NextRequest) {
   if (sessionCookie && request.method === 'GET') {
     try {
       const parsed = await verifyToken(sessionCookie.value);
+
+      // Admin route protection
+      if (isAdminRoute && parsed.user.role !== 'admin') {
+        return NextResponse.redirect(new URL('/community', request.url));
+      }
+
       const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       res.cookies.set({
         name: 'session',
         value: await signToken({
           ...parsed,
-          expires: expiresInOneDay.toISOString()
+          expires: expiresInOneDay.toISOString(),
         }),
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
-        expires: expiresInOneDay
+        expires: expiresInOneDay,
       });
     } catch (error) {
       console.error('Error updating session:', error);
       res.cookies.delete('session');
-      if (isProtectedRoute) {
+      if (isProtectedRoute || isAdminRoute) {
         return NextResponse.redirect(new URL('/sign-in', request.url));
       }
     }
@@ -45,5 +53,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-  runtime: 'nodejs'
+  runtime: 'nodejs',
 };
