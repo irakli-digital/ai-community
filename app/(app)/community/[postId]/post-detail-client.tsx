@@ -1,0 +1,474 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Heart,
+  MessageCircle,
+  Pin,
+  PinOff,
+  Trash2,
+  ExternalLink,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { t } from '@/lib/i18n/ka';
+import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+import { ka } from 'date-fns/locale';
+import type { PostDetail, CommentWithAuthor } from '@/lib/db/community-queries';
+import {
+  likePost,
+  unlikePost,
+  deletePost,
+  pinPost,
+  unpinPost,
+  createComment,
+  deleteComment,
+  likeComment,
+  unlikeComment,
+} from '../actions';
+import { MarkdownContent } from '@/components/community/markdown-content';
+
+// ─── Comment Component ──────────────────────────────────────────────────────
+
+function CommentItem({
+  comment,
+  postId,
+  canLike,
+  userId,
+  userRole,
+  depth,
+  onReply,
+}: {
+  comment: CommentWithAuthor;
+  postId: number;
+  canLike: boolean;
+  userId: number | null;
+  userRole: string;
+  depth: number;
+  onReply: (parentId: number) => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const isAuthor = userId === comment.author.id;
+  const isAdminOrMod = userRole === 'admin' || userRole === 'moderator';
+  const canDelete = isAuthor || isAdminOrMod;
+
+  const timeAgo = formatDistanceToNow(new Date(comment.createdAt), {
+    addSuffix: true,
+    locale: ka,
+  });
+
+  async function handleLikeComment() {
+    startTransition(async () => {
+      if (comment.liked) {
+        await unlikeComment(comment.id);
+      } else {
+        await likeComment(comment.id);
+      }
+      router.refresh();
+    });
+  }
+
+  async function handleDeleteComment() {
+    if (!confirm('ნამდვილად გსურთ კომენტარის წაშლა?')) return;
+    startTransition(async () => {
+      await deleteComment(comment.id);
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className={cn('border-l-2 border-gray-100 pl-4', depth > 0 && 'ml-4')}>
+      <div className="flex items-start gap-3 py-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+          {comment.author.avatarUrl ? (
+            <img
+              src={comment.author.avatarUrl}
+              alt={comment.author.name ?? ''}
+              className="h-full w-full rounded-full object-cover"
+            />
+          ) : (
+            (comment.author.name?.[0] ?? '?').toUpperCase()
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-900">
+              {comment.author.name ?? 'მომხმარებელი'}
+            </span>
+            <span className="text-xs text-gray-400">{timeAgo}</span>
+          </div>
+          <div className="mt-1 text-sm text-gray-700">
+            <MarkdownContent content={comment.content} />
+          </div>
+          <div className="mt-2 flex items-center gap-3">
+            <button
+              onClick={handleLikeComment}
+              disabled={!canLike || isPending}
+              className={cn(
+                'flex items-center gap-1 text-xs transition-colors',
+                comment.liked
+                  ? 'text-red-500'
+                  : canLike
+                    ? 'text-gray-400 hover:text-red-500'
+                    : 'text-gray-300'
+              )}
+            >
+              <Heart
+                className={cn('h-3.5 w-3.5', comment.liked && 'fill-current')}
+              />
+              {comment.likesCount > 0 && comment.likesCount}
+            </button>
+            {depth === 0 && userId && (
+              <button
+                onClick={() => onReply(comment.id)}
+                className="text-xs text-gray-400 hover:text-gray-600"
+              >
+                პასუხი
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={handleDeleteComment}
+                disabled={isPending}
+                className="text-xs text-gray-400 hover:text-red-500"
+              >
+                წაშლა
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Replies */}
+      {comment.replies.map((reply) => (
+        <CommentItem
+          key={reply.id}
+          comment={reply}
+          postId={postId}
+          canLike={canLike}
+          userId={userId}
+          userRole={userRole}
+          depth={depth + 1}
+          onReply={onReply}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Detail Component ──────────────────────────────────────────────────
+
+export function PostDetailClient({
+  post,
+  comments: initialComments,
+  canLike,
+  isAuthor,
+  isAdminOrMod,
+  userId,
+  userRole,
+}: {
+  post: PostDetail;
+  comments: CommentWithAuthor[];
+  canLike: boolean;
+  isAuthor: boolean;
+  isAdminOrMod: boolean;
+  userId: number | null;
+  userRole: string;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [commentText, setCommentText] = useState('');
+  const [replyToId, setReplyToId] = useState<number | null>(null);
+  const [liked, setLiked] = useState(post.liked);
+  const [likesCount, setLikesCount] = useState(post.likesCount);
+
+  const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
+    addSuffix: true,
+    locale: ka,
+  });
+
+  async function handleLikePost() {
+    // Optimistic
+    setLiked(!liked);
+    setLikesCount((c) => c + (liked ? -1 : 1));
+    try {
+      if (liked) {
+        await unlikePost(post.id);
+      } else {
+        await likePost(post.id);
+      }
+    } catch {
+      setLiked(liked);
+      setLikesCount(post.likesCount);
+    }
+  }
+
+  async function handleDeletePost() {
+    if (!confirm('ნამდვილად გსურთ პოსტის წაშლა?')) return;
+    startTransition(async () => {
+      await deletePost(post.id);
+      router.push('/community');
+    });
+  }
+
+  async function handlePin() {
+    startTransition(async () => {
+      if (post.isPinned) {
+        await unpinPost(post.id);
+      } else {
+        await pinPost(post.id);
+      }
+      router.refresh();
+    });
+  }
+
+  async function handleSubmitComment(e: React.FormEvent) {
+    e.preventDefault();
+    if (!commentText.trim()) return;
+
+    startTransition(async () => {
+      await createComment({
+        postId: post.id,
+        content: commentText.trim(),
+        parentId: replyToId,
+      });
+      setCommentText('');
+      setReplyToId(null);
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Back */}
+      <Link href="/community">
+        <Button variant="ghost" size="sm">
+          <ArrowLeft className="h-4 w-4" />
+          {t('common.back')}
+        </Button>
+      </Link>
+
+      {/* Post */}
+      <article className="rounded-xl border bg-white p-6">
+        {/* Author header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-600">
+              {post.author.avatarUrl ? (
+                <img
+                  src={post.author.avatarUrl}
+                  alt={post.author.name ?? ''}
+                  className="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                (post.author.name?.[0] ?? '?').toUpperCase()
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                {post.author.name ?? 'მომხმარებელი'}
+              </p>
+              <p className="text-xs text-gray-500">{timeAgo}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {post.isPinned && (
+              <span className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                <Pin className="h-3 w-3" />
+                {t('community.pinnedPost')}
+              </span>
+            )}
+            {post.category && (
+              <span
+                className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
+                style={{ backgroundColor: post.category.color }}
+              >
+                {post.category.name}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Title */}
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">{post.title}</h1>
+
+        {/* Content (markdown) */}
+        <div className="mt-4 prose prose-sm max-w-none text-gray-700">
+          <MarkdownContent content={post.content} />
+        </div>
+
+        {/* Images */}
+        {post.images.length > 0 && (
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {post.images.map((img) => (
+              <img
+                key={img.id}
+                src={img.url}
+                alt={img.altText ?? ''}
+                className="rounded-lg object-cover"
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Links */}
+        {post.links.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {post.links.map((link) => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-gray-50"
+              >
+                {link.imageUrl && (
+                  <img
+                    src={link.imageUrl}
+                    alt=""
+                    className="h-16 w-24 shrink-0 rounded object-cover"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1">
+                    <p className="truncate text-sm font-medium text-gray-900">
+                      {link.title || link.url}
+                    </p>
+                    <ExternalLink className="h-3 w-3 shrink-0 text-gray-400" />
+                  </div>
+                  {link.description && (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">
+                      {link.description}
+                    </p>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="mt-6 flex items-center justify-between border-t pt-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleLikePost}
+              disabled={!canLike}
+              className={cn(
+                'flex items-center gap-1.5 text-sm transition-colors',
+                liked
+                  ? 'text-red-500'
+                  : canLike
+                    ? 'text-gray-500 hover:text-red-500'
+                    : 'cursor-default text-gray-400'
+              )}
+            >
+              <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
+              {likesCount}
+            </button>
+            <span className="flex items-center gap-1.5 text-sm text-gray-500">
+              <MessageCircle className="h-4 w-4" />
+              {post.commentsCount}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {isAdminOrMod && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handlePin}
+                disabled={isPending}
+              >
+                {post.isPinned ? (
+                  <>
+                    <PinOff className="h-4 w-4" />
+                    მოხსნა
+                  </>
+                ) : (
+                  <>
+                    <Pin className="h-4 w-4" />
+                    მიმაგრება
+                  </>
+                )}
+              </Button>
+            )}
+            {(isAuthor || isAdminOrMod) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeletePost}
+                disabled={isPending}
+                className="text-red-500 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+                {t('common.delete')}
+              </Button>
+            )}
+          </div>
+        </div>
+      </article>
+
+      {/* Comment Form */}
+      {userId && (
+        <form onSubmit={handleSubmitComment} className="rounded-xl border bg-white p-4">
+          {replyToId && (
+            <div className="mb-2 flex items-center gap-2 text-xs text-gray-500">
+              <span>პასუხობ კომენტარს</span>
+              <button
+                type="button"
+                onClick={() => setReplyToId(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="დაწერეთ კომენტარი..."
+              rows={2}
+              className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isPending || !commentText.trim()}
+              className="self-end"
+            >
+              {isPending ? '...' : 'გაგზავნა'}
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {/* Comments */}
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-gray-900">
+          კომენტარები ({post.commentsCount})
+        </h2>
+        {initialComments.length === 0 ? (
+          <p className="py-4 text-sm text-gray-500">
+            ჯერ კომენტარები არ არის.
+          </p>
+        ) : (
+          initialComments.map((comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              postId={post.id}
+              canLike={canLike}
+              userId={userId}
+              userRole={userRole}
+              depth={0}
+              onReply={(parentId) => setReplyToId(parentId)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
