@@ -6,8 +6,10 @@ import {
   timestamp,
   integer,
   boolean,
+  uniqueIndex,
+  index,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 
 // ─── Users ──────────────────────────────────────────────────────────────────
 export const users = pgTable('users', {
@@ -90,6 +92,129 @@ export const activityLogs = pgTable('activity_logs', {
   ipAddress: varchar('ip_address', { length: 45 }),
 });
 
+// ─── Posts ───────────────────────────────────────────────────────────────────
+export const posts = pgTable(
+  'posts',
+  {
+    id: serial('id').primaryKey(),
+    authorId: integer('author_id')
+      .notNull()
+      .references(() => users.id),
+    categoryId: integer('category_id').references(() => categories.id),
+    title: varchar('title', { length: 300 }).notNull(),
+    content: text('content').notNull(),
+    isPinned: boolean('is_pinned').notNull().default(false),
+    likesCount: integer('likes_count').notNull().default(0),
+    commentsCount: integer('comments_count').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at'),
+  },
+  (table) => [
+    index('posts_author_id_idx').on(table.authorId),
+    index('posts_category_id_idx').on(table.categoryId),
+    index('posts_created_at_id_idx').on(table.createdAt, table.id),
+    index('posts_is_pinned_idx').on(table.isPinned),
+  ]
+);
+
+// ─── Post Images ────────────────────────────────────────────────────────────
+export const postImages = pgTable(
+  'post_images',
+  {
+    id: serial('id').primaryKey(),
+    postId: integer('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    url: text('url').notNull(),
+    altText: varchar('alt_text', { length: 300 }),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [index('post_images_post_id_idx').on(table.postId)]
+);
+
+// ─── Post Links (OG metadata) ──────────────────────────────────────────────
+export const postLinks = pgTable(
+  'post_links',
+  {
+    id: serial('id').primaryKey(),
+    postId: integer('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    url: text('url').notNull(),
+    title: varchar('title', { length: 300 }),
+    description: text('description'),
+    imageUrl: text('image_url'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [index('post_links_post_id_idx').on(table.postId)]
+);
+
+// ─── Comments ───────────────────────────────────────────────────────────────
+export const comments = pgTable(
+  'comments',
+  {
+    id: serial('id').primaryKey(),
+    postId: integer('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    authorId: integer('author_id')
+      .notNull()
+      .references(() => users.id),
+    parentId: integer('parent_id'), // self-ref for threading
+    content: text('content').notNull(),
+    likesCount: integer('likes_count').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at'),
+  },
+  (table) => [
+    index('comments_post_id_idx').on(table.postId),
+    index('comments_author_id_idx').on(table.authorId),
+    index('comments_parent_id_idx').on(table.parentId),
+  ]
+);
+
+// ─── Post Likes ─────────────────────────────────────────────────────────────
+export const postLikes = pgTable(
+  'post_likes',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    postId: integer('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('post_likes_user_post_unique').on(table.userId, table.postId),
+  ]
+);
+
+// ─── Comment Likes ──────────────────────────────────────────────────────────
+export const commentLikes = pgTable(
+  'comment_likes',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    commentId: integer('comment_id')
+      .notNull()
+      .references(() => comments.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('comment_likes_user_comment_unique').on(
+      table.userId,
+      table.commentId
+    ),
+  ]
+);
+
 // ─── Relations ──────────────────────────────────────────────────────────────
 export const usersRelations = relations(users, ({ one, many }) => ({
   subscription: one(subscriptions, {
@@ -97,6 +222,10 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [subscriptions.userId],
   }),
   activityLogs: many(activityLogs),
+  posts: many(posts),
+  comments: many(comments),
+  postLikes: many(postLikes),
+  commentLikes: many(commentLikes),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
@@ -113,6 +242,79 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  author: one(users, {
+    fields: [posts.authorId],
+    references: [users.id],
+  }),
+  category: one(categories, {
+    fields: [posts.categoryId],
+    references: [categories.id],
+  }),
+  images: many(postImages),
+  links: many(postLinks),
+  comments: many(comments),
+  likes: many(postLikes),
+}));
+
+export const postImagesRelations = relations(postImages, ({ one }) => ({
+  post: one(posts, {
+    fields: [postImages.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const postLinksRelations = relations(postLinks, ({ one }) => ({
+  post: one(posts, {
+    fields: [postLinks.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
+  author: one(users, {
+    fields: [comments.authorId],
+    references: [users.id],
+  }),
+  parent: one(comments, {
+    fields: [comments.parentId],
+    references: [comments.id],
+    relationName: 'commentReplies',
+  }),
+  replies: many(comments, { relationName: 'commentReplies' }),
+  likes: many(commentLikes),
+}));
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  posts: many(posts),
+}));
+
+export const postLikesRelations = relations(postLikes, ({ one }) => ({
+  user: one(users, {
+    fields: [postLikes.userId],
+    references: [users.id],
+  }),
+  post: one(posts, {
+    fields: [postLikes.postId],
+    references: [posts.id],
+  }),
+}));
+
+export const commentLikesRelations = relations(commentLikes, ({ one }) => ({
+  user: one(users, {
+    fields: [commentLikes.userId],
+    references: [users.id],
+  }),
+  comment: one(comments, {
+    fields: [commentLikes.commentId],
+    references: [comments.id],
+  }),
+}));
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -123,6 +325,16 @@ export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
+export type PostImage = typeof postImages.$inferSelect;
+export type NewPostImage = typeof postImages.$inferInsert;
+export type PostLink = typeof postLinks.$inferSelect;
+export type NewPostLink = typeof postLinks.$inferInsert;
+export type Comment = typeof comments.$inferSelect;
+export type NewComment = typeof comments.$inferInsert;
+export type PostLike = typeof postLikes.$inferSelect;
+export type CommentLike = typeof commentLikes.$inferSelect;
 
 // ─── Activity Types ─────────────────────────────────────────────────────────
 export enum ActivityType {
