@@ -127,6 +127,8 @@ const dictionary = {
   // ─── Errors ─────────────────────────────────────────────────────────
   'error.generic': 'რაღაც არასწორად წავიდა. სცადეთ თავიდან.',
   'error.notFound': 'გვერდი ვერ მოიძებნა.',
+  'error.notFoundDesc': 'გვერდი, რომელსაც ეძებთ, არ არსებობს ან წაშლილია.',
+  'error.backHome': 'მთავარ გვერდზე დაბრუნება',
   'error.unauthorized': 'წვდომა აკრძალულია.',
   'error.forbidden': 'არ გაქვთ ამ მოქმედების უფლება.',
   'error.passwordMismatch': 'ახალი პაროლი და დადასტურება არ ემთხვევა.',
@@ -134,6 +136,25 @@ const dictionary = {
   'error.passwordIncorrect': 'მიმდინარე პაროლი არასწორია.',
   'error.userCreateFailed': 'მომხმარებლის შექმნა ვერ მოხერხდა. სცადეთ თავიდან.',
   'error.invalidInvitation': 'არასწორი ან ვადაგასული მოსაწვევი.',
+  'error.somethingWentWrong': 'რაღაც შეცდომა მოხდა',
+  'error.tryAgain': 'თავიდან ცდა',
+  'error.sectionLoadFailed': 'ამ სექციის ჩატვირთვა ვერ მოხერხდა.',
+  'error.networkError': 'ქსელის შეცდომა. შეამოწმეთ ინტერნეტ კავშირი.',
+  'error.serverError': 'სერვერის შეცდომა. სცადეთ მოგვიანებით.',
+  'error.sessionExpired': 'სესია ვადაგასულია. გთხოვთ, ხელახლა შედით.',
+
+  // ─── Form Validation ──────────────────────────────────────────────
+  'validation.required': 'ეს ველი აუცილებელია.',
+  'validation.emailInvalid': 'ელფოსტის ფორმატი არასწორია.',
+  'validation.passwordMin': 'პაროლი უნდა იყოს მინიმუმ 8 სიმბოლო.',
+  'validation.passwordMax': 'პაროლი არ უნდა აღემატებოდეს 100 სიმბოლოს.',
+  'validation.nameRequired': 'სახელი აუცილებელია.',
+  'validation.nameMax': 'სახელი არ უნდა აღემატებოდეს 100 სიმბოლოს.',
+  'validation.titleRequired': 'სათაური აუცილებელია.',
+  'validation.contentRequired': 'კონტენტი აუცილებელია.',
+  'validation.urlInvalid': 'URL ფორმატი არასწორია.',
+  'validation.fileTooLarge': 'ფაილი ძალიან დიდია.',
+  'validation.invalidFileType': 'ფაილის ტიპი დაუშვებელია.',
 
   // ─── Upload ─────────────────────────────────────────────────────────
   'upload.avatar': 'ავატარის ატვირთვა',
