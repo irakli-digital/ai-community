@@ -150,6 +150,35 @@ const dictionary = {
   'admin.communitySettings': 'თემის პარამეტრები',
   'admin.categories': 'კატეგორიები',
   'admin.courses': 'კურსები',
+
+  // ─── Leaderboard ───────────────────────────────────────────────────
+  'leaderboard.title': 'ლიდერბორდი',
+  'leaderboard.7days': '7 დღე',
+  'leaderboard.30days': '30 დღე',
+  'leaderboard.allTime': 'ყველა დრო',
+  'leaderboard.position': '#',
+  'leaderboard.member': 'წევრი',
+  'leaderboard.points': 'ქულები',
+  'leaderboard.level': 'დონე',
+  'leaderboard.noData': 'ჯერ მონაცემები არ არის.',
+
+  // ─── Members ──────────────────────────────────────────────────────
+  'members.title': 'წევრები',
+  'members.searchPlaceholder': 'მოძებნეთ სახელით...',
+  'members.filterByLevel': 'დონის ფილტრი',
+  'members.allLevels': 'ყველა დონე',
+  'members.noMembers': 'წევრები ვერ მოიძებნა.',
+  'members.online': 'ონლაინ',
+  'members.joined': 'გაწევრიანდა',
+  'members.recentPosts': 'ბოლო პოსტები',
+  'members.noPosts': 'ჯერ პოსტები არ აქვს.',
+
+  // ─── Profile ──────────────────────────────────────────────────────
+  'profile.editProfile': 'პროფილის რედაქტირება',
+  'profile.points': 'ქულები',
+  'profile.level': 'დონე',
+  'profile.socialLinks': 'სოციალური ბმულები',
+  'profile.profileUpdated': 'პროფილი წარმატებით განახლდა.',
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;
