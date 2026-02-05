@@ -15,6 +15,12 @@ import { getUser, isPaidUser } from '@/lib/db/queries';
 import { eq, and, sql, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { awardPoints, revokePoints } from '@/lib/gamification';
+import {
+  notifyPostLiked,
+  notifyCommentLiked,
+  notifyPostCommented,
+  notifyCommentReplied,
+} from '@/lib/notifications';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -248,13 +254,13 @@ export async function likePost(postId: number) {
 
   // Award point to post author (not self)
   const [post] = await db
-    .select({ authorId: posts.authorId })
+    .select({ authorId: posts.authorId, title: posts.title })
     .from(posts)
     .where(eq(posts.id, postId))
     .limit(1);
 
   if (post && post.authorId !== user.id) {
-    await awardPoints({
+    const result = await awardPoints({
       userId: post.authorId,
       points: 1,
       reason: 'post_liked',
@@ -262,6 +268,21 @@ export async function likePost(postId: number) {
       sourceType: 'post',
       sourceId: postId,
     });
+
+    // Notify post author
+    notifyPostLiked({
+      postAuthorId: post.authorId,
+      actorId: user.id,
+      actorName: user.name || 'მომხმარებელი',
+      postId,
+      postTitle: post.title,
+    }).catch(() => {}); // fire-and-forget
+
+    // Notify level-up if applicable
+    if (result.leveledUp) {
+      const { notifyLevelUp } = await import('@/lib/notifications');
+      notifyLevelUp({ userId: post.authorId, newLevel: result.newLevel }).catch(() => {});
+    }
   }
 
   revalidatePath('/community');
@@ -345,6 +366,41 @@ export async function createComment(
     .set({ commentsCount: sql`${posts.commentsCount} + 1` })
     .where(eq(posts.id, data.postId));
 
+  // Notify post author about new comment (fire-and-forget)
+  const [commentedPost] = await db
+    .select({ authorId: posts.authorId, title: posts.title })
+    .from(posts)
+    .where(eq(posts.id, data.postId))
+    .limit(1);
+
+  if (commentedPost && commentedPost.authorId !== user.id) {
+    notifyPostCommented({
+      postAuthorId: commentedPost.authorId,
+      actorId: user.id,
+      actorName: user.name || 'მომხმარებელი',
+      postId: data.postId,
+      postTitle: commentedPost.title,
+    }).catch(() => {});
+  }
+
+  // Notify parent comment author about reply
+  if (data.parentId) {
+    const [parentComment] = await db
+      .select({ authorId: comments.authorId })
+      .from(comments)
+      .where(eq(comments.id, data.parentId))
+      .limit(1);
+
+    if (parentComment && parentComment.authorId !== user.id) {
+      notifyCommentReplied({
+        commentAuthorId: parentComment.authorId,
+        actorId: user.id,
+        actorName: user.name || 'მომხმარებელი',
+        postId: data.postId,
+      }).catch(() => {});
+    }
+  }
+
   revalidatePath(`/community/${data.postId}`);
   revalidatePath('/community');
   return { commentId: comment.id };
@@ -411,13 +467,13 @@ export async function likeComment(commentId: number) {
 
   // Award point to comment author (not self)
   const [comment] = await db
-    .select({ authorId: comments.authorId })
+    .select({ authorId: comments.authorId, content: comments.content, postId: comments.postId })
     .from(comments)
     .where(eq(comments.id, commentId))
     .limit(1);
 
   if (comment && comment.authorId !== user.id) {
-    await awardPoints({
+    const result = await awardPoints({
       userId: comment.authorId,
       points: 1,
       reason: 'comment_liked',
@@ -425,6 +481,20 @@ export async function likeComment(commentId: number) {
       sourceType: 'comment',
       sourceId: commentId,
     });
+
+    // Notify comment author
+    notifyCommentLiked({
+      commentAuthorId: comment.authorId,
+      actorId: user.id,
+      actorName: user.name || 'მომხმარებელი',
+      postId: comment.postId,
+      commentContent: comment.content,
+    }).catch(() => {});
+
+    if (result.leveledUp) {
+      const { notifyLevelUp } = await import('@/lib/notifications');
+      notifyLevelUp({ userId: comment.authorId, newLevel: result.newLevel }).catch(() => {});
+    }
   }
 
   return { success: true, liked: true };
