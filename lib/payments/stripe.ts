@@ -131,7 +131,8 @@ export async function handleSubscriptionChange(
     return;
   }
 
-  const plan = subscription.items.data[0]?.plan;
+  const item = subscription.items.data[0];
+  const plan = item?.plan;
 
   if (status === 'active' || status === 'trialing') {
     await updateUserSubscription(user.id, {
@@ -139,8 +140,8 @@ export async function handleSubscriptionChange(
       stripeProductId: plan?.product as string,
       stripePriceId: plan?.id || null,
       status,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: item ? new Date(item.current_period_start * 1000) : null,
+      currentPeriodEnd: item ? new Date(item.current_period_end * 1000) : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     });
   } else if (status === 'canceled' || status === 'unpaid') {

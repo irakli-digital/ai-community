@@ -141,14 +141,14 @@ export async function getMemberCount() {
 }
 
 export async function getOnlineMemberCount() {
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
   const result = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(users)
     .where(
       and(
         isNull(users.deletedAt),
-        sql`${users.lastSeenAt} > ${fiveMinutesAgo}`
+        sql`${users.lastSeenAt} > ${fiveMinutesAgo}::timestamp`
       )
     );
 

@@ -80,13 +80,14 @@ export async function GET(request: NextRequest) {
       .where(eq(subscriptions.userId, user[0].id))
       .limit(1);
 
+    const item = subscription.items.data[0];
     const subscriptionData = {
       stripeSubscriptionId: subscriptionId,
       stripeProductId: productId,
       stripePriceId: plan.id,
       status: subscription.status,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: item ? new Date(item.current_period_start * 1000) : null,
+      currentPeriodEnd: item ? new Date(item.current_period_end * 1000) : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       updatedAt: new Date(),
     };
