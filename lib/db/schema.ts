@@ -345,6 +345,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   pointEventsReceived: many(pointEvents, { relationName: 'pointEventsReceived' }),
   pointEventsGiven: many(pointEvents, { relationName: 'pointEventsGiven' }),
   courseProgress: many(courseProgress),
+  notifications: many(notifications),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
@@ -526,7 +527,48 @@ export const courseProgressRelations = relations(courseProgress, ({ one }) => ({
   }),
 }));
 
+// ─── Notifications ──────────────────────────────────────────────────────────
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: varchar('type', { length: 30 }).notNull(), // post_like, comment_like, post_comment, comment_reply, level_up, new_course, announcement
+    title: varchar('title', { length: 500 }).notNull(),
+    body: text('body'),
+    linkUrl: text('link_url'),
+    actorId: integer('actor_id').references(() => users.id),
+    isRead: boolean('is_read').notNull().default(false),
+    isEmailSent: boolean('is_email_sent').notNull().default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('notifications_user_read_created_idx').on(
+      table.userId,
+      table.isRead,
+      table.createdAt
+    ),
+    index('notifications_user_id_idx').on(table.userId),
+  ]
+);
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+  actor: one(users, {
+    fields: [notifications.actorId],
+    references: [users.id],
+    relationName: 'notificationActor',
+  }),
+}));
+
 // ─── Types ──────────────────────────────────────────────────────────────────
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;

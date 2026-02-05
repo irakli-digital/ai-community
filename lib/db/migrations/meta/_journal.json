@@ -36,6 +36,13 @@
       "when": 1770261171455,
       "tag": "0004_chubby_spacker_dave",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770261623812,
+      "tag": "0005_noisy_starjammers",
+      "breakpoints": true
     }
   ]
 }
