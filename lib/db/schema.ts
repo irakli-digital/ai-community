@@ -215,6 +215,122 @@ export const commentLikes = pgTable(
   ]
 );
 
+// ─── Courses ────────────────────────────────────────────────────────────────
+export const courses = pgTable(
+  'courses',
+  {
+    id: serial('id').primaryKey(),
+    title: varchar('title', { length: 300 }).notNull(),
+    slug: varchar('slug', { length: 300 }).notNull().unique(),
+    description: text('description'),
+    thumbnailUrl: text('thumbnail_url'),
+    isPaid: boolean('is_paid').notNull().default(false),
+    isPublished: boolean('is_published').notNull().default(false),
+    sortOrder: integer('sort_order').notNull().default(0),
+    totalLessons: integer('total_lessons').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('courses_slug_idx').on(table.slug),
+    index('courses_sort_order_idx').on(table.sortOrder),
+    index('courses_is_published_idx').on(table.isPublished),
+  ]
+);
+
+// ─── Course Sections ────────────────────────────────────────────────────────
+export const courseSections = pgTable(
+  'course_sections',
+  {
+    id: serial('id').primaryKey(),
+    courseId: integer('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    title: varchar('title', { length: 300 }).notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('course_sections_course_id_idx').on(table.courseId),
+    index('course_sections_sort_order_idx').on(table.courseId, table.sortOrder),
+  ]
+);
+
+// ─── Lessons ────────────────────────────────────────────────────────────────
+export const lessons = pgTable(
+  'lessons',
+  {
+    id: serial('id').primaryKey(),
+    sectionId: integer('section_id')
+      .notNull()
+      .references(() => courseSections.id, { onDelete: 'cascade' }),
+    courseId: integer('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    title: varchar('title', { length: 300 }).notNull(),
+    description: text('description'),
+    videoUrl: text('video_url'),
+    videoProvider: varchar('video_provider', { length: 20 }), // 'youtube' | 'vimeo'
+    content: text('content'), // Markdown
+    sortOrder: integer('sort_order').notNull().default(0),
+    durationSeconds: integer('duration_seconds'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('lessons_section_id_idx').on(table.sectionId),
+    index('lessons_course_id_idx').on(table.courseId),
+    index('lessons_sort_order_idx').on(table.sectionId, table.sortOrder),
+  ]
+);
+
+// ─── Lesson Attachments ─────────────────────────────────────────────────────
+export const lessonAttachments = pgTable(
+  'lesson_attachments',
+  {
+    id: serial('id').primaryKey(),
+    lessonId: integer('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    fileName: varchar('file_name', { length: 500 }).notNull(),
+    fileUrl: text('file_url').notNull(),
+    fileSizeBytes: integer('file_size_bytes'),
+    mimeType: varchar('mime_type', { length: 100 }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [index('lesson_attachments_lesson_id_idx').on(table.lessonId)]
+);
+
+// ─── Course Progress ────────────────────────────────────────────────────────
+export const courseProgress = pgTable(
+  'course_progress',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    courseId: integer('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    lessonId: integer('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    completed: boolean('completed').notNull().default(false),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('course_progress_user_lesson_unique').on(
+      table.userId,
+      table.lessonId
+    ),
+    index('course_progress_user_course_idx').on(table.userId, table.courseId),
+    index('course_progress_course_id_idx').on(table.courseId),
+  ]
+);
+
 // ─── Relations ──────────────────────────────────────────────────────────────
 export const usersRelations = relations(users, ({ one, many }) => ({
   subscription: one(subscriptions, {
@@ -228,6 +344,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   commentLikes: many(commentLikes),
   pointEventsReceived: many(pointEvents, { relationName: 'pointEventsReceived' }),
   pointEventsGiven: many(pointEvents, { relationName: 'pointEventsGiven' }),
+  courseProgress: many(courseProgress),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
@@ -353,6 +470,62 @@ export const pointEventsRelations = relations(pointEvents, ({ one }) => ({
   }),
 }));
 
+// ─── Course Relations ───────────────────────────────────────────────────────
+export const coursesRelations = relations(courses, ({ many }) => ({
+  sections: many(courseSections),
+  lessons: many(lessons),
+  progress: many(courseProgress),
+}));
+
+export const courseSectionsRelations = relations(
+  courseSections,
+  ({ one, many }) => ({
+    course: one(courses, {
+      fields: [courseSections.courseId],
+      references: [courses.id],
+    }),
+    lessons: many(lessons),
+  })
+);
+
+export const lessonsRelations = relations(lessons, ({ one, many }) => ({
+  section: one(courseSections, {
+    fields: [lessons.sectionId],
+    references: [courseSections.id],
+  }),
+  course: one(courses, {
+    fields: [lessons.courseId],
+    references: [courses.id],
+  }),
+  attachments: many(lessonAttachments),
+  progress: many(courseProgress),
+}));
+
+export const lessonAttachmentsRelations = relations(
+  lessonAttachments,
+  ({ one }) => ({
+    lesson: one(lessons, {
+      fields: [lessonAttachments.lessonId],
+      references: [lessons.id],
+    }),
+  })
+);
+
+export const courseProgressRelations = relations(courseProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [courseProgress.userId],
+    references: [users.id],
+  }),
+  course: one(courses, {
+    fields: [courseProgress.courseId],
+    references: [courses.id],
+  }),
+  lesson: one(lessons, {
+    fields: [courseProgress.lessonId],
+    references: [lessons.id],
+  }),
+}));
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -375,6 +548,16 @@ export type PostLike = typeof postLikes.$inferSelect;
 export type CommentLike = typeof commentLikes.$inferSelect;
 export type PointEvent = typeof pointEvents.$inferSelect;
 export type NewPointEvent = typeof pointEvents.$inferInsert;
+export type Course = typeof courses.$inferSelect;
+export type NewCourse = typeof courses.$inferInsert;
+export type CourseSection = typeof courseSections.$inferSelect;
+export type NewCourseSection = typeof courseSections.$inferInsert;
+export type Lesson = typeof lessons.$inferSelect;
+export type NewLesson = typeof lessons.$inferInsert;
+export type LessonAttachment = typeof lessonAttachments.$inferSelect;
+export type NewLessonAttachment = typeof lessonAttachments.$inferInsert;
+export type CourseProgress = typeof courseProgress.$inferSelect;
+export type NewCourseProgress = typeof courseProgress.$inferInsert;
 
 // ─── Activity Types ─────────────────────────────────────────────────────────
 export enum ActivityType {
