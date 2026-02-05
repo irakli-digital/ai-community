@@ -1,12 +1,13 @@
 'use client';
 
+import { useActionState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Lock, Trash2, Loader2 } from 'lucide-react';
-import { useActionState } from 'react';
 import { updatePassword, deleteAccount } from '@/app/(login)/actions';
+import { t } from '@/lib/i18n/ka';
 
 type PasswordState = {
   currentPassword?: string;
@@ -22,7 +23,7 @@ type DeleteState = {
   success?: string;
 };
 
-export default function SecurityPage() {
+export default function AccountSettingsPage() {
   const [passwordState, passwordAction, isPasswordPending] = useActionState<
     PasswordState,
     FormData
@@ -34,19 +35,16 @@ export default function SecurityPage() {
   >(deleteAccount, {});
 
   return (
-    <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium bold text-gray-900 mb-6">
-        Security Settings
-      </h1>
-      <Card className="mb-8">
+    <div className="space-y-6">
+      <Card>
         <CardHeader>
-          <CardTitle>Password</CardTitle>
+          <CardTitle>{t('settings.updatePassword')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" action={passwordAction}>
             <div>
               <Label htmlFor="current-password" className="mb-2">
-                Current Password
+                {t('auth.currentPassword')}
               </Label>
               <Input
                 id="current-password"
@@ -56,12 +54,11 @@ export default function SecurityPage() {
                 required
                 minLength={8}
                 maxLength={100}
-                defaultValue={passwordState.currentPassword}
               />
             </div>
             <div>
               <Label htmlFor="new-password" className="mb-2">
-                New Password
+                {t('auth.newPassword')}
               </Label>
               <Input
                 id="new-password"
@@ -71,12 +68,11 @@ export default function SecurityPage() {
                 required
                 minLength={8}
                 maxLength={100}
-                defaultValue={passwordState.newPassword}
               />
             </div>
             <div>
               <Label htmlFor="confirm-password" className="mb-2">
-                Confirm New Password
+                {t('auth.confirmPassword')}
               </Label>
               <Input
                 id="confirm-password"
@@ -85,7 +81,6 @@ export default function SecurityPage() {
                 required
                 minLength={8}
                 maxLength={100}
-                defaultValue={passwordState.confirmPassword}
               />
             </div>
             {passwordState.error && (
@@ -102,12 +97,12 @@ export default function SecurityPage() {
               {isPasswordPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
+                  {t('settings.updating')}
                 </>
               ) : (
                 <>
                   <Lock className="mr-2 h-4 w-4" />
-                  Update Password
+                  {t('settings.updatePassword')}
                 </>
               )}
             </Button>
@@ -117,16 +112,16 @@ export default function SecurityPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Delete Account</CardTitle>
+          <CardTitle>{t('settings.deleteAccount')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-500 mb-4">
-            Account deletion is non-reversable. Please proceed with caution.
+            {t('settings.deleteWarning')}
           </p>
           <form action={deleteAction} className="space-y-4">
             <div>
               <Label htmlFor="delete-password" className="mb-2">
-                Confirm Password
+                {t('auth.password')}
               </Label>
               <Input
                 id="delete-password"
@@ -135,7 +130,6 @@ export default function SecurityPage() {
                 required
                 minLength={8}
                 maxLength={100}
-                defaultValue={deleteState.password}
               />
             </div>
             {deleteState.error && (
@@ -150,18 +144,18 @@ export default function SecurityPage() {
               {isDeletePending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  {t('settings.deleting')}
                 </>
               ) : (
                 <>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Account
+                  {t('settings.deleteAccount')}
                 </>
               )}
             </Button>
           </form>
         </CardContent>
       </Card>
-    </section>
+    </div>
   );
 }
