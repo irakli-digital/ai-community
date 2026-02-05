@@ -226,6 +226,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   comments: many(comments),
   postLikes: many(postLikes),
   commentLikes: many(commentLikes),
+  pointEventsReceived: many(pointEvents, { relationName: 'pointEventsReceived' }),
+  pointEventsGiven: many(pointEvents, { relationName: 'pointEventsGiven' }),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
@@ -315,6 +317,42 @@ export const commentLikesRelations = relations(commentLikes, ({ one }) => ({
   }),
 }));
 
+// ─── Point Events (gamification audit log) ──────────────────────────────────
+export const pointEvents = pgTable(
+  'point_events',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    points: integer('points').notNull(), // +1 or -1
+    reason: varchar('reason', { length: 50 }).notNull(), // 'post_liked', 'comment_liked', 'post_unliked', 'comment_unliked'
+    sourceUserId: integer('source_user_id').references(() => users.id), // the liker
+    sourceType: varchar('source_type', { length: 20 }), // 'post' or 'comment'
+    sourceId: integer('source_id'), // postId or commentId
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('point_events_user_id_idx').on(table.userId),
+    index('point_events_created_at_idx').on(table.createdAt),
+    index('point_events_user_created_idx').on(table.userId, table.createdAt),
+  ]
+);
+
+// ─── Point Events Relations ─────────────────────────────────────────────────
+export const pointEventsRelations = relations(pointEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [pointEvents.userId],
+    references: [users.id],
+    relationName: 'pointEventsReceived',
+  }),
+  sourceUser: one(users, {
+    fields: [pointEvents.sourceUserId],
+    references: [users.id],
+    relationName: 'pointEventsGiven',
+  }),
+}));
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -335,6 +373,8 @@ export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type PostLike = typeof postLikes.$inferSelect;
 export type CommentLike = typeof commentLikes.$inferSelect;
+export type PointEvent = typeof pointEvents.$inferSelect;
+export type NewPointEvent = typeof pointEvents.$inferInsert;
 
 // ─── Activity Types ─────────────────────────────────────────────────────────
 export enum ActivityType {
