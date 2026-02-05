@@ -1,0 +1,9 @@
+# AI წრე - Robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /settings
+Disallow: /api/
+Disallow: /notifications
+
+Sitemap: https://aiwre.ge/sitemap.xml

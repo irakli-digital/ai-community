@@ -1,6 +1,17 @@
+import type { Metadata } from 'next';
 import { t } from '@/lib/i18n/ka';
 import { getPublishedCourses } from './actions';
 import { CourseCard } from '@/components/classroom/course-card';
+
+export const metadata: Metadata = {
+  title: 'კლასრუმი — AI წრე',
+  description: 'AI წრის კურსები — ისწავლე ხელოვნური ინტელექტი და ავტომატიზაცია.',
+  openGraph: {
+    title: 'კლასრუმი — AI წრე',
+    description: 'AI წრის კურსები — ისწავლე ხელოვნური ინტელექტი და ავტომატიზაცია.',
+    type: 'website',
+  },
+};
 
 export default async function ClassroomPage() {
   const courses = await getPublishedCourses();

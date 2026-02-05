@@ -5,9 +5,29 @@ import { getUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 
 export const metadata: Metadata = {
-  title: 'AI წრე — ქართული AI/ტექ საზოგადოება',
+  title: {
+    default: 'AI წრე — ქართული AI/ტექ საზოგადოება',
+    template: '%s',
+  },
   description:
     'AI წრე — ქართული ტექნოლოგიური საზოგადოება. ისწავლე AI, ავტომატიზაცია და ტექნოლოგიები.',
+  metadataBase: new URL(process.env.BASE_URL || 'http://localhost:3000'),
+  openGraph: {
+    title: 'AI წრე — ქართული AI/ტექ საზოგადოება',
+    description: 'ისწავლე AI, ავტომატიზაცია და ტექნოლოგიები ქართულ საზოგადოებაში.',
+    type: 'website',
+    locale: 'ka_GE',
+    siteName: 'AI წრე',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI წრე — ქართული AI/ტექ საზოგადოება',
+    description: 'ისწავლე AI, ავტომატიზაცია და ტექნოლოგიები ქართულ საზოგადოებაში.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {

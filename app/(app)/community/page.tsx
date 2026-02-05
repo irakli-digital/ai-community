@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getUser, isPaidUser } from '@/lib/db/queries';
 import { getCategories } from '@/app/(app)/admin/categories/actions';
 import {
@@ -5,6 +6,16 @@ import {
   getPinnedPosts,
 } from '@/lib/db/community-queries';
 import { CommunityFeed } from './feed-client';
+
+export const metadata: Metadata = {
+  title: 'თემი — AI წრე',
+  description: 'AI წრის საზოგადოების ფიდი — პოსტები, დისკუსიები და რესურსები.',
+  openGraph: {
+    title: 'თემი — AI წრე',
+    description: 'AI წრის საზოგადოების ფიდი — პოსტები, დისკუსიები და რესურსები.',
+    type: 'website',
+  },
+};
 
 export default async function CommunityPage({
   searchParams,
