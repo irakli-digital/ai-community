@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,17 +18,8 @@ const tabs: { key: SearchTab; label: string }[] = [
   { key: 'members', label: 'წევრები' },
 ];
 
-export default function SearchPage() {
-  return (
-    <Suspense fallback={<div className="py-12 text-center text-gray-500">იტვირთება...</div>}>
-      <SearchPageInner />
-    </Suspense>
-  );
-}
-
 function SearchPageInner() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
   const initialTab = (searchParams.get('tab') as SearchTab) || 'posts';
 
@@ -245,5 +236,17 @@ function SearchPageInner() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+      </div>
+    }>
+      <SearchPageInner />
+    </Suspense>
   );
 }
