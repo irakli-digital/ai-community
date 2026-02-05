@@ -14,6 +14,7 @@ import {
 import { getUser, isPaidUser } from '@/lib/db/queries';
 import { eq, and, sql, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { awardPoints, revokePoints } from '@/lib/gamification';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -245,6 +246,24 @@ export async function likePost(postId: number) {
     .set({ likesCount: sql`${posts.likesCount} + 1` })
     .where(eq(posts.id, postId));
 
+  // Award point to post author (not self)
+  const [post] = await db
+    .select({ authorId: posts.authorId })
+    .from(posts)
+    .where(eq(posts.id, postId))
+    .limit(1);
+
+  if (post && post.authorId !== user.id) {
+    await awardPoints({
+      userId: post.authorId,
+      points: 1,
+      reason: 'post_liked',
+      sourceUserId: user.id,
+      sourceType: 'post',
+      sourceId: postId,
+    });
+  }
+
   revalidatePath('/community');
   revalidatePath(`/community/${postId}`);
   return { success: true, liked: true };
@@ -272,6 +291,24 @@ export async function unlikePost(postId: number) {
     .update(posts)
     .set({ likesCount: sql`GREATEST(${posts.likesCount} - 1, 0)` })
     .where(eq(posts.id, postId));
+
+  // Revoke point from post author (not self)
+  const [post] = await db
+    .select({ authorId: posts.authorId })
+    .from(posts)
+    .where(eq(posts.id, postId))
+    .limit(1);
+
+  if (post && post.authorId !== user.id) {
+    await revokePoints({
+      userId: post.authorId,
+      points: -1,
+      reason: 'post_unliked',
+      sourceUserId: user.id,
+      sourceType: 'post',
+      sourceId: postId,
+    });
+  }
 
   revalidatePath('/community');
   revalidatePath(`/community/${postId}`);
@@ -372,6 +409,24 @@ export async function likeComment(commentId: number) {
     .set({ likesCount: sql`${comments.likesCount} + 1` })
     .where(eq(comments.id, commentId));
 
+  // Award point to comment author (not self)
+  const [comment] = await db
+    .select({ authorId: comments.authorId })
+    .from(comments)
+    .where(eq(comments.id, commentId))
+    .limit(1);
+
+  if (comment && comment.authorId !== user.id) {
+    await awardPoints({
+      userId: comment.authorId,
+      points: 1,
+      reason: 'comment_liked',
+      sourceUserId: user.id,
+      sourceType: 'comment',
+      sourceId: commentId,
+    });
+  }
+
   return { success: true, liked: true };
 }
 
@@ -406,6 +461,24 @@ export async function unlikeComment(commentId: number) {
     .update(comments)
     .set({ likesCount: sql`GREATEST(${comments.likesCount} - 1, 0)` })
     .where(eq(comments.id, commentId));
+
+  // Revoke point from comment author (not self)
+  const [comment] = await db
+    .select({ authorId: comments.authorId })
+    .from(comments)
+    .where(eq(comments.id, commentId))
+    .limit(1);
+
+  if (comment && comment.authorId !== user.id) {
+    await revokePoints({
+      userId: comment.authorId,
+      points: -1,
+      reason: 'comment_unliked',
+      sourceUserId: user.id,
+      sourceType: 'comment',
+      sourceId: commentId,
+    });
+  }
 
   return { success: true, liked: false };
 }
