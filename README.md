@@ -1,119 +1,185 @@
-# Next.js SaaS Starter
+# AI წრე (AI Circle)
 
-This is a starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users.
+ქართული AI/ტექნოლოგიური საზოგადოების პლატფორმა — Skool.com-ის სტილში აშენებული, Next.js 15-ზე.
 
-**Demo: [https://next-saas-start.vercel.app/](https://next-saas-start.vercel.app/)**
+## ფუნქციები
 
-## Features
+- **საზოგადოების ფიდი** — პოსტები, კომენტარები, მოწონებები, კატეგორიების ფილტრი
+- **კლასრუმი** — კურსები სექციებითა და გაკვეთილებით, ვიდეო ჩაშენება, პროგრესის ტრეკინგი
+- **გეიმიფიკაცია** — ქულები, დონეები (1-9), ლიდერბორდი
+- **წევრების დირექტორია** — პროფილები, ონლაინ სტატუსი
+- **შეტყობინებები** — ინ-აპ + ელფოსტა (Mailgun)
+- **გლობალური ძიება** — PostgreSQL full-text search
+- **ადმინ პანელი** — ანალიტიკა, კონტენტის მართვა, წევრების მართვა
+- **ფრემიუმ მოდელი** — Stripe-ით, GEL ვალუტა
 
-- Marketing landing page (`/`) with animated Terminal element
-- Pricing page (`/pricing`) which connects to Stripe Checkout
-- Dashboard pages with CRUD operations on users/teams
-- Basic RBAC with Owner and Member roles
-- Subscription management with Stripe Customer Portal
-- Email/password authentication with JWTs stored to cookies
-- Global middleware to protect logged-in routes
-- Local middleware to protect Server Actions or validate Zod schemas
-- Activity logging system for any user events
+## ტექ სტეკი
 
-## Tech Stack
+| კომპონენტი | ტექნოლოგია |
+|---|---|
+| ფრეიმვორკი | Next.js 15 (App Router, Server Actions) |
+| ენა | TypeScript |
+| სტილი | Tailwind CSS 4 |
+| UI კომპონენტები | shadcn/ui (Radix UI) |
+| ბაზა | PostgreSQL (Drizzle ORM) |
+| ავთენტიფიკაცია | JWT (httpOnly cookies) |
+| გადახდები | Stripe |
+| ფაილების შენახვა | AWS S3 (presigned uploads) |
+| ელფოსტა | Mailgun |
+| ფონტი | Noto Sans Georgian |
+| დეპლოი | Railway.com (Docker) |
 
-- **Framework**: [Next.js](https://nextjs.org/)
-- **Database**: [Postgres](https://www.postgresql.org/)
-- **ORM**: [Drizzle](https://orm.drizzle.team/)
-- **Payments**: [Stripe](https://stripe.com/)
-- **UI Library**: [shadcn/ui](https://ui.shadcn.com/)
+## ლოკალური სეტაპი
 
-## Getting Started
+### წინაპირობები
+
+- Node.js 20+
+- pnpm
+- PostgreSQL ბაზა
+
+### ინსტალაცია
 
 ```bash
-git clone https://github.com/nextjs/saas-starter
+# კლონირება
+git clone <repo-url>
 cd saas-starter
+
+# დამოკიდებულებების ინსტალაცია
 pnpm install
-```
 
-## Running Locally
+# გარემოს ცვლადები
+cp .env.example .env
+# შეავსეთ .env ფაილი (იხ. ქვემოთ)
 
-[Install](https://docs.stripe.com/stripe-cli) and log in to your Stripe account:
-
-```bash
-stripe login
-```
-
-Use the included setup script to create your `.env` file:
-
-```bash
+# ბაზის სეტაპი
 pnpm db:setup
-```
-
-Run the database migrations and seed the database with a default user and team:
-
-```bash
 pnpm db:migrate
+
+# (ოფციონალური) ტესტ მონაცემები
 pnpm db:seed
-```
 
-This will create the following user and team:
-
-- User: `test@test.com`
-- Password: `admin123`
-
-You can also create new users through the `/sign-up` route.
-
-Finally, run the Next.js development server:
-
-```bash
+# დეველოპმენტ სერვერი
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the app in action.
+აპლიკაცია ხელმისაწვდომი იქნება: http://localhost:3000
 
-You can listen for Stripe webhooks locally through their CLI to handle subscription change events:
+### პირველი მომხმარებელი = ადმინი
 
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+პირველი დარეგისტრირებული მომხმარებელი ავტომატურად ხდება ადმინი.
+
+## გარემოს ცვლადები
+
+```env
+# ─── აუცილებელი ─────────────────────────────────
+POSTGRES_URL=postgresql://user:pass@localhost:5432/aicircle
+AUTH_SECRET=your-secret-key-min-32-chars
+BASE_URL=http://localhost:3000
+
+# ─── Stripe ─────────────────────────────────────
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ─── AWS S3 (ფაილების ატვირთვა) ─────────────────
+AWS_S3_BUCKET=your-bucket
+AWS_S3_REGION=eu-central-1
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+
+# ─── Mailgun (ელფოსტა) ─────────────────────────
+MAILGUN_API_KEY=key-...
+MAILGUN_DOMAIN=mg.yourdomain.com
+MAILGUN_FROM=AI წრე <noreply@yourdomain.com>
 ```
 
-## Testing Payments
+## სკრიპტები
 
-To test Stripe payments, use the following test card details:
+| ბრძანება | აღწერა |
+|---|---|
+| `pnpm dev` | დეველოპმენტ სერვერი (Turbopack) |
+| `pnpm build` | პროდაქშენ ბილდი |
+| `pnpm start` | პროდაქშენ სერვერი |
+| `pnpm db:setup` | ბაზის ინიციალიზაცია |
+| `pnpm db:migrate` | მიგრაციების გაშვება |
+| `pnpm db:seed` | ტესტ მონაცემების ჩაწერა |
+| `pnpm db:generate` | ახალი მიგრაციის გენერაცია |
+| `pnpm db:studio` | Drizzle Studio (DB GUI) |
+| `npx playwright test` | E2E ტესტები |
 
-- Card Number: `4242 4242 4242 4242`
-- Expiration: Any future date
-- CVC: Any 3-digit number
+## Railway-ზე დეპლოი
 
-## Going to Production
+### 1. Railway პროექტის შექმნა
 
-When you're ready to deploy your SaaS application to production, follow these steps:
+1. შედით [railway.com](https://railway.com)-ზე
+2. შექმენით ახალი პროექტი
+3. დაამატეთ PostgreSQL სერვისი
+4. დააკავშირეთ GitHub რეპო
 
-### Set up a production Stripe webhook
+### 2. გარემოს ცვლადების დაყენება
 
-1. Go to the Stripe Dashboard and create a new webhook for your production environment.
-2. Set the endpoint URL to your production API route (e.g., `https://yourdomain.com/api/stripe/webhook`).
-3. Select the events you want to listen for (e.g., `checkout.session.completed`, `customer.subscription.updated`).
+Railway Settings → Variables:
 
-### Deploy to Vercel
+- `POSTGRES_URL` — ავტომატურად Railway PostgreSQL-იდან
+- `AUTH_SECRET` — გენერირებული სეკრეტი
+- `BASE_URL` — თქვენი Railway URL ან custom domain
+- `STRIPE_SECRET_KEY` — Stripe live key
+- `STRIPE_WEBHOOK_SECRET` — Stripe webhook secret
+- `AWS_S3_BUCKET`, `AWS_S3_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+- `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM`
 
-1. Push your code to a GitHub repository.
-2. Connect your repository to [Vercel](https://vercel.com/) and deploy it.
-3. Follow the Vercel deployment process, which will guide you through setting up your project.
+### 3. Dockerfile ბილდი
 
-### Add environment variables
+Railway ავტომატურად ამოიცნობს `Dockerfile`-ს და `railway.json`-ს.
 
-In your Vercel project settings (or during deployment), add all the necessary environment variables. Make sure to update the values for the production environment, including:
+### 4. Custom Domain
 
-1. `BASE_URL`: Set this to your production domain.
-2. `STRIPE_SECRET_KEY`: Use your Stripe secret key for the production environment.
-3. `STRIPE_WEBHOOK_SECRET`: Use the webhook secret from the production webhook you created in step 1.
-4. `POSTGRES_URL`: Set this to your production database URL.
-5. `AUTH_SECRET`: Set this to a random string. `openssl rand -base64 32` will generate one.
+Railway Settings → Domains → Add Custom Domain
 
-## Other Templates
+### 5. Stripe Webhook
 
-While this template is intentionally minimal and to be used as a learning resource, there are other paid versions in the community which are more full-featured:
+Stripe Dashboard → Webhooks → Add endpoint:
+- URL: `https://yourdomain.com/api/stripe/webhook`
+- Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`
 
-- https://achromatic.dev
-- https://shipfa.st
-- https://makerkit.dev
-- https://zerotoshipped.com
-- https://turbostarter.dev
+## პროექტის სტრუქტურა
+
+```
+app/
+├── (public)/          # ლენდინგ გვერდი
+├── (auth)/            # შესვლა/რეგისტრაცია
+├── (app)/             # ავთენტიფიცირებული აპი
+│   ├── community/     # საზოგადოების ფიდი
+│   ├── classroom/     # კურსები
+│   ├── members/       # წევრების დირექტორია
+│   ├── leaderboard/   # ლიდერბორდი
+│   ├── notifications/ # შეტყობინებები
+│   ├── search/        # ძიება
+│   ├── settings/      # პარამეტრები
+│   └── admin/         # ადმინ პანელი
+├── api/               # API routes
+└── layout.tsx         # root layout
+
+components/
+├── ui/                # shadcn/ui
+├── community/         # პოსტი, კომენტარი, კატეგორია
+├── classroom/         # კურსი, გაკვეთილი
+├── members/           # წევრის ბარათი, ბეჯი
+├── layout/            # ჰედერი, საიდბარი
+├── notifications/     # შეტყობინებების ზარი
+├── search/            # ძიების მოდალი
+└── shared/            # საერთო კომპონენტები
+
+lib/
+├── auth/              # JWT, მიდლვეარი
+├── db/                # Drizzle სქემა, კვერიები
+├── i18n/              # ქართული თარგმანები
+├── payments/          # Stripe ინტეგრაცია
+├── storage/           # S3 ინტეგრაცია
+├── email/             # Mailgun ინტეგრაცია
+├── gamification.ts    # ქულები, დონეები
+└── notifications.ts   # შეტყობინებების ლოგიკა
+```
+
+## ლიცენზია
+
+Private — ყველა უფლება დაცულია.
