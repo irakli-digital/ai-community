@@ -10,6 +10,11 @@ import {
 import { db } from '@/lib/db/drizzle';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { sendEmailAsync } from '@/lib/email/mailgun';
+import {
+  subscriptionConfirmationEmail,
+  subscriptionCancellationEmail,
+} from '@/lib/email/templates';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil',
@@ -135,6 +140,10 @@ export async function handleSubscriptionChange(
   const plan = item?.plan;
 
   if (status === 'active' || status === 'trialing') {
+    // Check if this is a new subscription (not just renewal)
+    const existingSub = await getUserSubscription(user.id);
+    const isNewSubscription = !existingSub || existingSub.status !== 'active';
+
     await updateUserSubscription(user.id, {
       stripeSubscriptionId: subscriptionId,
       stripeProductId: plan?.product as string,
@@ -144,7 +153,23 @@ export async function handleSubscriptionChange(
       currentPeriodEnd: item ? new Date(item.current_period_end * 1000) : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     });
+
+    // Send subscription confirmation email for new subscriptions
+    if (isNewSubscription) {
+      const template = subscriptionConfirmationEmail({ name: user.name || undefined });
+      sendEmailAsync({ to: user.email, ...template });
+    }
   } else if (status === 'canceled' || status === 'unpaid') {
+    // Send cancellation email
+    const periodEnd = subscription.current_period_end
+      ? new Date(subscription.current_period_end * 1000).toLocaleDateString('ka-GE')
+      : undefined;
+    const template = subscriptionCancellationEmail({
+      name: user.name || undefined,
+      periodEnd,
+    });
+    sendEmailAsync({ to: user.email, ...template });
+
     await updateUserSubscription(user.id, {
       stripeSubscriptionId: null,
       stripeProductId: null,

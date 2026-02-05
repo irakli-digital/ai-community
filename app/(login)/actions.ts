@@ -25,6 +25,8 @@ import {
   validatedActionWithUser,
 } from '@/lib/auth/middleware';
 import { isRateLimited, getClientIp } from '@/lib/auth/rate-limit';
+import { sendEmailAsync } from '@/lib/email/mailgun';
+import { welcomeEmail } from '@/lib/email/templates';
 
 async function logActivity(
   userId: number,
@@ -162,6 +164,9 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     logActivity(createdUser.id, ActivityType.SIGN_UP),
     setSession({ id: createdUser.id, role: createdUser.role }),
   ]);
+
+  // Fire-and-forget welcome email
+  sendEmailAsync(welcomeEmail({ email: createdUser.email }));
 
   const redirectTo = formData.get('redirect') as string | null;
   if (redirectTo === 'checkout') {
