@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Agentic Tribe — Join the Waiting List',
   description:
-    'A tribe of builders exploring agentic AI. Join the waiting list.',
+    'A community for experimenting with agentic AI — sharing insights, workflows, and automations. Join the waiting list.',
 };
 
 export default function WaitingListLayout({

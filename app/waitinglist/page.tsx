@@ -96,10 +96,7 @@ export default function WaitingListPage() {
 
           {/* Philosophy */}
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            A tribe of builders exploring agentic AI. We build, share, and learn
-            together - every member contributes. This is not a spectator
-            community. It is a collective of makers pushing the boundaries of
-            what autonomous agents can do.
+            A community for experimenting with agentic AI — sharing insights, workflows, and automations.
           </p>
 
           {/* Card with form */}
@@ -128,7 +125,7 @@ export default function WaitingListPage() {
               ) : (
                 <>
                   <p className="mb-6 text-sm text-muted-foreground">
-                    Request access to join the waiting list. Spots are limited.
+                    Leave your email and we'll notify you when we launch.
                   </p>
                   <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
                     <Input
