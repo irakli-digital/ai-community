@@ -19,7 +19,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const navItems = [
   { href: '/community', icon: MessageSquare, labelKey: 'nav.community' as const },
   { href: '/classroom', icon: GraduationCap, labelKey: 'nav.classroom' as const },
-  { href: '/members', icon: Users, labelKey: 'nav.members' as const },
+  // { href: '/members', icon: Users, labelKey: 'nav.members' as const },
   { href: '/leaderboard', icon: Trophy, labelKey: 'nav.leaderboard' as const },
 ];
 
