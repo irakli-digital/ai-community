@@ -9,7 +9,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Redirect everything to /waitinglist while the site is in pre-launch mode
-  if (pathname !== '/waitinglist') {
+  // Allow static assets (files with extensions) and the waitinglist page itself
+  if (pathname !== '/waitinglist' && !pathname.includes('.')) {
     return NextResponse.redirect(new URL('/waitinglist', request.url));
   }
 
