@@ -6,8 +6,9 @@ import { redirect } from 'next/navigation';
 import { AdminMembersClient } from './members-client';
 
 async function requireAdmin() {
+  const { hasAdminRole } = await import('@/lib/auth/roles');
   const user = await getUser();
-  if (!user || user.role !== 'admin') redirect('/community');
+  if (!user || !hasAdminRole(user.role)) redirect('/community');
   return user;
 }
 

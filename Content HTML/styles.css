@@ -1,0 +1,419 @@
+/* ============================================================
+   Agentic Tribe — Content HTML Shared Styles
+   Claude AI-inspired warm dark palette (standalone, no Tailwind)
+   ============================================================ */
+
+/* --- Google Fonts for Georgian --- */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap');
+
+/* --- Design Tokens --- */
+:root {
+  --bg:            hsl(25 8% 5%);
+  --bg-card:       hsl(25 7% 8%);
+  --fg:            hsl(40 12% 90%);
+  --primary:       hsl(16 53% 50%);
+  --primary-fg:    hsl(40 20% 96%);
+  --secondary:     hsl(25 6% 12%);
+  --muted:         hsl(25 5% 16%);
+  --muted-fg:      hsl(30 6% 55%);
+  --accent:        hsl(25 5% 21%);
+  --destructive:   hsl(4 60% 33%);
+  --radius:        0.6rem;
+  --radius-sm:     0.35rem;
+  --radius-lg:     0.85rem;
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Noto Sans Georgian', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: hsl(16 60% 60%);
+}
+
+/* --- Layout --- */
+.page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+/* --- Grid Background (decorative) --- */
+.grid-bg {
+  background-image:
+    linear-gradient(var(--muted) 1px, transparent 1px),
+    linear-gradient(90deg, var(--muted) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center;
+}
+
+/* --- Header / Hero --- */
+.post-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--muted);
+}
+
+.post-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--secondary);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 100px;
+  border: 1px solid var(--muted);
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+}
+
+.post-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--fg);
+  margin-bottom: 1rem;
+}
+
+.post-subtitle {
+  font-size: 1.05rem;
+  color: var(--muted-fg);
+  line-height: 1.6;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* --- Intro Block --- */
+.intro {
+  background: var(--bg-card);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--fg);
+}
+
+.intro p + p {
+  margin-top: 0.85rem;
+}
+
+.intro strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* --- Section --- */
+.section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--muted);
+}
+
+.section-title .icon {
+  font-size: 1rem;
+}
+
+/* --- Account Card --- */
+.account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.account-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.account-card:hover {
+  border-color: var(--primary);
+  background: var(--secondary);
+}
+
+.account-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--secondary);
+  border: 1px solid var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.account-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-handle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.account-handle a {
+  color: var(--fg);
+}
+
+.account-handle a:hover {
+  color: var(--primary);
+}
+
+.account-desc {
+  font-size: 0.8rem;
+  color: var(--muted-fg);
+  margin-top: 0.15rem;
+}
+
+.account-follow-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: transparent;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 100px;
+  border: 1px solid var(--primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.account-follow-btn:hover {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+
+/* --- Agent Section / CTA --- */
+.cta-block {
+  background: var(--secondary);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.cta-block .cta-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cta-block p {
+  font-size: 0.9rem;
+  color: var(--muted-fg);
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+
+.steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  counter-reset: step;
+}
+
+.steps-list li {
+  counter-increment: step;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  font-size: 0.88rem;
+  color: var(--fg);
+  border-bottom: 1px solid hsl(25 5% 12%);
+}
+
+.steps-list li:last-child {
+  border-bottom: none;
+}
+
+.steps-list li::before {
+  content: counter(step);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.cta-result {
+  background: var(--bg-card);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-top: 1rem;
+  font-size: 0.88rem;
+  color: var(--fg);
+  line-height: 1.6;
+}
+
+/* --- Footer --- */
+.post-footer {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--muted);
+  margin-top: 2rem;
+}
+
+.footer-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 0.35rem;
+}
+
+.footer-logo span {
+  color: var(--primary);
+}
+
+.footer-tagline {
+  font-size: 0.8rem;
+  color: var(--muted-fg);
+}
+
+.footer-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* --- Utility --- */
+.text-primary { color: var(--primary); }
+.text-muted   { color: var(--muted-fg); }
+.text-center  { text-align: center; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+
+/* --- Divider --- */
+.divider {
+  height: 1px;
+  background: var(--muted);
+  border: none;
+  margin: 1.5rem 0;
+}
+
+/* --- Print / PDF Export --- */
+@media print {
+  body {
+    background: #0f0d0b;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+
+  .account-card:hover {
+    border-color: var(--muted);
+    background: var(--bg-card);
+  }
+
+  .account-follow-btn {
+    display: none;
+  }
+
+  a[href]::after {
+    content: none;
+  }
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .page {
+    padding: 2rem 1rem;
+  }
+
+  .post-title {
+    font-size: 1.45rem;
+  }
+
+  .account-card {
+    padding: 0.7rem 0.8rem;
+    gap: 0.75rem;
+  }
+
+  .account-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+
+  .account-follow-btn {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}

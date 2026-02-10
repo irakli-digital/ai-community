@@ -41,6 +41,7 @@ import {
   FileText,
 } from 'lucide-react';
 import Link from 'next/link';
+import { MarkdownEditor } from '@/components/shared/markdown-editor';
 
 type SectionWithLessons = CourseSection & {
   lessons: (Lesson & { attachments: LessonAttachment[] })[];
@@ -706,12 +707,11 @@ function LessonForm({
       </div>
       <div>
         <label className="text-xs font-medium">Content (Markdown)</label>
-        <textarea
+        <MarkdownEditor
           value={lessonContent}
-          onChange={(e) => setLessonContent(e.target.value)}
+          onChange={setLessonContent}
+          minRows={12}
           placeholder="Lesson content in Markdown format..."
-          className="w-full rounded-md border border-border px-3 py-2 text-sm font-mono focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-          rows={4}
         />
       </div>
       <div className="flex gap-3">

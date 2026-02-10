@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { User } from '@/lib/db/schema';
 import { getUser, isPaidUser } from '@/lib/db/queries';
+import { hasAdminRole } from '@/lib/auth/roles';
 import { redirect } from 'next/navigation';
 
 export type ActionState = {
@@ -70,7 +71,7 @@ export function validatedActionWithAdmin<S extends z.ZodType<any, any>, T>(
       throw new Error('User is not authenticated');
     }
 
-    if (user.role !== 'admin') {
+    if (!hasAdminRole(user.role)) {
       return { error: 'Access denied.' };
     }
 
@@ -101,7 +102,7 @@ export function validatedActionWithPaidUser<S extends z.ZodType<any, any>, T>(
     }
 
     const paid = await isPaidUser(user.id);
-    if (!paid && user.role !== 'admin') {
+    if (!paid && !hasAdminRole(user.role)) {
       return { error: 'This feature is only available for paid plan users.' };
     }
 

@@ -4,7 +4,8 @@ import { CommunitySettingsClient } from './settings-client';
 
 export default async function CommunitySettingsPage() {
   const user = await getUser();
-  if (!user || user.role !== 'admin') redirect('/community');
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  if (!user || !hasAdminRole(user.role)) redirect('/community');
 
   const settings = await getCommunitySettings();
 
@@ -19,7 +20,7 @@ export default async function CommunitySettingsPage() {
         coverImageUrl: settings.coverImageUrl || '',
       } : {
         id: 0,
-        name: 'AI Circle',
+        name: 'Agentic Tribe',
         description: '',
         aboutContent: '',
         logoUrl: '',

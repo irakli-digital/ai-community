@@ -380,7 +380,7 @@
           "type": "varchar(200)",
           "primaryKey": false,
           "notNull": true,
-          "default": "'AI Circle'"
+          "default": "'Agentic Tribe'"
         },
         "description": {
           "name": "description",

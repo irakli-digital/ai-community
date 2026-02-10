@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getUser, isPaidUser } from '@/lib/db/queries';
+import { hasAdminRole, hasModRole } from '@/lib/auth/roles';
 import { getPostById, getPostComments } from '@/lib/db/community-queries';
 import { PostDetailClient } from './post-detail-client';
 
@@ -18,10 +19,9 @@ export default async function PostDetailPage({
 
   const comments = await getPostComments(postId, user?.id);
   const paid = user ? await isPaidUser(user.id) : false;
-  const canLike = paid || user?.role === 'admin';
+  const canLike = paid || hasAdminRole(user?.role);
   const isAuthor = user?.id === post.author.id;
-  const isAdminOrMod =
-    user?.role === 'admin' || user?.role === 'moderator';
+  const isAdminOrMod = hasModRole(user?.role);
 
   return (
     <PostDetailClient

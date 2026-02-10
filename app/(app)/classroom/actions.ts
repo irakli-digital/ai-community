@@ -258,7 +258,8 @@ export async function canAccessCourse(courseId: number): Promise<{
   if (!course.isPaid) return { hasAccess: true, isPaidCourse: false };
 
   // Paid course: check if user is paid or admin
-  if (user.role === 'admin') return { hasAccess: true, isPaidCourse: true };
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  if (hasAdminRole(user.role)) return { hasAccess: true, isPaidCourse: true };
 
   const paid = await isPaidUser(user.id);
   return { hasAccess: paid, isPaidCourse: true };

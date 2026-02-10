@@ -10,7 +10,8 @@ import { revalidatePath } from 'next/cache';
 async function requireAdmin() {
   const user = await getUser();
   if (!user) throw new Error('Unauthorized');
-  if (user.role !== 'admin') throw new Error('Access denied.');
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  if (!hasAdminRole(user.role)) throw new Error('Access denied.');
   return user;
 }
 

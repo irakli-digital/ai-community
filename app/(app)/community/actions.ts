@@ -14,6 +14,7 @@ import {
 import { getUser, isPaidUser } from '@/lib/db/queries';
 import { eq, and, sql, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { hasAdminRole, hasModRole } from '@/lib/auth/roles';
 import { awardPoints, revokePoints } from '@/lib/gamification';
 import {
   notifyPostLiked,
@@ -33,7 +34,7 @@ async function requireUser() {
 async function requirePaidUser() {
   const user = await requireUser();
   const paid = await isPaidUser(user.id);
-  if (!paid && user.role !== 'admin') {
+  if (!paid && !hasAdminRole(user.role)) {
     throw new Error('This feature is only available for paid plan users.');
   }
   return user;
@@ -41,7 +42,7 @@ async function requirePaidUser() {
 
 async function requireAdminOrMod() {
   const user = await requireUser();
-  if (user.role !== 'admin' && user.role !== 'moderator') {
+  if (!hasModRole(user.role)) {
     throw new Error('You do not have permission to perform this action.');
   }
   return user;
@@ -187,7 +188,7 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
     .limit(1);
 
   if (!post) throw new Error('Post not found.');
-  if (post.authorId !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
+  if (post.authorId !== user.id && !hasModRole(user.role)) {
     throw new Error('You do not have permission to perform this action.');
   }
 
@@ -218,7 +219,7 @@ export async function deletePost(postId: number) {
     .limit(1);
 
   if (!post) throw new Error('Post not found.');
-  if (post.authorId !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
+  if (post.authorId !== user.id && !hasModRole(user.role)) {
     throw new Error('You do not have permission to perform this action.');
   }
 
@@ -420,8 +421,7 @@ export async function deleteComment(commentId: number) {
   if (!comment) throw new Error('Comment not found.');
   if (
     comment.authorId !== user.id &&
-    user.role !== 'admin' &&
-    user.role !== 'moderator'
+    !hasModRole(user.role)
   ) {
     throw new Error('You do not have permission to perform this action.');
   }
@@ -566,10 +566,9 @@ export async function getPostDetail(postId: number) {
 
   const postComments = await getPostComments(postId, user?.id);
   const paid = user ? await isPaidUser(user.id) : false;
-  const canLike = paid || user?.role === 'admin';
+  const canLike = paid || hasAdminRole(user?.role);
   const isAuthor = user?.id === post.author.id;
-  const isAdminOrMod =
-    user?.role === 'admin' || user?.role === 'moderator';
+  const isAdminOrMod = hasModRole(user?.role);
 
   return {
     post,

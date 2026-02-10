@@ -8,11 +8,11 @@ import {
 import { CommunityFeed } from './feed-client';
 
 export const metadata: Metadata = {
-  title: 'Community — AI Circle',
-  description: 'AI Circle community feed — posts, discussions, and resources.',
+  title: 'Community — Agentic Tribe',
+  description: 'Agentic Tribe community feed — posts, discussions, and resources.',
   openGraph: {
-    title: 'Community — AI Circle',
-    description: 'AI Circle community feed — posts, discussions, and resources.',
+    title: 'Community — Agentic Tribe',
+    description: 'Agentic Tribe community feed — posts, discussions, and resources.',
     type: 'website',
   },
 };
@@ -28,8 +28,9 @@ export default async function CommunityPage({
   const categoryId = params.category ? Number(params.category) : null;
 
   const paid = user ? await isPaidUser(user.id) : false;
-  const canCreate = paid || user?.role === 'admin';
-  const canLike = paid || user?.role === 'admin';
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  const canCreate = paid || hasAdminRole(user?.role);
+  const canLike = paid || hasAdminRole(user?.role);
 
   const [pinnedPosts, { posts, nextCursor }, communitySettings, memberCount, onlineCount] =
     await Promise.all([
@@ -55,7 +56,7 @@ export default async function CommunityPage({
       canLike={canLike ?? false}
       userId={user?.id ?? null}
       userRole={user?.role ?? 'member'}
-      communityName={communitySettings?.name ?? 'AI Circle'}
+      communityName={communitySettings?.name ?? 'Agentic Tribe'}
       communityDescription={communitySettings?.description ?? null}
       communityLogoUrl={communitySettings?.logoUrl ?? null}
       memberCount={memberCount}

@@ -1,4 +1,4 @@
-# E2E Test Plan — AI წრე (AI Circle)
+# E2E Test Plan — AI წრე (Agentic Tribe)
 
 ## Framework
 - **Playwright** with TypeScript

@@ -5,4 +5,4 @@ CREATE TABLE "waiting_list" (
 	CONSTRAINT "waiting_list_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-ALTER TABLE "community_settings" ALTER COLUMN "name" SET DEFAULT 'AI Circle';
+ALTER TABLE "community_settings" ALTER COLUMN "name" SET DEFAULT 'Agentic Tribe';

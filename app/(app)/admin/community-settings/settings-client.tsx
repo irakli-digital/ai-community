@@ -115,7 +115,7 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="AI Circle"
+            placeholder="Agentic Tribe"
             maxLength={200}
           />
         </div>

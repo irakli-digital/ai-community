@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { ArrowLeft, Image as ImageIcon, Link2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { t } from '@/lib/i18n/ka';
 import { createPost } from '../actions';
 import { getCategories } from '@/app/(app)/admin/categories/actions';
@@ -129,13 +130,11 @@ export default function NewPostPage() {
           <label className="mb-1 block text-sm font-medium text-foreground">
             Content (Markdown)
           </label>
-          <textarea
+          <MarkdownEditor
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={setContent}
+            minRows={10}
             placeholder="Write your post..."
-            rows={10}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-            required
           />
         </div>
 

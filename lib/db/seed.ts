@@ -7,7 +7,7 @@ async function createStripeProducts() {
   console.log('Creating Stripe products and prices...');
 
   const product = await stripe.products.create({
-    name: 'AI Circle — Paid Plan',
+    name: 'Agentic Tribe — Paid Plan',
     description: 'Full access to all features',
   });
 
@@ -24,8 +24,8 @@ async function createStripeProducts() {
 }
 
 async function seed() {
-  const email = 'admin@aicircle.ge';
-  const password = 'admin123';
+  const email = process.env.ADMIN_EMAIL ?? 'admin@aicircle.ge';
+  const password = process.env.ADMIN_PASSWORD ?? 'admin123';
   const passwordHash = await hashPassword(password);
 
   const [user] = await db
@@ -44,10 +44,10 @@ async function seed() {
 
   // Create initial community settings
   await db.insert(communitySettings).values({
-    name: 'AI Circle',
+    name: 'Agentic Tribe',
     description: 'AI & technology community — learn, share, grow.',
     aboutContent:
-      'AI Circle is a technology community where you can learn about artificial intelligence, automation, and modern technologies. Join us and become part of our community!',
+      'Agentic Tribe is a technology community where you can learn about artificial intelligence, automation, and modern technologies. Join us and become part of our community!',
     adminUserId: user.id,
   });
 

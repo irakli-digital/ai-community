@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useTransition } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { RichMarkdown } from '@/components/shared/rich-markdown';
 import { VideoEmbed } from './video-embed';
 import {
   markLessonComplete,
@@ -126,9 +126,7 @@ export function LessonContent({
 
       {/* Markdown content */}
       {lesson.content && (
-        <div className="prose prose-invert max-w-none">
-          <ReactMarkdown>{lesson.content}</ReactMarkdown>
-        </div>
+        <RichMarkdown content={lesson.content} showToc />
       )}
 
       {/* Attachments */}

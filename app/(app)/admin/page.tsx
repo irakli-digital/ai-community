@@ -19,7 +19,8 @@ import { redirect } from 'next/navigation';
 
 async function requireAdmin() {
   const user = await getUser();
-  if (!user || user.role !== 'admin') redirect('/community');
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  if (!user || !hasAdminRole(user.role)) redirect('/community');
   return user;
 }
 

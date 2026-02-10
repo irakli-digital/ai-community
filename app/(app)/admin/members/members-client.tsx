@@ -52,6 +52,7 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
 
   function getRoleIcon(role: string) {
     switch (role) {
+      case 'owner':
       case 'admin':
         return <Crown className="h-3.5 w-3.5 text-foreground" />;
       case 'moderator':
@@ -63,11 +64,13 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
 
   function getRoleBadge(role: string) {
     const colors: Record<string, string> = {
+      owner: 'bg-primary text-primary-foreground border-primary',
       admin: 'bg-primary text-primary-foreground border-primary',
       moderator: 'bg-accent text-foreground border-border',
       member: 'bg-secondary text-muted-foreground border-border',
     };
     const labels: Record<string, string> = {
+      owner: 'Owner',
       admin: 'Admin',
       moderator: 'Moderator',
       member: 'Member',

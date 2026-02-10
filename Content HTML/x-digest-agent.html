@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI აგენტი X დაიჯესტისთვის — Agentic Tribe</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .square {
+      width: 1080px;
+      height: 1080px;
+      background: var(--bg);
+      border: 1px solid var(--muted);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      padding: 2.75rem 3rem;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .sq-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      flex-shrink: 0;
+    }
+    .sq-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--secondary);
+      color: var(--primary);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+      border-radius: 100px;
+      border: 1px solid var(--muted);
+      margin-bottom: 1rem;
+    }
+    .sq-header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--fg);
+      line-height: 1.3;
+    }
+    .sq-header h1 .accent {
+      color: var(--primary);
+    }
+    .sq-subtitle {
+      font-size: 0.88rem;
+      color: var(--muted-fg);
+      margin-top: 0.6rem;
+      line-height: 1.5;
+    }
+
+    /* Two-column layout */
+    .sq-body {
+      flex: 1;
+      display: flex;
+      gap: 2rem;
+      min-height: 0;
+    }
+
+    /* Steps column */
+    .steps-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .steps-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--muted);
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid hsl(25 5% 10%);
+    }
+    .step:last-child {
+      border-bottom: none;
+    }
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.65rem;
+      height: 1.65rem;
+      background: var(--primary);
+      color: var(--primary-fg);
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 0.05rem;
+    }
+    .step-text {
+      font-size: 0.85rem;
+      color: var(--fg);
+      line-height: 1.5;
+    }
+    .step-text .dim {
+      color: var(--muted-fg);
+      font-size: 0.78rem;
+    }
+
+    /* Result box */
+    .result-box {
+      background: var(--secondary);
+      border: 1px solid var(--muted);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      margin-top: auto;
+      font-size: 0.85rem;
+      color: var(--fg);
+      line-height: 1.6;
+    }
+    .result-box strong {
+      color: var(--primary);
+    }
+
+    /* Image column */
+    .demo-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .demo-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--muted);
+    }
+    .demo-img-wrap {
+      flex: 1;
+      border-radius: var(--radius);
+      border: 1px solid var(--muted);
+      overflow: hidden;
+      min-height: 0;
+    }
+    .demo-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top right;
+      display: block;
+    }
+
+    /* Footer */
+    .sq-footer {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding-top: 1.25rem;
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--muted);
+    }
+    .sq-footer .footer-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+    .sq-footer .logo {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    @media print {
+      body { padding: 0; }
+      .square { border: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="square">
+
+    <!-- Header -->
+    <div class="sq-header">
+      <div class="sq-badge">გაიდი</div>
+      <h1>AI აგენტი, რომელიც <span class="accent">X</span>-ს<br>ჩემს მაგივრად კითხულობს</h1>
+      <p class="sq-subtitle">ყოველდღიური AI დაიჯესტი თელეგრამზე — 5 ნაბიჯით</p>
+    </div>
+
+    <!-- Body: steps + demo image -->
+    <div class="sq-body">
+
+      <!-- Left: Steps -->
+      <div class="steps-col">
+        <div class="steps-label">როგორ მუშაობს</div>
+
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            X API-ზე წვდომის მიღება
+            <div class="dim">დეველოპერ ექაუნთი</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            .md კონფიგურაციის დაწერა
+            <div class="dim">რომელ ექაუნთებს ადევნოს თვალი და როგორ გაფილტროს</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            ტელეგრამ არხის შექმნა
+            <div class="dim">დაიჯესტისთვის</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            AI აგენტის დაკავშირება არხთან
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-text">
+            Cron job-ის დაყენება
+            <div class="dim">დღეში ერთხელ ან ორჯერ</div>
+          </div>
+        </div>
+
+        <div class="result-box">
+          აგენტი კითხულობს, აჯამებს და აგზავნის.<br>
+          <strong>ყოველ დილით ახალი AI ბრიფინგით იღვიძებ.</strong>
+        </div>
+      </div>
+
+      <!-- Right: Demo image -->
+      <div class="demo-col">
+        <div class="demo-label">თელეგრამ დაიჯესტი</div>
+        <div class="demo-img-wrap">
+          <img src="x-digest-demo.png" alt="X Digest Telegram Bot Demo">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="sq-footer">
+      <img src="logo.svg" alt="Agentic Tribe" class="footer-icon">
+      <span class="logo">Agentic Tribe</span>
+    </div>
+
+  </div>
+</body>
+</html>

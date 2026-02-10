@@ -8,11 +8,12 @@ import { revalidatePath } from 'next/cache';
 
 export async function changeUserRole(userId: number, newRole: string) {
   const currentUser = await getUser();
-  if (!currentUser || currentUser.role !== 'admin') {
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  if (!currentUser || !hasAdminRole(currentUser.role)) {
     throw new Error('Access denied.');
   }
 
-  if (!['admin', 'moderator', 'member'].includes(newRole)) {
+  if (!['owner', 'admin', 'moderator', 'member'].includes(newRole)) {
     throw new Error('Invalid role.');
   }
 

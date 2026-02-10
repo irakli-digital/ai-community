@@ -71,7 +71,7 @@ export const subscriptions = pgTable('subscriptions', {
 // ─── Community Settings (single row) ────────────────────────────────────────
 export const communitySettings = pgTable('community_settings', {
   id: serial('id').primaryKey(),
-  name: varchar('name', { length: 200 }).notNull().default('AI Circle'),
+  name: varchar('name', { length: 200 }).notNull().default('Agentic Tribe'),
   description: text('description'),
   aboutContent: text('about_content'),
   logoUrl: text('logo_url'),

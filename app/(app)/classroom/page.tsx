@@ -4,11 +4,11 @@ import { getPublishedCourses } from './actions';
 import { CourseCard } from '@/components/classroom/course-card';
 
 export const metadata: Metadata = {
-  title: 'Classroom — AI Circle',
-  description: 'AI Circle courses — learn artificial intelligence and automation.',
+  title: 'Classroom — Agentic Tribe',
+  description: 'Agentic Tribe courses — learn artificial intelligence and automation.',
   openGraph: {
-    title: 'Classroom — AI Circle',
-    description: 'AI Circle courses — learn artificial intelligence and automation.',
+    title: 'Classroom — Agentic Tribe',
+    description: 'Agentic Tribe courses — learn artificial intelligence and automation.',
     type: 'website',
   },
 };

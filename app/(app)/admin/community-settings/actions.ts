@@ -14,7 +14,8 @@ export async function updateCommunitySettings(data: {
   coverImageUrl: string | null;
 }) {
   const user = await getUser();
-  if (!user || user.role !== 'admin') {
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  if (!user || !hasAdminRole(user.role)) {
     throw new Error('Access denied.');
   }
 
@@ -58,7 +59,8 @@ export async function uploadAndSetImage(
   url: string
 ) {
   const user = await getUser();
-  if (!user || user.role !== 'admin') {
+  const { hasAdminRole } = await import('@/lib/auth/roles');
+  if (!user || !hasAdminRole(user.role)) {
     throw new Error('Access denied.');
   }
 

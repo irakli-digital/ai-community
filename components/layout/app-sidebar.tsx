@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { hasAdminRole } from '@/lib/auth/roles';
 import { Button } from '@/components/ui/button';
 import {
   MessageSquare,
@@ -85,7 +86,7 @@ export function AppSidebar({
               </Link>
             ))}
 
-            {user?.role === 'admin' && (
+            {hasAdminRole(user?.role) && (
               <Link href="/admin" onClick={onClose}>
                 <Button
                   variant={isActive('/admin') ? 'secondary' : 'ghost'}

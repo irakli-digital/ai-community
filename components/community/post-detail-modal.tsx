@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { hasModRole } from '@/lib/auth/roles';
 import {
   X,
   Heart,
@@ -56,7 +57,7 @@ function ModalCommentItem({
 }) {
   const [isPending, startTransition] = useTransition();
   const isAuthor = userId === comment.author.id;
-  const isAdminOrMod = userRole === 'admin' || userRole === 'moderator';
+  const isAdminOrMod = hasModRole(userRole);
   const canDelete = isAuthor || isAdminOrMod;
 
   const timeAgo = formatDistanceToNow(new Date(comment.createdAt), {

@@ -200,6 +200,12 @@ const dictionary = {
   'profile.level': 'Level',
   'profile.socialLinks': 'Social Links',
   'profile.profileUpdated': 'Profile updated successfully.',
+
+  // ─── Paywall ──────────────────────────────────────────────────────
+  'paywall.title': 'Join Agentic Tribe to read this post',
+  'paywall.description': 'Sign up for free to unlock all community posts, courses, and more.',
+  'paywall.joinNow': 'Join Now',
+  'paywall.alreadyMember': 'Already a member?',
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

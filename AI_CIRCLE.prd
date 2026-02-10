@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**AI წრე** (AI Circle) is a Skool.com-style community platform for the Georgian Tech/AI/Automation niche. Built on the existing Next.js 15 SaaS starter, it combines a community discussion feed, a structured course classroom, gamification (points/levels/leaderboard), member profiles, global search, notifications, and an admin dashboard — all in Georgian language.
+**AI წრე** (Agentic Tribe) is a Skool.com-style community platform for the Georgian Tech/AI/Automation niche. Built on the existing Next.js 15 SaaS starter, it combines a community discussion feed, a structured course classroom, gamification (points/levels/leaderboard), member profiles, global search, notifications, and an admin dashboard — all in Georgian language.
 
 **Platform type:** Single community (not multi-tenant)
 **Target audience:** Georgian-speaking tech enthusiasts, AI practitioners, automation learners

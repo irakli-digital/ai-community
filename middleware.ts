@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
+import { hasAdminRole } from '@/lib/auth/roles';
 
 const protectedRoutes = ['/community', '/classroom', '/members', '/leaderboard', '/settings', '/notifications', '/search'];
 const adminRoutes = ['/admin'];
@@ -19,8 +20,9 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
+  const isPublicPostRoute = /^\/community\/\d+$/.test(pathname);
 
-  if ((isProtectedRoute || isAdminRoute) && !sessionCookie) {
+  if ((isProtectedRoute || isAdminRoute) && !sessionCookie && !isPublicPostRoute) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
@@ -31,7 +33,7 @@ export async function middleware(request: NextRequest) {
       const parsed = await verifyToken(sessionCookie.value);
 
       // Admin route protection
-      if (isAdminRoute && parsed.user.role !== 'admin') {
+      if (isAdminRoute && !hasAdminRole(parsed.user.role)) {
         return NextResponse.redirect(new URL('/community', request.url));
       }
 

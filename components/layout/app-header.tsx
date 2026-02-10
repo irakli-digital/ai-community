@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { hasAdminRole } from '@/lib/auth/roles';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -113,7 +114,7 @@ export function AppHeader() {
                     {t('nav.settings')}
                   </Link>
                 </DropdownMenuItem>
-                {user.role === 'admin' && (
+                {hasAdminRole(user.role) && (
                   <DropdownMenuItem asChild className="cursor-pointer">
                     <Link href="/admin" className="flex items-center">
                       <Shield className="mr-2 h-4 w-4" />

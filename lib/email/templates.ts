@@ -1,5 +1,5 @@
 /**
- * Email templates for AI Circle.
+ * Email templates for Agentic Tribe.
  * Returns { subject, html, text } for each template.
  */
 
@@ -27,11 +27,11 @@ function wrap(content: string): string {
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo"><span class="logo-box">AI Circle</span></div>
+      <div class="logo"><span class="logo-box">Agentic Tribe</span></div>
       ${content}
     </div>
     <div class="footer">
-      <p>© ${new Date().getFullYear()} AI Circle — Artificial Intelligence Community</p>
+      <p>© ${new Date().getFullYear()} Agentic Tribe — Artificial Intelligence Community</p>
     </div>
   </div>
 </body>
@@ -43,10 +43,10 @@ function wrap(content: string): string {
 export function welcomeEmail(params: { name?: string; email: string }) {
   const greeting = params.name ? `Hello, ${params.name}!` : 'Hello!';
   return {
-    subject: 'Welcome to AI Circle! 🎉',
+    subject: 'Welcome to Agentic Tribe! 🎉',
     html: wrap(`
       <h1>${greeting}</h1>
-      <p>We're glad you joined AI Circle — the artificial intelligence community.</p>
+      <p>We're glad you joined Agentic Tribe — the artificial intelligence community.</p>
       <p>Here you can:</p>
       <ul style="color: #4b5563; font-size: 15px; line-height: 1.8;">
         <li>Participate in community discussions</li>
@@ -55,7 +55,7 @@ export function welcomeEmail(params: { name?: string; email: string }) {
       </ul>
       <a href="${BASE_URL}/community" class="btn">Go to Community</a>
     `),
-    text: `${greeting}\n\nWe're glad you joined AI Circle.\n\nVisit: ${BASE_URL}/community`,
+    text: `${greeting}\n\nWe're glad you joined Agentic Tribe.\n\nVisit: ${BASE_URL}/community`,
   };
 }
 

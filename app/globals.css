@@ -123,3 +123,250 @@
     background-size: 48px 48px;
   }
 }
+
+/* ─── Rich Markdown Prose ─────────────────────────────────────────────── */
+
+@layer utilities {
+  .rich-prose {
+    color: var(--foreground);
+    line-height: 1.75;
+    font-size: 1rem;
+
+    /* Headings */
+    & h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      color: var(--foreground);
+      letter-spacing: -0.02em;
+    }
+    & h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--foreground);
+      letter-spacing: -0.01em;
+    }
+    & h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: var(--foreground);
+    }
+    & h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--foreground);
+    }
+
+    /* Heading anchor links */
+    & h1 a.heading-anchor,
+    & h2 a.heading-anchor,
+    & h3 a.heading-anchor,
+    & h4 a.heading-anchor {
+      text-decoration: none;
+      color: var(--muted-foreground);
+      opacity: 0;
+      margin-left: 0.5rem;
+      transition: opacity 0.15s ease;
+    }
+    & h1:hover a.heading-anchor,
+    & h2:hover a.heading-anchor,
+    & h3:hover a.heading-anchor,
+    & h4:hover a.heading-anchor {
+      opacity: 1;
+    }
+
+    /* Paragraphs */
+    & p {
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Links */
+    & a:not(.heading-anchor) {
+      color: var(--primary);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: color 0.15s ease;
+      &:hover {
+        color: var(--ring);
+      }
+    }
+
+    /* Strong & emphasis */
+    & strong {
+      font-weight: 700;
+      color: var(--foreground);
+    }
+
+    /* Blockquote */
+    & blockquote {
+      border-left: 3px solid var(--border);
+      background: var(--secondary);
+      padding: 0.75rem 1rem;
+      margin: 1.25rem 0;
+      border-radius: 0 0.5rem 0.5rem 0;
+      color: var(--muted-foreground);
+      & p:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    /* Inline code */
+    & :not(pre) > code {
+      background: var(--secondary);
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      font-size: 0.875em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--foreground);
+    }
+
+    /* Lists */
+    & ul {
+      list-style: disc;
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+      & li {
+        margin-bottom: 0.375rem;
+        &::marker {
+          color: var(--muted-foreground);
+        }
+      }
+    }
+    & ol {
+      list-style: decimal;
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+      & li {
+        margin-bottom: 0.375rem;
+        &::marker {
+          color: var(--muted-foreground);
+        }
+      }
+    }
+    & li > ul,
+    & li > ol {
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Tables */
+    & table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      display: block;
+      overflow-x: auto;
+    }
+    & thead {
+      border-bottom: 2px solid var(--border);
+    }
+    & th {
+      text-align: left;
+      padding: 0.625rem 1rem;
+      font-weight: 600;
+      color: var(--foreground);
+      white-space: nowrap;
+    }
+    & td {
+      padding: 0.625rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+    & tbody tr:hover {
+      background: var(--secondary);
+    }
+
+    /* Horizontal rule */
+    & hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    /* Images */
+    & img {
+      border-radius: 0.5rem;
+      max-width: 100%;
+      height: auto;
+      margin: 1.25rem 0;
+    }
+
+    /* Pre / code block wrapper — shiki provides the <pre>, we just ensure spacing */
+    & pre {
+      margin: 1.25rem 0;
+      border-radius: 0.5rem;
+    }
+
+    /* First child has no top margin */
+    & > *:first-child {
+      margin-top: 0;
+    }
+  }
+
+  /* ─── Callout blocks (rendered by remark-github-alerts) ─────────── */
+
+  .markdown-alert {
+    padding: 0.75rem 1rem;
+    margin: 1.25rem 0;
+    border-left: 3px solid var(--border);
+    border-radius: 0 0.5rem 0.5rem 0;
+    background: var(--secondary);
+    & p:last-child {
+      margin-bottom: 0;
+    }
+    & .markdown-alert-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      text-transform: capitalize;
+    }
+  }
+  .markdown-alert-note {
+    border-left-color: var(--accent);
+    background: hsl(25 5% 21% / 0.3);
+    & .markdown-alert-title {
+      color: var(--accent-foreground);
+    }
+  }
+  .markdown-alert-tip {
+    border-left-color: var(--primary);
+    background: hsl(16 53% 50% / 0.08);
+    & .markdown-alert-title {
+      color: var(--primary);
+    }
+  }
+  .markdown-alert-warning {
+    border-left-color: var(--chart-3);
+    background: hsl(35 70% 50% / 0.08);
+    & .markdown-alert-title {
+      color: var(--chart-3);
+    }
+  }
+  .markdown-alert-caution {
+    border-left-color: var(--destructive);
+    background: hsl(4 60% 33% / 0.1);
+    & .markdown-alert-title {
+      color: var(--destructive);
+    }
+  }
+  .markdown-alert-important {
+    border-left-color: var(--ring);
+    background: hsl(16 40% 50% / 0.08);
+    & .markdown-alert-title {
+      color: var(--ring);
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { hasAdminRole } from '@/lib/auth/roles';
 import {
   MessageSquare,
   GraduationCap,
@@ -51,7 +52,7 @@ export function AppNavTabs() {
               {t(item.labelKey)}
             </Link>
           ))}
-          {user?.role === 'admin' && (
+          {hasAdminRole(user?.role) && (
             <Link
               href="/admin"
               className={cn(

@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Leaderboard — AI Circle',
-  description: 'AI Circle leaderboard — see the most active members.',
+  title: 'Leaderboard — Agentic Tribe',
+  description: 'Agentic Tribe leaderboard — see the most active members.',
   openGraph: {
-    title: 'Leaderboard — AI Circle',
-    description: 'AI Circle leaderboard.',
+    title: 'Leaderboard — Agentic Tribe',
+    description: 'Agentic Tribe leaderboard.',
     type: 'website',
   },
 };
