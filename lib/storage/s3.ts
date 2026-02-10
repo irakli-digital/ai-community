@@ -39,13 +39,13 @@ export async function getPresignedUploadUrl({
   // Validate MIME type
   if (!ALLOWED_MIME_TYPES.includes(contentType)) {
     throw new Error(
-      `ფაილის ტიპი დაუშვებელია. დაშვებულია: ${ALLOWED_MIME_TYPES.join(', ')}`
+      `File type not allowed. Allowed types: ${ALLOWED_MIME_TYPES.join(', ')}`
     );
   }
 
   // Validate file size
   if (contentLength > MAX_FILE_SIZE) {
-    throw new Error('ფაილი ძალიან დიდია. მაქსიმუმ 5MB.');
+    throw new Error('File is too large. Maximum 5MB.');
   }
 
   const command = new PutObjectCommand({

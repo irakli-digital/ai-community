@@ -34,7 +34,7 @@ async function requirePaidUser() {
   const user = await requireUser();
   const paid = await isPaidUser(user.id);
   if (!paid && user.role !== 'admin') {
-    throw new Error('ეს ფუნქცია მხოლოდ ფასიანი გეგმის მომხმარებლებისთვისაა.');
+    throw new Error('This feature is only available for paid plan users.');
   }
   return user;
 }
@@ -42,7 +42,7 @@ async function requirePaidUser() {
 async function requireAdminOrMod() {
   const user = await requireUser();
   if (user.role !== 'admin' && user.role !== 'moderator') {
-    throw new Error('არ გაქვთ ამ მოქმედების უფლება.');
+    throw new Error('You do not have permission to perform this action.');
   }
   return user;
 }
@@ -186,9 +186,9 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
     .where(and(eq(posts.id, data.postId), isNull(posts.deletedAt)))
     .limit(1);
 
-  if (!post) throw new Error('პოსტი ვერ მოიძებნა.');
+  if (!post) throw new Error('Post not found.');
   if (post.authorId !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
-    throw new Error('არ გაქვთ ამ მოქმედების უფლება.');
+    throw new Error('You do not have permission to perform this action.');
   }
 
   await db
@@ -217,9 +217,9 @@ export async function deletePost(postId: number) {
     .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
     .limit(1);
 
-  if (!post) throw new Error('პოსტი ვერ მოიძებნა.');
+  if (!post) throw new Error('Post not found.');
   if (post.authorId !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
-    throw new Error('არ გაქვთ ამ მოქმედების უფლება.');
+    throw new Error('You do not have permission to perform this action.');
   }
 
   await db
@@ -273,7 +273,7 @@ export async function likePost(postId: number) {
     notifyPostLiked({
       postAuthorId: post.authorId,
       actorId: user.id,
-      actorName: user.name || 'მომხმარებელი',
+      actorName: user.name || 'User',
       postId,
       postTitle: post.title,
     }).catch(() => {}); // fire-and-forget
@@ -377,7 +377,7 @@ export async function createComment(
     notifyPostCommented({
       postAuthorId: commentedPost.authorId,
       actorId: user.id,
-      actorName: user.name || 'მომხმარებელი',
+      actorName: user.name || 'User',
       postId: data.postId,
       postTitle: commentedPost.title,
     }).catch(() => {});
@@ -395,7 +395,7 @@ export async function createComment(
       notifyCommentReplied({
         commentAuthorId: parentComment.authorId,
         actorId: user.id,
-        actorName: user.name || 'მომხმარებელი',
+        actorName: user.name || 'User',
         postId: data.postId,
       }).catch(() => {});
     }
@@ -417,13 +417,13 @@ export async function deleteComment(commentId: number) {
     .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)))
     .limit(1);
 
-  if (!comment) throw new Error('კომენტარი ვერ მოიძებნა.');
+  if (!comment) throw new Error('Comment not found.');
   if (
     comment.authorId !== user.id &&
     user.role !== 'admin' &&
     user.role !== 'moderator'
   ) {
-    throw new Error('არ გაქვთ ამ მოქმედების უფლება.');
+    throw new Error('You do not have permission to perform this action.');
   }
 
   await db
@@ -486,7 +486,7 @@ export async function likeComment(commentId: number) {
     notifyCommentLiked({
       commentAuthorId: comment.authorId,
       actorId: user.id,
-      actorName: user.name || 'მომხმარებელი',
+      actorName: user.name || 'User',
       postId: comment.postId,
       commentContent: comment.content,
     }).catch(() => {});
@@ -551,6 +551,35 @@ export async function unlikeComment(commentId: number) {
   }
 
   return { success: true, liked: false };
+}
+
+// ─── Get Post Detail (for modal) ─────────────────────────────────────────────
+
+export async function getPostDetail(postId: number) {
+  const user = await getUser();
+  const { getPostById, getPostComments } = await import(
+    '@/lib/db/community-queries'
+  );
+
+  const post = await getPostById(postId, user?.id);
+  if (!post) return null;
+
+  const postComments = await getPostComments(postId, user?.id);
+  const paid = user ? await isPaidUser(user.id) : false;
+  const canLike = paid || user?.role === 'admin';
+  const isAuthor = user?.id === post.author.id;
+  const isAdminOrMod =
+    user?.role === 'admin' || user?.role === 'moderator';
+
+  return {
+    post,
+    comments: postComments,
+    canLike: canLike ?? false,
+    isAuthor,
+    isAdminOrMod: isAdminOrMod ?? false,
+    userId: user?.id ?? null,
+    userRole: user?.role ?? 'member',
+  };
 }
 
 // ─── Pin / Unpin Post (admin/mod only) ──────────────────────────────────────

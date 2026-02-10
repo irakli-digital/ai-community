@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'წევრები — AI წრე',
-  description: 'AI წრის წევრების დირექტორია — გაიცანი საზოგადოების წევრები.',
+  title: 'Members — AI Circle',
+  description: 'AI Circle member directory — meet the community members.',
   openGraph: {
-    title: 'წევრები — AI წრე',
-    description: 'AI წრის წევრების დირექტორია.',
+    title: 'Members — AI Circle',
+    description: 'AI Circle member directory.',
     type: 'website',
   },
 };

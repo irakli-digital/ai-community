@@ -88,15 +88,15 @@ export async function createNotification(params: {
 function getBatchedTitle(type: NotificationType, count: number, _linkUrl?: string): string {
   switch (type) {
     case 'post_like':
-      return `${count} ადამიანმა მოიწონა თქვენი პოსტი`;
+      return `${count} people liked your post`;
     case 'comment_like':
-      return `${count} ადამიანმა მოიწონა თქვენი კომენტარი`;
+      return `${count} people liked your comment`;
     case 'post_comment':
-      return `${count} ახალი კომენტარი თქვენს პოსტზე`;
+      return `${count} new comments on your post`;
     case 'comment_reply':
-      return `${count} ახალი პასუხი თქვენს კომენტარზე`;
+      return `${count} new replies to your comment`;
     default:
-      return `${count} ახალი შეტყობინება`;
+      return `${count} new notifications`;
   }
 }
 
@@ -112,7 +112,7 @@ export async function notifyPostLiked(params: {
   await createNotification({
     userId: params.postAuthorId,
     type: 'post_like',
-    title: `${params.actorName}-მ მოიწონა თქვენი პოსტი: "${truncate(params.postTitle, 50)}"`,
+    title: `${params.actorName} liked your post: "${truncate(params.postTitle, 50)}"`,
     linkUrl: `/community/${params.postId}`,
     actorId: params.actorId,
   });
@@ -128,7 +128,7 @@ export async function notifyCommentLiked(params: {
   await createNotification({
     userId: params.commentAuthorId,
     type: 'comment_like',
-    title: `${params.actorName}-მ მოიწონა თქვენი კომენტარი: "${truncate(params.commentContent, 50)}"`,
+    title: `${params.actorName} liked your comment: "${truncate(params.commentContent, 50)}"`,
     linkUrl: `/community/${params.postId}`,
     actorId: params.actorId,
   });
@@ -144,7 +144,7 @@ export async function notifyPostCommented(params: {
   await createNotification({
     userId: params.postAuthorId,
     type: 'post_comment',
-    title: `${params.actorName}-მ დაწერა კომენტარი თქვენს პოსტზე: "${truncate(params.postTitle, 50)}"`,
+    title: `${params.actorName} commented on your post: "${truncate(params.postTitle, 50)}"`,
     linkUrl: `/community/${params.postId}`,
     actorId: params.actorId,
   });
@@ -159,7 +159,7 @@ export async function notifyCommentReplied(params: {
   await createNotification({
     userId: params.commentAuthorId,
     type: 'comment_reply',
-    title: `${params.actorName}-მ უპასუხა თქვენს კომენტარს`,
+    title: `${params.actorName} replied to your comment`,
     linkUrl: `/community/${params.postId}`,
     actorId: params.actorId,
   });
@@ -172,7 +172,7 @@ export async function notifyLevelUp(params: {
   await createNotification({
     userId: params.userId,
     type: 'level_up',
-    title: `გილოცავთ! თქვენ მიაღწიეთ ${params.newLevel} დონეს! 🎉`,
+    title: `Congratulations! You reached level ${params.newLevel}! 🎉`,
     linkUrl: `/members/${params.userId}`,
   });
 }
@@ -191,7 +191,7 @@ export async function notifyNewCourse(params: {
     await createNotification({
       userId: user.id,
       type: 'new_course',
-      title: `ახალი კურსი გამოქვეყნდა: "${truncate(params.courseTitle, 80)}"`,
+      title: `New course published: "${truncate(params.courseTitle, 80)}"`,
       linkUrl: `/classroom/${params.courseSlug}`,
     });
   }

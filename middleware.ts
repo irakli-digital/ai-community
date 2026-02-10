@@ -7,6 +7,12 @@ const adminRoutes = ['/admin'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Redirect everything to /waitinglist while the site is in pre-launch mode
+  if (pathname !== '/waitinglist') {
+    return NextResponse.redirect(new URL('/waitinglist', request.url));
+  }
+
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));

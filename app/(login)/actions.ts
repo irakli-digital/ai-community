@@ -52,7 +52,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const ip = getClientIp(hdrs);
   if (isRateLimited(`signin:${ip}`)) {
     return {
-      error: 'ბევრი მცდელობა. სცადეთ მოგვიანებით.',
+      error: 'Too many attempts. Please try again later.',
       email: data.email,
       password: '',
     };
@@ -68,7 +68,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   if (userResult.length === 0) {
     return {
-      error: 'არასწორი ელფოსტა ან პაროლი.',
+      error: 'Invalid email or password.',
       email,
       password: '',
     };
@@ -83,7 +83,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   if (!isPasswordValid) {
     return {
-      error: 'არასწორი ელფოსტა ან პაროლი.',
+      error: 'Invalid email or password.',
       email,
       password: '',
     };
@@ -104,6 +104,8 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 });
 
 const signUpSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  lastName: z.string().min(1, 'Last name is required').max(100),
   email: z.string().email(),
   password: z.string().min(8),
 });
@@ -114,13 +116,13 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const ip = getClientIp(hdrs);
   if (isRateLimited(`signup:${ip}`)) {
     return {
-      error: 'ბევრი მცდელობა. სცადეთ მოგვიანებით.',
+      error: 'Too many attempts. Please try again later.',
       email: data.email,
       password: '',
     };
   }
 
-  const { email, password } = data;
+  const { name, lastName, email, password } = data;
 
   const existingUser = await db
     .select()
@@ -130,7 +132,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
   if (existingUser.length > 0) {
     return {
-      error: 'მომხმარებლის შექმნა ვერ მოხერხდა. სცადეთ თავიდან.',
+      error: 'Failed to create account. Please try again.',
       email,
       password: '',
     };
@@ -145,6 +147,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const isFirstUser = (userCount[0]?.count ?? 0) === 0;
 
   const newUser: NewUser = {
+    name,
+    lastName,
     email,
     passwordHash,
     role: isFirstUser ? 'admin' : 'member',
@@ -154,7 +158,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
   if (!createdUser) {
     return {
-      error: 'მომხმარებლის შექმნა ვერ მოხერხდა. სცადეთ თავიდან.',
+      error: 'Failed to create account. Please try again.',
       email,
       password: '',
     };
@@ -207,7 +211,7 @@ export const updatePassword = validatedActionWithUser(
         currentPassword,
         newPassword,
         confirmPassword,
-        error: 'მიმდინარე პაროლი არასწორია.',
+        error: 'Current password is incorrect.',
       };
     }
 
@@ -216,7 +220,7 @@ export const updatePassword = validatedActionWithUser(
         currentPassword,
         newPassword,
         confirmPassword,
-        error: 'ახალი პაროლი უნდა განსხვავდებოდეს მიმდინარეისგან.',
+        error: 'New password must be different from the current one.',
       };
     }
 
@@ -225,7 +229,7 @@ export const updatePassword = validatedActionWithUser(
         currentPassword,
         newPassword,
         confirmPassword,
-        error: 'ახალი პაროლი და დადასტურება არ ემთხვევა.',
+        error: 'New password and confirmation do not match.',
       };
     }
 
@@ -240,7 +244,7 @@ export const updatePassword = validatedActionWithUser(
     ]);
 
     return {
-      success: 'პაროლი წარმატებით განახლდა.',
+      success: 'Password updated successfully.',
     };
   }
 );
@@ -258,7 +262,7 @@ export const deleteAccount = validatedActionWithUser(
     if (!isPasswordValid) {
       return {
         password,
-        error: 'არასწორი პაროლი. ანგარიშის წაშლა ვერ მოხერხდა.',
+        error: 'Incorrect password. Failed to delete account.',
       };
     }
 
@@ -279,8 +283,8 @@ export const deleteAccount = validatedActionWithUser(
 );
 
 const updateAccountSchema = z.object({
-  name: z.string().min(1, 'სახელი აუცილებელია').max(100),
-  email: z.string().email('არასწორი ელფოსტა'),
+  name: z.string().min(1, 'Name is required').max(100),
+  email: z.string().email('Invalid email'),
 });
 
 export const updateAccount = validatedActionWithUser(
@@ -293,6 +297,6 @@ export const updateAccount = validatedActionWithUser(
       logActivity(user.id, ActivityType.UPDATE_ACCOUNT),
     ]);
 
-    return { name, success: 'ანგარიში წარმატებით განახლდა.' };
+    return { name, success: 'Account updated successfully.' };
   }
 );

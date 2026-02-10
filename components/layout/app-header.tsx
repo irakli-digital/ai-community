@@ -14,7 +14,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Search,
-  Menu,
   LogOut,
   Settings,
   User as UserIcon,
@@ -31,7 +30,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 import { useEffect } from 'react';
 
-export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
+export function AppHeader() {
   const { data: user } = useSWR<User>('/api/user', fetcher);
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -64,23 +63,13 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
 
   return (
     <>
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        {/* Left: mobile menu + logo */}
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        {/* Left: logo */}
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={onMenuToggle}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
           <Link href="/community" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white font-bold text-sm">
-              AI
-            </div>
-            <span className="text-lg font-semibold text-gray-900 hidden sm:inline">
+            <img src="/logo.svg" alt={t('common.appName')} className="h-8 w-8" />
+            <span className="text-lg font-semibold text-foreground hidden sm:inline">
               {t('common.appName')}
             </span>
           </Link>
@@ -89,7 +78,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
         {/* Right: search, notifications, user menu */}
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
-            <Search className="h-5 w-5 text-gray-500" />
+            <Search className="h-5 w-5 text-muted-foreground" />
           </Button>
 
           <NotificationBell />
@@ -100,7 +89,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="user-menu">
                   <Avatar className="h-9 w-9">
                     <AvatarImage src={user.avatarUrl || undefined} alt={user.name || ''} />
-                    <AvatarFallback className="bg-orange-100 text-orange-700 text-sm font-medium">
+                    <AvatarFallback className="bg-secondary text-foreground text-sm font-medium">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -109,7 +98,7 @@ export function AppHeader({ onMenuToggle }: { onMenuToggle?: () => void }) {
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium">{user.name || user.email}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="cursor-pointer">

@@ -1,5 +1,5 @@
 /**
- * Georgian email templates for AI წრე.
+ * Email templates for AI Circle.
  * Returns { subject, html, text } for each template.
  */
 
@@ -8,12 +8,12 @@ const BASE_URL = process.env.BASE_URL || 'https://aiwre.ge';
 function wrap(content: string): string {
   return `
 <!DOCTYPE html>
-<html lang="ka">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: 'Noto Sans Georgian', Arial, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
     .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
     .card { background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb; }
     .logo { text-align: center; margin-bottom: 24px; }
@@ -27,11 +27,11 @@ function wrap(content: string): string {
 <body>
   <div class="container">
     <div class="card">
-      <div class="logo"><span class="logo-box">AI წრე</span></div>
+      <div class="logo"><span class="logo-box">AI Circle</span></div>
       ${content}
     </div>
     <div class="footer">
-      <p>© ${new Date().getFullYear()} AI წრე — ხელოვნური ინტელექტის საზოგადოება</p>
+      <p>© ${new Date().getFullYear()} AI Circle — Artificial Intelligence Community</p>
     </div>
   </div>
 </body>
@@ -41,43 +41,43 @@ function wrap(content: string): string {
 // ─── Welcome Email ──────────────────────────────────────────────────────────
 
 export function welcomeEmail(params: { name?: string; email: string }) {
-  const greeting = params.name ? `გამარჯობა, ${params.name}!` : 'გამარჯობა!';
+  const greeting = params.name ? `Hello, ${params.name}!` : 'Hello!';
   return {
-    subject: 'კეთილი იყოს თქვენი მობრძანება AI წრე-ში! 🎉',
+    subject: 'Welcome to AI Circle! 🎉',
     html: wrap(`
       <h1>${greeting}</h1>
-      <p>მოხარული ვართ, რომ შემოუერთდით AI წრეს — ხელოვნური ინტელექტის საზოგადოებას.</p>
-      <p>აქ შეგიძლიათ:</p>
+      <p>We're glad you joined AI Circle — the artificial intelligence community.</p>
+      <p>Here you can:</p>
       <ul style="color: #4b5563; font-size: 15px; line-height: 1.8;">
-        <li>მიიღოთ მონაწილეობა თემის დისკუსიებში</li>
-        <li>გაიაროთ კურსები AI და ავტომატიზაციის შესახებ</li>
-        <li>დაუკავშირდეთ მსგავსი ინტერესების მქონე ადამიანებს</li>
+        <li>Participate in community discussions</li>
+        <li>Take courses on AI and automation</li>
+        <li>Connect with like-minded people</li>
       </ul>
-      <a href="${BASE_URL}/community" class="btn">გადავიდეთ თემზე</a>
+      <a href="${BASE_URL}/community" class="btn">Go to Community</a>
     `),
-    text: `${greeting}\n\nმოხარული ვართ, რომ შემოუერთდით AI წრეს.\n\nეწვიეთ: ${BASE_URL}/community`,
+    text: `${greeting}\n\nWe're glad you joined AI Circle.\n\nVisit: ${BASE_URL}/community`,
   };
 }
 
 // ─── Subscription Confirmation ──────────────────────────────────────────────
 
 export function subscriptionConfirmationEmail(params: { name?: string }) {
-  const greeting = params.name ? `გამარჯობა, ${params.name}!` : 'გამარჯობა!';
+  const greeting = params.name ? `Hello, ${params.name}!` : 'Hello!';
   return {
-    subject: 'გამოწერა წარმატებით გააქტიურდა! ✅',
+    subject: 'Subscription activated successfully! ✅',
     html: wrap(`
       <h1>${greeting}</h1>
-      <p>თქვენი ფასიანი გეგმა წარმატებით გააქტიურდა.</p>
-      <p>ახლა თქვენ გაქვთ სრული წვდომა:</p>
+      <p>Your paid plan has been activated successfully.</p>
+      <p>You now have full access to:</p>
       <ul style="color: #4b5563; font-size: 15px; line-height: 1.8;">
-        <li>პოსტების შექმნა</li>
-        <li>ყველა კურსზე წვდომა</li>
-        <li>პოსტების და კომენტარების მოწონება</li>
-        <li>ლიდერბორდში მონაწილეობა</li>
+        <li>Create posts</li>
+        <li>Access all courses</li>
+        <li>Like posts and comments</li>
+        <li>Participate in the leaderboard</li>
       </ul>
-      <a href="${BASE_URL}/community" class="btn">დავიწყოთ</a>
+      <a href="${BASE_URL}/community" class="btn">Get Started</a>
     `),
-    text: `${greeting}\n\nთქვენი ფასიანი გეგმა წარმატებით გააქტიურდა.\n\n${BASE_URL}/community`,
+    text: `${greeting}\n\nYour paid plan has been activated successfully.\n\n${BASE_URL}/community`,
   };
 }
 
@@ -87,21 +87,21 @@ export function subscriptionCancellationEmail(params: {
   name?: string;
   periodEnd?: string;
 }) {
-  const greeting = params.name ? `გამარჯობა, ${params.name}!` : 'გამარჯობა!';
+  const greeting = params.name ? `Hello, ${params.name}!` : 'Hello!';
   const periodInfo = params.periodEnd
-    ? `თქვენი წვდომა გაგრძელდება ${params.periodEnd}-მდე.`
-    : 'თქვენი წვდომა გაგრძელდება მიმდინარე ბილინგის პერიოდის ბოლომდე.';
+    ? `Your access will continue until ${params.periodEnd}.`
+    : 'Your access will continue until the end of the current billing period.';
 
   return {
-    subject: 'გამოწერა გაუქმებულია',
+    subject: 'Subscription cancelled',
     html: wrap(`
       <h1>${greeting}</h1>
-      <p>თქვენი გამოწერა გაუქმდა.</p>
+      <p>Your subscription has been cancelled.</p>
       <p>${periodInfo}</p>
-      <p>ამის შემდეგ თქვენ ავტომატურად გადახვალთ უფასო გეგმაზე.</p>
-      <p>თუ გადაიფიქრეთ, ნებისმიერ დროს შეგიძლიათ ხელახლა გააქტიუროთ გამოწერა.</p>
-      <a href="${BASE_URL}/settings/billing" class="btn">ბილინგის პარამეტრები</a>
+      <p>After that, you will automatically be switched to the free plan.</p>
+      <p>If you change your mind, you can reactivate your subscription at any time.</p>
+      <a href="${BASE_URL}/settings/billing" class="btn">Billing Settings</a>
     `),
-    text: `${greeting}\n\nთქვენი გამოწერა გაუქმდა.\n${periodInfo}\n\n${BASE_URL}/settings/billing`,
+    text: `${greeting}\n\nYour subscription has been cancelled.\n${periodInfo}\n\n${BASE_URL}/settings/billing`,
   };
 }

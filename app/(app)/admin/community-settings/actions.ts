@@ -15,11 +15,11 @@ export async function updateCommunitySettings(data: {
 }) {
   const user = await getUser();
   if (!user || user.role !== 'admin') {
-    throw new Error('წვდომა აკრძალულია.');
+    throw new Error('Access denied.');
   }
 
   if (!data.name || data.name.trim().length === 0) {
-    throw new Error('სახელი აუცილებელია.');
+    throw new Error('Name is required.');
   }
 
   // Check if settings exist
@@ -59,7 +59,7 @@ export async function uploadAndSetImage(
 ) {
   const user = await getUser();
   if (!user || user.role !== 'admin') {
-    throw new Error('წვდომა აკრძალულია.');
+    throw new Error('Access denied.');
   }
 
   const existing = await db.select().from(communitySettings).limit(1);

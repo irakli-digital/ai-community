@@ -48,7 +48,7 @@ export default function AdminCoursesPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('ნამდვილად გსურთ კურსის წაშლა? ეს წაშლის ყველა სექციასა და გაკვეთილს.')) return;
+    if (!confirm('Are you sure you want to delete this course? This will delete all sections and lessons.')) return;
     startTransition(async () => {
       await deleteCourse(id);
       await loadCourses();
@@ -64,7 +64,7 @@ export default function AdminCoursesPage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {t('admin.courses')}
           </h1>
         </div>
@@ -81,28 +81,28 @@ export default function AdminCoursesPage() {
           <Card key={course.id} className="py-3">
             <CardContent className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <BookOpen className="h-5 w-5 text-gray-400" />
+                <BookOpen className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{course.title}</span>
                     {course.isPaid && (
                       <span className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                         <Lock className="h-3 w-3" />
-                        ფასიანი
+                        Paid
                       </span>
                     )}
                     <span
                       className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
                         course.isPublished
                           ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
+                          : 'bg-secondary text-muted-foreground'
                       }`}
                     >
-                      {course.isPublished ? 'გამოქვეყნებული' : 'დრაფტი'}
+                      {course.isPublished ? 'Published' : 'Draft'}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {course.totalLessons} გაკვეთილი · #{course.sortOrder}
+                  <p className="text-xs text-muted-foreground">
+                    {course.totalLessons} lessons · #{course.sortOrder}
                   </p>
                 </div>
               </div>
@@ -112,7 +112,7 @@ export default function AdminCoursesPage() {
                   size="icon"
                   onClick={() => handlePublish(course.id, course.isPublished)}
                   disabled={isPending}
-                  title={course.isPublished ? 'დამალვა' : 'გამოქვეყნება'}
+                  title={course.isPublished ? 'Unpublish' : 'Publish'}
                 >
                   {course.isPublished ? (
                     <EyeOff className="h-4 w-4" />
@@ -138,8 +138,8 @@ export default function AdminCoursesPage() {
           </Card>
         ))}
         {courseList.length === 0 && (
-          <p className="py-8 text-center text-gray-500">
-            კურსები ჯერ არ არის. შექმენით პირველი კურსი!
+          <p className="py-8 text-center text-muted-foreground">
+            No courses yet. Create your first course!
           </p>
         )}
       </div>

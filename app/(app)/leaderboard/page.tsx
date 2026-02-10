@@ -44,14 +44,14 @@ export default function LeaderboardPage() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Trophy className="h-7 w-7 text-orange-500" />
-        <h1 className="text-2xl font-bold text-gray-900">
+        <Trophy className="h-7 w-7 text-foreground" />
+        <h1 className="text-2xl font-bold text-foreground">
           {t('leaderboard.title')}
         </h1>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-gray-100 p-1 mb-6">
+      <div className="flex gap-1 rounded-lg bg-secondary p-1 mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -59,8 +59,8 @@ export default function LeaderboardPage() {
             className={cn(
               'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors',
               period === tab.key
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {tab.label}
@@ -72,11 +72,11 @@ export default function LeaderboardPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-lg bg-gray-100" />
+            <div key={i} className="h-16 animate-pulse rounded-lg bg-secondary" />
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <p className="text-center text-gray-500 py-12">
+        <p className="text-center text-muted-foreground py-12">
           {t('leaderboard.noData')}
         </p>
       ) : (
@@ -85,19 +85,19 @@ export default function LeaderboardPage() {
             <Link
               key={entry.id}
               href={`/members/${entry.id}`}
-              className="flex items-center gap-4 rounded-xl border bg-white p-4 transition-shadow hover:shadow-md"
+              className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-md"
             >
               {/* Position */}
               <div
                 className={cn(
                   'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold',
                   index === 0
-                    ? 'bg-yellow-100 text-yellow-700'
+                    ? 'bg-primary text-primary-foreground'
                     : index === 1
-                      ? 'bg-gray-100 text-gray-600'
+                      ? 'bg-accent text-foreground'
                       : index === 2
-                        ? 'bg-orange-100 text-orange-700'
-                        : 'bg-gray-50 text-gray-500'
+                        ? 'bg-secondary text-foreground'
+                        : 'bg-secondary text-muted-foreground'
                 )}
               >
                 {index + 1}
@@ -105,7 +105,7 @@ export default function LeaderboardPage() {
 
               {/* Avatar */}
               <div className="relative">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
                   {entry.avatarUrl ? (
                     <img
                       src={entry.avatarUrl}
@@ -125,8 +125,8 @@ export default function LeaderboardPage() {
               {/* Name + Level */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900 truncate">
-                    {entry.name ?? 'მომხმარებელი'}
+                  <span className="font-medium text-foreground truncate">
+                    {entry.name ?? 'Member'}
                   </span>
                   <LevelBadge level={entry.level} size="sm" />
                 </div>
@@ -134,10 +134,10 @@ export default function LeaderboardPage() {
 
               {/* Points */}
               <div className="text-right">
-                <span className="text-lg font-bold text-orange-500">
+                <span className="text-lg font-bold text-primary">
                   {entry.points}
                 </span>
-                <p className="text-xs text-gray-500">{t('leaderboard.points')}</p>
+                <p className="text-xs text-muted-foreground">{t('leaderboard.points')}</p>
               </div>
             </Link>
           ))}

@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n/ka';
 import { LevelBadge } from '@/components/members/level-badge';
 import { OnlineIndicator } from '@/components/members/online-indicator';
 import { formatDistanceToNow, format } from 'date-fns';
-import { ka } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import {
   Globe,
   Facebook,
@@ -55,7 +55,7 @@ export default async function MemberProfilePage({ params }: Props) {
     .orderBy(desc(posts.createdAt))
     .limit(10);
 
-  const displayName = user.name ?? 'მომხმარებელი';
+  const displayName = user.name ?? 'Member';
   const initial = (user.name?.[0] ?? '?').toUpperCase();
   const isOnline =
     user.lastSeenAt &&
@@ -71,11 +71,11 @@ export default async function MemberProfilePage({ params }: Props) {
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="rounded-xl border bg-white p-6">
+      <div className="rounded-lg border bg-card p-6">
         <div className="flex flex-col sm:flex-row items-start gap-5">
           {/* Avatar */}
           <div className="relative">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gray-200 text-2xl font-medium text-gray-600">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary text-2xl font-medium text-muted-foreground">
               {user.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
@@ -96,7 +96,7 @@ export default async function MemberProfilePage({ params }: Props) {
           {/* Info */}
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-foreground">
                 {displayName}
               </h1>
               <LevelBadge level={user.level} size="md" />
@@ -108,13 +108,13 @@ export default async function MemberProfilePage({ params }: Props) {
             </div>
 
             {user.bio && (
-              <p className="mt-2 text-gray-600 text-sm leading-relaxed">
+              <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
                 {user.bio}
               </p>
             )}
 
             {/* Meta */}
-            <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-500">
+            <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
               {user.location && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
@@ -124,23 +124,23 @@ export default async function MemberProfilePage({ params }: Props) {
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 {t('members.joined')}{' '}
-                {format(new Date(user.createdAt), 'd MMM yyyy', { locale: ka })}
+                {format(new Date(user.createdAt), 'd MMM yyyy', { locale: enUS })}
               </span>
             </div>
 
             {/* Stats */}
             <div className="mt-4 flex gap-6">
               <div>
-                <span className="text-xl font-bold text-orange-500">
+                <span className="text-xl font-bold text-primary">
                   {user.points}
                 </span>
-                <p className="text-xs text-gray-500">{t('profile.points')}</p>
+                <p className="text-xs text-muted-foreground">{t('profile.points')}</p>
               </div>
               <div>
-                <span className="text-xl font-bold text-gray-900">
+                <span className="text-xl font-bold text-foreground">
                   {user.level}
                 </span>
-                <p className="text-xs text-gray-500">{t('profile.level')}</p>
+                <p className="text-xs text-muted-foreground">{t('profile.level')}</p>
               </div>
             </div>
 
@@ -153,7 +153,7 @@ export default async function MemberProfilePage({ params }: Props) {
                     href={link.url!}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                     title={link.label}
                   >
                     <link.icon className="h-4 w-4" />
@@ -167,21 +167,21 @@ export default async function MemberProfilePage({ params }: Props) {
 
       {/* Recent Posts */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           {t('members.recentPosts')}
         </h2>
         {recentPosts.length === 0 ? (
-          <p className="text-gray-500 text-sm">{t('members.noPosts')}</p>
+          <p className="text-muted-foreground text-sm">{t('members.noPosts')}</p>
         ) : (
           <div className="space-y-3">
             {recentPosts.map((post) => (
               <Link
                 key={post.id}
                 href={`/community/${post.id}`}
-                className="block rounded-xl border bg-white p-4 transition-shadow hover:shadow-md"
+                className="block rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
               >
                 <div className="flex items-start justify-between">
-                  <h3 className="font-medium text-gray-900">{post.title}</h3>
+                  <h3 className="font-medium text-foreground">{post.title}</h3>
                   {post.catName && (
                     <span
                       className="shrink-0 ml-2 rounded-full px-2 py-0.5 text-xs font-medium text-white"
@@ -191,10 +191,10 @@ export default async function MemberProfilePage({ params }: Props) {
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
                   {post.content}
                 </p>
-                <div className="mt-2 flex items-center gap-4 text-xs text-gray-400">
+                <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Heart className="h-3 w-3" /> {post.likesCount}
                   </span>
@@ -204,7 +204,7 @@ export default async function MemberProfilePage({ params }: Props) {
                   <span>
                     {formatDistanceToNow(new Date(post.createdAt), {
                       addSuffix: true,
-                      locale: ka,
+                      locale: enUS,
                     })}
                   </span>
                 </div>

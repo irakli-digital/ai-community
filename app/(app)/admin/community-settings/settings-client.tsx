@@ -42,7 +42,7 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: any) {
-      setError(err.message || 'შეცდომა');
+      setError(err.message || 'Error');
     }
     setSaving(false);
   }
@@ -57,11 +57,11 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
     // Validate
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError('ფაილი ძალიან დიდია. მაქსიმუმ 5MB.');
+      setError('File is too large. Maximum 5MB.');
       return;
     }
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      setError('ფაილის ტიპი დაუშვებელია. გამოიყენეთ JPG, PNG ან WebP.');
+      setError('Invalid file type. Use JPG, PNG, or WebP.');
       return;
     }
 
@@ -79,7 +79,7 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
         }),
       });
 
-      if (!res.ok) throw new Error('ატვირთვა ვერ მოხერხდა');
+      if (!res.ok) throw new Error('Upload failed');
       const { presignedUrl, publicUrl } = await res.json();
 
       // Upload to S3
@@ -95,7 +95,7 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
         setCoverImageUrl(publicUrl);
       }
     } catch (err: any) {
-      setError(err.message || 'ატვირთვა ვერ მოხერხდა');
+      setError(err.message || 'Upload failed');
     }
     setUploading(null);
   }
@@ -103,78 +103,78 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Settings className="h-6 w-6 text-orange-600" />
-        <h1 className="text-2xl font-bold text-gray-900">თემის პარამეტრები</h1>
+        <Settings className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold text-foreground">Community Settings</h1>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-6">
+      <div className="rounded-lg border border-border bg-card p-6 space-y-6">
         {/* Name */}
         <div className="space-y-2">
-          <Label htmlFor="name">თემის სახელი</Label>
+          <Label htmlFor="name">Community Name</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="AI წრე"
+            placeholder="AI Circle"
             maxLength={200}
           />
         </div>
 
         {/* Description */}
         <div className="space-y-2">
-          <Label htmlFor="description">მოკლე აღწერა</Label>
+          <Label htmlFor="description">Short Description</Label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="მოკლე აღწერა საზოგადოების შესახებ..."
+            placeholder="A short description about the community..."
             rows={3}
-            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-300 resize-none"
+            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring resize-none"
           />
         </div>
 
         {/* About Content (Markdown) */}
         <div className="space-y-2">
           <Label htmlFor="aboutContent">
-            საზოგადოების შესახებ (Markdown)
+            About the Community (Markdown)
           </Label>
           <textarea
             id="aboutContent"
             value={aboutContent}
             onChange={(e) => setAboutContent(e.target.value)}
-            placeholder="# სათაური&#10;&#10;აქ დაწერეთ საზოგადოების შესახებ ინფორმაცია Markdown ფორმატში..."
+            placeholder="# Title&#10;&#10;Write about the community here in Markdown format..."
             rows={10}
-            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-mono outline-none focus:border-orange-300 resize-y"
+            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-mono outline-none focus:border-ring resize-y"
           />
-          <p className="text-xs text-gray-400">
-            Markdown ფორმატი: # სათაური, **ბოლდი**, *იტალიკი*, - სია
+          <p className="text-xs text-muted-foreground">
+            Markdown format: # Heading, **bold**, *italic*, - list
           </p>
         </div>
 
         {/* Logo */}
         <div className="space-y-2">
-          <Label>ლოგო</Label>
+          <Label>Logo</Label>
           <div className="flex items-center gap-4">
             {logoUrl ? (
               <img
                 src={logoUrl}
-                alt="ლოგო"
-                className="h-16 w-16 rounded-lg object-cover border border-gray-200"
+                alt="Logo"
+                className="h-16 w-16 rounded-lg object-cover border border-border"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50">
-                <ImageIcon className="h-6 w-6 text-gray-400" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed border-border bg-background">
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
             <div>
               <label className="cursor-pointer">
-                <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-accent">
                   {uploading === 'logo' ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Upload className="h-4 w-4" />
                   )}
-                  ლოგოს ატვირთვა
+                  Upload Logo
                 </span>
                 <input
                   type="file"
@@ -189,7 +189,7 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
                   onClick={() => setLogoUrl('')}
                   className="ml-2 text-xs text-red-500 hover:text-red-600"
                 >
-                  წაშლა
+                  Remove
                 </button>
               )}
             </div>
@@ -198,28 +198,28 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
 
         {/* Cover Image */}
         <div className="space-y-2">
-          <Label>ფონის სურათი</Label>
+          <Label>Cover Image</Label>
           <div className="space-y-3">
             {coverImageUrl ? (
               <img
                 src={coverImageUrl}
-                alt="ფონი"
-                className="h-32 w-full rounded-lg object-cover border border-gray-200"
+                alt="Cover"
+                className="h-32 w-full rounded-lg object-cover border border-border"
               />
             ) : (
-              <div className="flex h-32 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50">
-                <ImageIcon className="h-8 w-8 text-gray-400" />
+              <div className="flex h-32 w-full items-center justify-center rounded-lg border-2 border-dashed border-border bg-background">
+                <ImageIcon className="h-8 w-8 text-muted-foreground" />
               </div>
             )}
             <div className="flex items-center gap-2">
               <label className="cursor-pointer">
-                <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-accent">
                   {uploading === 'cover' ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Upload className="h-4 w-4" />
                   )}
-                  ფონის ატვირთვა
+                  Upload Cover
                 </span>
                 <input
                   type="file"
@@ -234,7 +234,7 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
                   onClick={() => setCoverImageUrl('')}
                   className="text-xs text-red-500 hover:text-red-600"
                 >
-                  წაშლა
+                  Remove
                 </button>
               )}
             </div>
@@ -249,7 +249,7 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
         )}
         {success && (
           <p className="text-sm text-green-600 bg-green-50 rounded-lg px-3 py-2">
-            პარამეტრები წარმატებით შეინახა ✓
+            Settings saved successfully
           </p>
         )}
 
@@ -258,14 +258,14 @@ export function CommunitySettingsClient({ settings }: { settings: SettingsData }
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : (
               <Save className="h-4 w-4 mr-2" />
             )}
-            {saving ? 'ინახება...' : 'შენახვა'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </div>
       </div>

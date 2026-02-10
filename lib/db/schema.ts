@@ -17,6 +17,7 @@ export const users = pgTable(
   {
     id: serial('id').primaryKey(),
     name: varchar('name', { length: 100 }),
+    lastName: varchar('last_name', { length: 100 }),
     email: varchar('email', { length: 255 }).notNull().unique(),
     passwordHash: text('password_hash').notNull(),
     role: varchar('role', { length: 20 }).notNull().default('member'),
@@ -70,7 +71,7 @@ export const subscriptions = pgTable('subscriptions', {
 // ─── Community Settings (single row) ────────────────────────────────────────
 export const communitySettings = pgTable('community_settings', {
   id: serial('id').primaryKey(),
-  name: varchar('name', { length: 200 }).notNull().default('AI წრე'),
+  name: varchar('name', { length: 200 }).notNull().default('AI Circle'),
   description: text('description'),
   aboutContent: text('about_content'),
   logoUrl: text('logo_url'),
@@ -339,6 +340,13 @@ export const courseProgress = pgTable(
     index('course_progress_course_id_idx').on(table.courseId),
   ]
 );
+
+// ─── Waiting List ────────────────────────────────────────────────────────────
+export const waitingList = pgTable('waiting_list', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
 
 // ─── Relations ──────────────────────────────────────────────────────────────
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -609,6 +617,8 @@ export type LessonAttachment = typeof lessonAttachments.$inferSelect;
 export type NewLessonAttachment = typeof lessonAttachments.$inferInsert;
 export type CourseProgress = typeof courseProgress.$inferSelect;
 export type NewCourseProgress = typeof courseProgress.$inferInsert;
+export type WaitingListEntry = typeof waitingList.$inferSelect;
+export type NewWaitingListEntry = typeof waitingList.$inferInsert;
 
 // ─── Activity Types ─────────────────────────────────────────────────────────
 export enum ActivityType {

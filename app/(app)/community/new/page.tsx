@@ -57,7 +57,7 @@ export default function NewPostPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           {t('community.newPost')}
         </h1>
       </div>
@@ -72,8 +72,8 @@ export default function NewPostPage() {
         {/* Category */}
         {categories.length > 0 && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              კატეგორია
+            <label className="mb-1 block text-sm font-medium text-foreground">
+              Category
             </label>
             <div className="flex flex-wrap gap-2">
               <button
@@ -81,11 +81,11 @@ export default function NewPostPage() {
                 onClick={() => setCategoryId(null)}
                 className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                   categoryId === null
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-foreground text-background'
+                    : 'bg-secondary text-muted-foreground hover:bg-accent'
                 }`}
               >
-                არცერთი
+                None
               </button>
               {categories.map((cat) => (
                 <button
@@ -95,7 +95,7 @@ export default function NewPostPage() {
                   className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                     categoryId === cat.id
                       ? 'text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-secondary text-muted-foreground hover:bg-accent'
                   }`}
                   style={
                     categoryId === cat.id
@@ -112,13 +112,13 @@ export default function NewPostPage() {
 
         {/* Title */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            სათაური
+          <label className="mb-1 block text-sm font-medium text-foreground">
+            Title
           </label>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="პოსტის სათაური"
+            placeholder="Post title"
             maxLength={300}
             required
           />
@@ -126,15 +126,15 @@ export default function NewPostPage() {
 
         {/* Content (Markdown) */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            შინაარსი (Markdown)
+          <label className="mb-1 block text-sm font-medium text-foreground">
+            Content (Markdown)
           </label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="დაწერეთ პოსტი..."
+            placeholder="Write your post..."
             rows={10}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
             required
           />
         </div>
@@ -170,7 +170,7 @@ export default function NewPostPage() {
               onClick={() => setShowLinkInput(true)}
             >
               <Link2 className="h-4 w-4" />
-              ბმულის დამატება
+              Add Link
             </Button>
           </div>
         )}
@@ -178,7 +178,7 @@ export default function NewPostPage() {
         {/* Submit */}
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={isPending || !title || !content}>
-            {isPending ? t('common.loading') : 'გამოქვეყნება'}
+            {isPending ? t('common.loading') : 'Publish'}
           </Button>
           <Link href="/community">
             <Button type="button" variant="ghost">

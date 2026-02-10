@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: 'რაღაც არასწორად წავიდა.' },
+      { error: 'Something went wrong.' },
       { status: 500 }
     );
   }

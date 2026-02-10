@@ -138,26 +138,26 @@ const adminLinks = [
   {
     href: '/admin/members',
     icon: Users,
-    title: 'წევრების მართვა',
-    desc: 'წევრების ნახვა, როლების შეცვლა',
+    title: 'Manage Members',
+    desc: 'View members, change roles',
   },
   {
     href: '/admin/categories',
     icon: FolderOpen,
-    title: 'კატეგორიები',
-    desc: 'პოსტების კატეგორიების მართვა',
+    title: 'Categories',
+    desc: 'Manage post categories',
   },
   {
     href: '/admin/courses',
     icon: BookOpen,
-    title: 'კურსები',
-    desc: 'კურსების, სექციებისა და გაკვეთილების მართვა',
+    title: 'Courses',
+    desc: 'Manage courses, sections, and lessons',
   },
   {
     href: '/admin/community-settings',
     icon: Settings,
-    title: 'თემის პარამეტრები',
-    desc: 'სახელი, აღწერა, ლოგო, ფონი',
+    title: 'Community Settings',
+    desc: 'Name, description, logo, cover image',
   },
 ];
 
@@ -168,66 +168,62 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3">
-        <BarChart3 className="h-7 w-7 text-orange-600" />
-        <h1 className="text-2xl font-bold text-gray-900">{t('admin.title')}</h1>
+        <BarChart3 className="h-7 w-7 text-foreground" />
+        <h1 className="text-2xl font-bold text-foreground">{t('admin.title')}</h1>
       </div>
 
       {/* Stats cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          icon={<Users className="h-5 w-5 text-blue-600" />}
-          label="სულ წევრები"
+          icon={<Users className="h-5 w-5 text-foreground" />}
+          label="Total Members"
           value={analytics.totalMembers}
-          sub={`${analytics.onlineNow} ონლაინ`}
-          bgColor="bg-blue-50"
+          sub={`${analytics.onlineNow} online`}
         />
         <StatCard
-          icon={<UserPlus className="h-5 w-5 text-green-600" />}
-          label="ახალი წევრები"
+          icon={<UserPlus className="h-5 w-5 text-foreground" />}
+          label="New Members"
           value={analytics.newMembers7d}
-          sub={`7 დღეში • ${analytics.newMembers30d} 30 დღეში`}
-          bgColor="bg-green-50"
+          sub={`last 7 days • ${analytics.newMembers30d} last 30 days`}
         />
         <StatCard
-          icon={<TrendingUp className="h-5 w-5 text-purple-600" />}
-          label="აქტიური წევრები"
+          icon={<TrendingUp className="h-5 w-5 text-foreground" />}
+          label="Active Members"
           value={analytics.activeMembers}
-          sub="ბოლო 30 დღეში"
-          bgColor="bg-purple-50"
+          sub="last 30 days"
         />
         <StatCard
-          icon={<Heart className="h-5 w-5 text-red-600" />}
-          label="ფასიანი გამოწერები"
+          icon={<Heart className="h-5 w-5 text-foreground" />}
+          label="Paid Subscriptions"
           value={analytics.paidSubscribers}
-          sub="აქტიური"
-          bgColor="bg-red-50"
+          sub="active"
         />
       </div>
 
       {/* Engagement metrics */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">ჩართულობა</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Engagement</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <EngagementCard
-            icon={<MessageSquare className="h-5 w-5 text-orange-600" />}
-            label="პოსტები"
+            icon={<MessageSquare className="h-5 w-5 text-foreground" />}
+            label="Posts"
             total={analytics.totalPosts}
             recent={analytics.posts7d}
-            period="7 დღეში"
+            period="last 7 days"
           />
           <EngagementCard
-            icon={<MessageSquare className="h-5 w-5 text-blue-600" />}
-            label="კომენტარები"
+            icon={<MessageSquare className="h-5 w-5 text-foreground" />}
+            label="Comments"
             total={analytics.totalComments}
             recent={analytics.comments7d}
-            period="7 დღეში"
+            period="last 7 days"
           />
           <EngagementCard
-            icon={<Heart className="h-5 w-5 text-red-600" />}
-            label="მოწონებები"
+            icon={<Heart className="h-5 w-5 text-foreground" />}
+            label="Likes"
             total={analytics.totalLikes}
             recent={analytics.likes7d}
-            period="7 დღეში"
+            period="last 7 days"
           />
         </div>
       </div>
@@ -235,24 +231,24 @@ export default async function AdminPage() {
       {/* Signup chart (simple bar chart) */}
       {analytics.signupsPerDay.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            რეგისტრაციები (ბოლო 14 დღე)
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Signups (Last 14 Days)
           </h2>
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-end gap-1 h-32">
               {analytics.signupsPerDay.map((day, i) => {
                 const maxCount = Math.max(...analytics.signupsPerDay.map((d) => d.count), 1);
                 const height = (day.count / maxCount) * 100;
                 return (
                   <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                    <span className="text-[10px] text-gray-500 font-medium">
+                    <span className="text-[10px] text-muted-foreground font-medium">
                       {day.count}
                     </span>
                     <div
-                      className="w-full max-w-8 rounded-t bg-orange-400 transition-all"
+                      className="w-full max-w-8 rounded-t bg-primary transition-all"
                       style={{ height: `${Math.max(height, 4)}%` }}
                     />
-                    <span className="text-[9px] text-gray-400 truncate w-full text-center">
+                    <span className="text-[9px] text-muted-foreground truncate w-full text-center">
                       {day.date}
                     </span>
                   </div>
@@ -266,24 +262,24 @@ export default async function AdminPage() {
       {/* Popular posts */}
       {analytics.popularPosts.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            პოპულარული პოსტები
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Popular Posts
           </h2>
-          <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+          <div className="rounded-lg border border-border bg-card divide-y divide-border">
             {analytics.popularPosts.map((post, i) => (
               <Link
                 key={post.id}
                 href={`/community/${post.id}`}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-600">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
                   {i + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {post.title}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {post.authorName} • ❤️ {post.likesCount} • 💬 {post.commentsCount}
                   </p>
                 </div>
@@ -295,18 +291,18 @@ export default async function AdminPage() {
 
       {/* Admin links */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">მართვა</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Management</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {adminLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-start gap-3 rounded-lg border border-gray-200 p-4 transition-colors hover:border-orange-300 hover:bg-orange-50/50"
+              className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/50 hover:bg-accent"
             >
-              <link.icon className="mt-0.5 h-5 w-5 text-orange-600" />
+              <link.icon className="mt-0.5 h-5 w-5 text-foreground" />
               <div>
-                <p className="font-medium text-gray-900">{link.title}</p>
-                <p className="text-sm text-gray-500">{link.desc}</p>
+                <p className="font-medium text-foreground">{link.title}</p>
+                <p className="text-sm text-muted-foreground">{link.desc}</p>
               </div>
             </Link>
           ))}
@@ -321,24 +317,22 @@ function StatCard({
   label,
   value,
   sub,
-  bgColor,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
   sub: string;
-  bgColor: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${bgColor}`}>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
           {icon}
         </div>
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          <p className="text-xs text-gray-400">{sub}</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-xs text-muted-foreground">{sub}</p>
         </div>
       </div>
     </div>
@@ -359,13 +353,13 @@ function EngagementCard({
   period: string;
 }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center gap-2 mb-2">
         {icon}
-        <p className="text-sm font-medium text-gray-900">{label}</p>
+        <p className="text-sm font-medium text-foreground">{label}</p>
       </div>
-      <p className="text-2xl font-bold text-gray-900">{total}</p>
-      <p className="text-xs text-gray-500">
+      <p className="text-2xl font-bold text-foreground">{total}</p>
+      <p className="text-xs text-muted-foreground">
         +{recent} {period}
       </p>
     </div>

@@ -166,7 +166,7 @@ export default function EditCoursePage() {
   }
 
   async function handleDeleteSection(id: number) {
-    if (!confirm('ნამდვილად გსურთ სექციის წაშლა? ყველა გაკვეთილი წაიშლება.'))
+    if (!confirm('Are you sure you want to delete this section? All lessons will be deleted.'))
       return;
     startTransition(async () => {
       await deleteSection(id);
@@ -264,7 +264,7 @@ export default function EditCoursePage() {
   }
 
   async function handleDeleteLesson(lessonId: number) {
-    if (!confirm('ნამდვილად გსურთ გაკვეთილის წაშლა?')) return;
+    if (!confirm('Are you sure you want to delete this lesson?')) return;
     startTransition(async () => {
       await deleteLesson(lessonId);
       await loadData();
@@ -273,7 +273,7 @@ export default function EditCoursePage() {
 
   if (!course) {
     return (
-      <div className="py-8 text-center text-gray-500">{t('common.loading')}</div>
+      <div className="py-8 text-center text-muted-foreground">{t('common.loading')}</div>
     );
   }
 
@@ -287,8 +287,8 @@ export default function EditCoursePage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
-            კურსის რედაქტირება
+          <h1 className="text-2xl font-bold text-foreground">
+            Edit Course
           </h1>
         </div>
         <Button
@@ -300,12 +300,12 @@ export default function EditCoursePage() {
           {course.isPublished ? (
             <>
               <EyeOff className="mr-1 h-4 w-4" />
-              დამალვა
+              Unpublish
             </>
           ) : (
             <>
               <Eye className="mr-1 h-4 w-4" />
-              გამოქვეყნება
+              Publish
             </>
           )}
         </Button>
@@ -314,29 +314,29 @@ export default function EditCoursePage() {
       {/* Course Details Form */}
       <Card>
         <CardHeader>
-          <CardTitle>კურსის ინფორმაცია</CardTitle>
+          <CardTitle>Course Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium">სათაური *</label>
+            <label className="text-sm font-medium">Title *</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="კურსის სათაური"
+              placeholder="Course title"
             />
           </div>
           <div>
-            <label className="text-sm font-medium">აღწერა</label>
+            <label className="text-sm font-medium">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="კურსის აღწერა..."
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              placeholder="Course description..."
+              className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
               rows={3}
             />
           </div>
           <div>
-            <label className="text-sm font-medium">თამბნეილის URL</label>
+            <label className="text-sm font-medium">Thumbnail URL</label>
             <Input
               value={thumbnailUrl}
               onChange={(e) => setThumbnailUrl(e.target.value)}
@@ -350,14 +350,14 @@ export default function EditCoursePage() {
                 id="isPaid"
                 checked={isPaid}
                 onChange={(e) => setIsPaid(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
               />
               <label htmlFor="isPaid" className="text-sm font-medium">
-                ფასიანი კურსი
+                Paid course
               </label>
             </div>
             <div>
-              <label className="text-sm font-medium">თანმიმდევრობა</label>
+              <label className="text-sm font-medium">Sort Order</label>
               <Input
                 type="number"
                 value={sortOrder}
@@ -376,8 +376,8 @@ export default function EditCoursePage() {
       {/* Sections & Lessons */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
-            სექციები და გაკვეთილები
+          <h2 className="text-lg font-semibold text-foreground">
+            Sections & Lessons
           </h2>
           <Button
             size="sm"
@@ -385,19 +385,19 @@ export default function EditCoursePage() {
             onClick={() => setShowNewSection(true)}
           >
             <Plus className="mr-1 h-4 w-4" />
-            სექციის დამატება
+            Add Section
           </Button>
         </div>
 
         {/* New Section Form */}
         {showNewSection && (
-          <Card className="border-dashed border-orange-300">
+          <Card className="border-dashed border-primary/50">
             <CardContent className="py-3">
               <div className="flex items-center gap-2">
                 <Input
                   value={newSectionTitle}
                   onChange={(e) => setNewSectionTitle(e.target.value)}
-                  placeholder="სექციის სახელი"
+                  placeholder="Section name"
                   className="flex-1"
                   autoFocus
                   onKeyDown={(e) => {
@@ -440,14 +440,14 @@ export default function EditCoursePage() {
                   <div className="flex flex-col">
                     <button
                       onClick={() => handleMoveSectionUp(sIdx)}
-                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30"
                       disabled={sIdx === 0 || isPending}
                     >
                       <GripVertical className="h-3 w-3" />
                     </button>
                     <button
                       onClick={() => handleMoveSectionDown(sIdx)}
-                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30"
                       disabled={sIdx === sections.length - 1 || isPending}
                     >
                       <GripVertical className="h-3 w-3" />
@@ -455,7 +455,7 @@ export default function EditCoursePage() {
                   </div>
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className="flex items-center gap-1 text-gray-700"
+                    className="flex items-center gap-1 text-foreground"
                   >
                     {expandedSections.has(section.id) ? (
                       <ChevronDown className="h-4 w-4" />
@@ -495,8 +495,8 @@ export default function EditCoursePage() {
                   ) : (
                     <span className="font-medium">
                       {section.title}{' '}
-                      <span className="text-xs text-gray-400">
-                        ({section.lessons.length} გაკვეთილი)
+                      <span className="text-xs text-muted-foreground">
+                        ({section.lessons.length} lessons)
                       </span>
                     </span>
                   )}
@@ -550,21 +550,21 @@ export default function EditCoursePage() {
                           isEditing
                         />
                       ) : (
-                        <div className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2">
+                        <div className="flex items-center justify-between rounded-md bg-background px-3 py-2">
                           <div className="flex items-center gap-2">
                             {lesson.videoUrl ? (
-                              <Video className="h-4 w-4 text-blue-500" />
+                              <Video className="h-4 w-4 text-muted-foreground" />
                             ) : (
-                              <FileText className="h-4 w-4 text-gray-400" />
+                              <FileText className="h-4 w-4 text-muted-foreground" />
                             )}
                             <span className="text-sm">{lesson.title}</span>
                             {lesson.durationSeconds && (
-                              <span className="text-xs text-gray-400">
-                                {Math.floor(lesson.durationSeconds / 60)} წთ
+                              <span className="text-xs text-muted-foreground">
+                                {Math.floor(lesson.durationSeconds / 60)} min
                               </span>
                             )}
                             {lesson.attachments.length > 0 && (
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-muted-foreground">
                                 📎 {lesson.attachments.length}
                               </span>
                             )}
@@ -613,13 +613,13 @@ export default function EditCoursePage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-orange-600"
+                      className="text-primary"
                       onClick={() =>
                         startAddLesson(section.id, section.lessons.length)
                       }
                     >
                       <Plus className="mr-1 h-3 w-3" />
-                      გაკვეთილის დამატება
+                      Add Lesson
                     </Button>
                   )}
                 </div>
@@ -629,8 +629,8 @@ export default function EditCoursePage() {
         ))}
 
         {sections.length === 0 && !showNewSection && (
-          <p className="py-4 text-center text-sm text-gray-500">
-            სექციები ჯერ არ არის. დაამატეთ პირველი სექცია.
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            No sections yet. Add your first section.
           </p>
         )}
       </div>
@@ -676,28 +676,28 @@ function LessonForm({
   isEditing?: boolean;
 }) {
   return (
-    <div className="space-y-3 rounded-md border border-dashed border-orange-300 bg-orange-50/30 p-3">
+    <div className="space-y-3 rounded-md border border-dashed border-primary/50 bg-secondary/30 p-3">
       <div>
-        <label className="text-xs font-medium">სათაური *</label>
+        <label className="text-xs font-medium">Title *</label>
         <Input
           value={lessonTitle}
           onChange={(e) => setLessonTitle(e.target.value)}
-          placeholder="გაკვეთილის სათაური"
+          placeholder="Lesson title"
           autoFocus
         />
       </div>
       <div>
-        <label className="text-xs font-medium">აღწერა</label>
+        <label className="text-xs font-medium">Description</label>
         <textarea
           value={lessonDesc}
           onChange={(e) => setLessonDesc(e.target.value)}
-          placeholder="მოკლე აღწერა..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          placeholder="Short description..."
+          className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
           rows={2}
         />
       </div>
       <div>
-        <label className="text-xs font-medium">ვიდეოს URL (YouTube / Vimeo)</label>
+        <label className="text-xs font-medium">Video URL (YouTube / Vimeo)</label>
         <Input
           value={lessonVideoUrl}
           onChange={(e) => setLessonVideoUrl(e.target.value)}
@@ -705,18 +705,18 @@ function LessonForm({
         />
       </div>
       <div>
-        <label className="text-xs font-medium">კონტენტი (Markdown)</label>
+        <label className="text-xs font-medium">Content (Markdown)</label>
         <textarea
           value={lessonContent}
           onChange={(e) => setLessonContent(e.target.value)}
-          placeholder="გაკვეთილის შინაარსი Markdown ფორმატში..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          placeholder="Lesson content in Markdown format..."
+          className="w-full rounded-md border border-border px-3 py-2 text-sm font-mono focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
           rows={4}
         />
       </div>
       <div className="flex gap-3">
         <div>
-          <label className="text-xs font-medium">ხანგრძლივობა (წამ)</label>
+          <label className="text-xs font-medium">Duration (seconds)</label>
           <Input
             type="number"
             value={lessonDuration}
@@ -725,7 +725,7 @@ function LessonForm({
           />
         </div>
         <div>
-          <label className="text-xs font-medium">თანმიმდევრობა</label>
+          <label className="text-xs font-medium">Sort Order</label>
           <Input
             type="number"
             value={lessonSortOrder}

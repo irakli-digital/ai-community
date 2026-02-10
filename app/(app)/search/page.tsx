@@ -8,14 +8,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LevelBadge } from '@/components/members/level-badge';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
-import { ka } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 
 type SearchTab = 'posts' | 'courses' | 'members';
 
 const tabs: { key: SearchTab; label: string }[] = [
-  { key: 'posts', label: 'პოსტები' },
-  { key: 'courses', label: 'კურსები' },
-  { key: 'members', label: 'წევრები' },
+  { key: 'posts', label: 'Posts' },
+  { key: 'courses', label: 'Courses' },
+  { key: 'members', label: 'Members' },
 ];
 
 function SearchPageInner() {
@@ -77,35 +77,35 @@ function SearchPageInner() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">ძიება</h1>
+      <h1 className="text-2xl font-bold text-foreground">Search</h1>
 
       {/* Search input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="მოძებნეთ პოსტები, კურსები, წევრები..."
-          className="w-full rounded-lg border border-gray-200 bg-white pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-orange-300 focus:ring-2 focus:ring-orange-100"
+          placeholder="Search posts, courses, members..."
+          className="w-full rounded-lg border border-border bg-card pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
           autoFocus
         />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-border">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2.5 text-sm font-medium transition-colors ${
               activeTab === tab.key
-                ? 'border-b-2 border-orange-500 text-orange-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
             {activeTab === tab.key && total > 0 && (
-              <span className="ml-1.5 text-xs text-gray-400">({total})</span>
+              <span className="ml-1.5 text-xs text-muted-foreground">({total})</span>
             )}
           </button>
         ))}
@@ -114,8 +114,8 @@ function SearchPageInner() {
       {/* Results */}
       <div className="space-y-1">
         {query && !loading && results.length === 0 && (
-          <p className="py-12 text-center text-gray-500">
-            &ldquo;{query}&rdquo; — შედეგები ვერ მოიძებნა
+          <p className="py-12 text-center text-muted-foreground">
+            &ldquo;{query}&rdquo; — No results found
           </p>
         )}
 
@@ -125,7 +125,7 @@ function SearchPageInner() {
             <Link
               key={post.id}
               href={`/community/${post.id}`}
-              className="flex items-start gap-3 rounded-lg border border-gray-100 bg-white px-4 py-3 hover:border-orange-200 transition-colors"
+              className="flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:border-primary/50 transition-colors"
             >
               <Avatar className="h-9 w-9 flex-shrink-0 mt-0.5">
                 <AvatarImage src={post.authorAvatar || undefined} />
@@ -134,11 +134,11 @@ function SearchPageInner() {
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-900">{post.title}</p>
-                <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                <p className="text-sm font-semibold text-foreground">{post.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
                   {post.content?.slice(0, 200)}
                 </p>
-                <div className="mt-1.5 flex items-center gap-3 text-xs text-gray-400">
+                <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
                   <span>{post.authorName}</span>
                   <span>❤️ {post.likesCount}</span>
                   <span>💬 {post.commentsCount}</span>
@@ -146,7 +146,7 @@ function SearchPageInner() {
                     <span>
                       {formatDistanceToNow(new Date(post.createdAt), {
                         addSuffix: true,
-                        locale: ka,
+                        locale: enUS,
                       })}
                     </span>
                   )}
@@ -161,7 +161,7 @@ function SearchPageInner() {
             <Link
               key={course.id}
               href={`/classroom/${course.slug}`}
-              className="flex items-center gap-4 rounded-lg border border-gray-100 bg-white px-4 py-3 hover:border-orange-200 transition-colors"
+              className="flex items-center gap-4 rounded-lg border border-border bg-card px-4 py-3 hover:border-primary/50 transition-colors"
             >
               {course.thumbnailUrl ? (
                 <img
@@ -170,24 +170,24 @@ function SearchPageInner() {
                   className="h-14 w-20 rounded-lg object-cover flex-shrink-0"
                 />
               ) : (
-                <div className="h-14 w-20 rounded-lg bg-gray-100 flex-shrink-0" />
+                <div className="h-14 w-20 rounded-lg bg-secondary flex-shrink-0" />
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className="text-sm font-semibold text-foreground truncate">
                     {course.title}
                   </p>
                   {course.isPaid && (
-                    <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded flex-shrink-0">
-                      ფასიანი
+                    <span className="text-xs font-medium text-primary bg-secondary px-2 py-0.5 rounded flex-shrink-0">
+                      Paid
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-gray-500 line-clamp-1">
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
                   {course.description?.slice(0, 150)}
                 </p>
-                <p className="mt-1 text-xs text-gray-400">
-                  {course.totalLessons} გაკვეთილი
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {course.totalLessons} lessons
                 </p>
               </div>
             </Link>
@@ -199,7 +199,7 @@ function SearchPageInner() {
             <Link
               key={member.id}
               href={`/members/${member.id}`}
-              className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white px-4 py-3 hover:border-orange-200 transition-colors"
+              className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:border-primary/50 transition-colors"
             >
               <Avatar className="h-10 w-10 flex-shrink-0">
                 <AvatarImage src={member.avatarUrl || undefined} />
@@ -209,12 +209,12 @@ function SearchPageInner() {
               </Avatar>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-gray-900">
-                    {member.name || 'უსახელო'}
+                  <p className="text-sm font-semibold text-foreground">
+                    {member.name || 'Unnamed'}
                   </p>
                   <LevelBadge level={member.level} />
                 </div>
-                <p className="text-xs text-gray-500">{member.points} ქულა</p>
+                <p className="text-xs text-muted-foreground">{member.points} points</p>
               </div>
             </Link>
           ))}
@@ -231,7 +231,7 @@ function SearchPageInner() {
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}
-            {loading ? 'იტვირთება...' : 'მეტის ჩატვირთვა'}
+            {loading ? 'Loading...' : 'Load more'}
           </Button>
         </div>
       )}
@@ -243,7 +243,7 @@ export default function SearchPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     }>
       <SearchPageInner />

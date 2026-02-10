@@ -71,7 +71,7 @@ export function validatedActionWithAdmin<S extends z.ZodType<any, any>, T>(
     }
 
     if (user.role !== 'admin') {
-      return { error: 'წვდომა აკრძალულია.' }; // Access denied
+      return { error: 'Access denied.' };
     }
 
     const result = schema.safeParse(Object.fromEntries(formData));
@@ -102,7 +102,7 @@ export function validatedActionWithPaidUser<S extends z.ZodType<any, any>, T>(
 
     const paid = await isPaidUser(user.id);
     if (!paid && user.role !== 'admin') {
-      return { error: 'ეს ფუნქცია მხოლოდ ფასიანი გეგმის მომხმარებლებისთვისაა.' };
+      return { error: 'This feature is only available for paid plan users.' };
     }
 
     const result = schema.safeParse(Object.fromEntries(formData));

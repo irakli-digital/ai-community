@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
-import { ka } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import useSWR, { mutate } from 'swr';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -96,8 +96,8 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Bell className="h-6 w-6 text-orange-600" />
-          <h1 className="text-2xl font-bold text-gray-900">შეტყობინებები</h1>
+          <Bell className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
         </div>
         {unreadCount > 0 && (
           <Button
@@ -107,23 +107,23 @@ export default function NotificationsPage() {
             className="flex items-center gap-2"
           >
             <CheckCheck className="h-4 w-4" />
-            ყველას წაკითხვა
+            Mark all as read
           </Button>
         )}
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+      <div className="rounded-lg border border-border bg-card divide-y divide-border">
         {allNotifications.length === 0 && !loading && (
-          <p className="px-4 py-12 text-center text-gray-500">
-            შეტყობინებები ცარიელია
+          <p className="px-4 py-12 text-center text-muted-foreground">
+            No notifications
           </p>
         )}
 
         {allNotifications.map((notif) => {
           const content = (
             <div
-              className={`flex items-start gap-3 px-4 py-4 transition-colors hover:bg-gray-50 ${
-                !notif.isRead ? 'bg-orange-50/30' : ''
+              className={`flex items-start gap-3 px-4 py-4 transition-colors hover:bg-accent ${
+                !notif.isRead ? 'bg-primary/5' : ''
               }`}
               onClick={() => {
                 if (!notif.isRead) markAsRead(notif.id);
@@ -144,20 +144,20 @@ export default function NotificationsPage() {
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm leading-snug ${
-                    !notif.isRead ? 'font-medium text-gray-900' : 'text-gray-600'
+                    !notif.isRead ? 'font-medium text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   {notif.title}
                 </p>
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(notif.createdAt), {
                     addSuffix: true,
-                    locale: ka,
+                    locale: enUS,
                   })}
                 </p>
               </div>
               {!notif.isRead && (
-                <span className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-orange-500" />
+                <span className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-primary" />
               )}
             </div>
           );
@@ -184,7 +184,7 @@ export default function NotificationsPage() {
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}
-            {loading ? 'იტვირთება...' : 'მეტის ჩატვირთვა'}
+            {loading ? 'Loading...' : 'Load more'}
           </Button>
         </div>
       )}

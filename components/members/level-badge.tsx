@@ -1,15 +1,15 @@
 import { cn } from '@/lib/utils';
 
 const LEVEL_COLORS: Record<number, { bg: string; text: string; border: string }> = {
-  1: { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200' },
-  2: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
-  3: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
-  4: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' },
-  5: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200' },
-  6: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' },
-  7: { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-200' },
-  8: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200' },
-  9: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-300' },
+  1: { bg: 'bg-secondary', text: 'text-muted-foreground', border: 'border-border' },
+  2: { bg: 'bg-secondary', text: 'text-muted-foreground', border: 'border-border' },
+  3: { bg: 'bg-secondary', text: 'text-foreground', border: 'border-border' },
+  4: { bg: 'bg-secondary', text: 'text-foreground', border: 'border-border' },
+  5: { bg: 'bg-accent', text: 'text-foreground', border: 'border-border' },
+  6: { bg: 'bg-accent', text: 'text-foreground', border: 'border-border' },
+  7: { bg: 'bg-accent', text: 'text-foreground', border: 'border-primary/30' },
+  8: { bg: 'bg-accent', text: 'text-primary', border: 'border-primary/50' },
+  9: { bg: 'bg-primary', text: 'text-primary-foreground', border: 'border-primary' },
 };
 
 const LEVEL_ICONS: Record<number, string> = {

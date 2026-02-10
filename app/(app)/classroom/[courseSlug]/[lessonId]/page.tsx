@@ -26,19 +26,19 @@ export default async function LessonPage({
   if (!access.hasAccess && access.isPaidCourse) {
     return (
       <div className="mx-auto max-w-lg py-12 text-center">
-        <Lock className="mx-auto h-12 w-12 text-amber-500" />
-        <h1 className="mt-4 text-2xl font-bold text-gray-900">
+        <Lock className="mx-auto h-12 w-12 text-muted-foreground" />
+        <h1 className="mt-4 text-2xl font-bold text-foreground">
           {course.title}
         </h1>
-        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <p className="font-medium text-amber-800">
-            ეს ფასიანი კურსია. კურსზე წვდომისთვის გამოიწერეთ ფასიანი გეგმა.
+        <div className="mt-6 rounded-lg border border-border bg-secondary p-4">
+          <p className="font-medium text-foreground">
+            This is a paid course. Subscribe to a paid plan to access this course.
           </p>
           <Link
             href="/settings/billing"
-            className="mt-3 inline-block rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+            className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
           >
-            გამოწერა
+            Subscribe
           </Link>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default async function LessonPage({
       <div className="mb-4 space-y-2">
         <Link
           href={`/classroom/${courseSlug}`}
-          className="text-sm text-orange-600 hover:text-orange-700"
+          className="text-sm text-primary hover:text-primary/80"
         >
           ← {course.title}
         </Link>
@@ -71,7 +71,7 @@ export default async function LessonPage({
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Sidebar */}
         <div className="order-2 w-full shrink-0 lg:order-1 lg:w-72">
-          <div className="sticky top-20 rounded-lg border border-gray-200 bg-white p-3">
+          <div className="sticky top-20 rounded-lg border border-border bg-card p-3">
             <LessonSidebar
               sections={sections}
               courseSlug={courseSlug}

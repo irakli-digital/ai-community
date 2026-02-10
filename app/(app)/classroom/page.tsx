@@ -4,11 +4,11 @@ import { getPublishedCourses } from './actions';
 import { CourseCard } from '@/components/classroom/course-card';
 
 export const metadata: Metadata = {
-  title: 'კლასრუმი — AI წრე',
-  description: 'AI წრის კურსები — ისწავლე ხელოვნური ინტელექტი და ავტომატიზაცია.',
+  title: 'Classroom — AI Circle',
+  description: 'AI Circle courses — learn artificial intelligence and automation.',
   openGraph: {
-    title: 'კლასრუმი — AI წრე',
-    description: 'AI წრის კურსები — ისწავლე ხელოვნური ინტელექტი და ავტომატიზაცია.',
+    title: 'Classroom — AI Circle',
+    description: 'AI Circle courses — learn artificial intelligence and automation.',
     type: 'website',
   },
 };
@@ -18,11 +18,11 @@ export default async function ClassroomPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{t('nav.classroom')}</h1>
+      <h1 className="text-2xl font-bold text-foreground">{t('nav.classroom')}</h1>
 
       {courses.length === 0 ? (
-        <p className="py-8 text-center text-gray-500">
-          კურსები ჯერ არ არის.
+        <p className="py-8 text-center text-muted-foreground">
+          No courses available yet.
         </p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'ლიდერბორდი — AI წრე',
-  description: 'AI წრის ლიდერბორდი — ნახე ყველაზე აქტიური წევრები.',
+  title: 'Leaderboard — AI Circle',
+  description: 'AI Circle leaderboard — see the most active members.',
   openGraph: {
-    title: 'ლიდერბორდი — AI წრე',
-    description: 'AI წრის ლიდერბორდი.',
+    title: 'Leaderboard — AI Circle',
+    description: 'AI Circle leaderboard.',
     type: 'website',
   },
 };

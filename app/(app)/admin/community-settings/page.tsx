@@ -19,7 +19,7 @@ export default async function CommunitySettingsPage() {
         coverImageUrl: settings.coverImageUrl || '',
       } : {
         id: 0,
-        name: 'AI წრე',
+        name: 'AI Circle',
         description: '',
         aboutContent: '',
         logoUrl: '',

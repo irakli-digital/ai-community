@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LevelBadge } from '@/components/members/level-badge';
 import { changeUserRole } from './actions';
 import { formatDistanceToNow } from 'date-fns';
-import { ka } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import Link from 'next/link';
 
 type Member = {
@@ -30,7 +30,7 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
   const [changingRole, setChangingRole] = useState<number | null>(null);
 
   const filtered = members.filter((m) => {
-    const matchesSearch = !search || 
+    const matchesSearch = !search ||
       (m.name?.toLowerCase().includes(search.toLowerCase()) ||
        m.email.toLowerCase().includes(search.toLowerCase()));
     const matchesRole = roleFilter === 'all' || m.role === roleFilter;
@@ -45,7 +45,7 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
         prev.map((m) => (m.id === userId ? { ...m, role: newRole } : m))
       );
     } catch (err) {
-      alert('როლის შეცვლა ვერ მოხერხდა');
+      alert('Failed to change role');
     }
     setChangingRole(null);
   }
@@ -53,24 +53,24 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
   function getRoleIcon(role: string) {
     switch (role) {
       case 'admin':
-        return <Crown className="h-3.5 w-3.5 text-yellow-600" />;
+        return <Crown className="h-3.5 w-3.5 text-foreground" />;
       case 'moderator':
-        return <Shield className="h-3.5 w-3.5 text-blue-600" />;
+        return <Shield className="h-3.5 w-3.5 text-muted-foreground" />;
       default:
-        return <UserIcon className="h-3.5 w-3.5 text-gray-400" />;
+        return <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />;
     }
   }
 
   function getRoleBadge(role: string) {
     const colors: Record<string, string> = {
-      admin: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-      moderator: 'bg-blue-50 text-blue-700 border-blue-200',
-      member: 'bg-gray-50 text-gray-600 border-gray-200',
+      admin: 'bg-primary text-primary-foreground border-primary',
+      moderator: 'bg-accent text-foreground border-border',
+      member: 'bg-secondary text-muted-foreground border-border',
     };
     const labels: Record<string, string> = {
-      admin: 'ადმინი',
-      moderator: 'მოდერატორი',
-      member: 'წევრი',
+      admin: 'Admin',
+      moderator: 'Moderator',
+      member: 'Member',
     };
     return (
       <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${colors[role] || colors.member}`}>
@@ -84,62 +84,62 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
     if (status === 'active') {
       return (
         <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
-          ფასიანი
+          Paid
         </span>
       );
     }
     return (
-      <span className="text-xs text-gray-400">უფასო</span>
+      <span className="text-xs text-muted-foreground">Free</span>
     );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Users className="h-6 w-6 text-orange-600" />
-        <h1 className="text-2xl font-bold text-gray-900">წევრების მართვა</h1>
-        <span className="text-sm text-gray-500">({members.length})</span>
+        <Users className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold text-foreground">Manage Members</h1>
+        <span className="text-sm text-muted-foreground">({members.length})</span>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="მოძებნეთ სახელით ან ელფოსტით..."
-            className="w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 py-2 text-sm outline-none focus:border-orange-300"
+            placeholder="Search by name or email..."
+            className="w-full rounded-lg border border-border bg-card pl-9 pr-3 py-2 text-sm outline-none focus:border-ring"
           />
         </div>
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-300"
+          className="rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
         >
-          <option value="all">ყველა როლი</option>
-          <option value="admin">ადმინი</option>
-          <option value="moderator">მოდერატორი</option>
-          <option value="member">წევრი</option>
+          <option value="all">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="moderator">Moderator</option>
+          <option value="member">Member</option>
         </select>
       </div>
 
       {/* Members table */}
-      <div className="rounded-lg border border-gray-200 bg-white overflow-x-auto">
+      <div className="rounded-lg border border-border bg-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="text-left px-4 py-3 font-medium text-gray-600">წევრი</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">როლი</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">გეგმა</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">ქულები</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">გაწევრიანდა</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">მოქმედება</th>
+            <tr className="border-b border-border bg-background/50">
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Member</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Role</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Plan</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Points</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Joined</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border">
             {filtered.map((member) => (
-              <tr key={member.id} className="hover:bg-gray-50/50">
+              <tr key={member.id} className="hover:bg-accent/50">
                 <td className="px-4 py-3">
                   <Link href={`/members/${member.id}`} className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
@@ -149,10 +149,10 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 truncate">
-                        {member.name || 'უსახელო'}
+                      <p className="font-medium text-foreground truncate">
+                        {member.name || 'Unnamed'}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">{member.email}</p>
+                      <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                     </div>
                   </Link>
                 </td>
@@ -161,13 +161,13 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
                     <LevelBadge level={member.level} />
-                    <span className="text-gray-600">{member.points}</span>
+                    <span className="text-muted-foreground">{member.points}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                   {formatDistanceToNow(new Date(member.createdAt), {
                     addSuffix: true,
-                    locale: ka,
+                    locale: enUS,
                   })}
                 </td>
                 <td className="px-4 py-3">
@@ -175,11 +175,11 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
                     value={member.role}
                     onChange={(e) => handleRoleChange(member.id, e.target.value)}
                     disabled={changingRole === member.id}
-                    className="rounded border border-gray-200 bg-white px-2 py-1 text-xs outline-none focus:border-orange-300 disabled:opacity-50"
+                    className="rounded border border-border bg-card px-2 py-1 text-xs outline-none focus:border-ring disabled:opacity-50"
                   >
-                    <option value="member">წევრი</option>
-                    <option value="moderator">მოდერატორი</option>
-                    <option value="admin">ადმინი</option>
+                    <option value="member">Member</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="admin">Admin</option>
                   </select>
                 </td>
               </tr>
@@ -188,7 +188,7 @@ export function AdminMembersClient({ members: initialMembers }: { members: Membe
         </table>
 
         {filtered.length === 0 && (
-          <p className="px-4 py-8 text-center text-gray-500">წევრები ვერ მოიძებნა</p>
+          <p className="px-4 py-8 text-center text-muted-foreground">No members found</p>
         )}
       </div>
     </div>

@@ -9,16 +9,16 @@ import { revalidatePath } from 'next/cache';
 export async function changeUserRole(userId: number, newRole: string) {
   const currentUser = await getUser();
   if (!currentUser || currentUser.role !== 'admin') {
-    throw new Error('წვდომა აკრძალულია.');
+    throw new Error('Access denied.');
   }
 
   if (!['admin', 'moderator', 'member'].includes(newRole)) {
-    throw new Error('არასწორი როლი.');
+    throw new Error('Invalid role.');
   }
 
   // Prevent changing own role (safety)
   if (currentUser.id === userId) {
-    throw new Error('საკუთარი როლის შეცვლა შეუძლებელია.');
+    throw new Error('Cannot change your own role.');
   }
 
   await db

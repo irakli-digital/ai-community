@@ -20,8 +20,8 @@ export function VideoEmbed({ url }: { url: string }) {
   const parsed = parseVideoUrl(url);
   if (!parsed) {
     return (
-      <div className="flex aspect-video items-center justify-center rounded-lg bg-gray-100 text-sm text-gray-500">
-        ვიდეო მიუწვდომელია
+      <div className="flex aspect-video items-center justify-center rounded-lg bg-secondary text-sm text-muted-foreground">
+        Video unavailable
       </div>
     );
   }
@@ -38,7 +38,7 @@ export function VideoEmbed({ url }: { url: string }) {
         className="absolute inset-0 h-full w-full"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
-        title="ვიდეო"
+        title="Video"
       />
     </div>
   );

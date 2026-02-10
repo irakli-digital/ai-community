@@ -17,7 +17,7 @@ import { revalidatePath } from 'next/cache';
 async function requireAdmin() {
   const user = await getUser();
   if (!user) throw new Error('Unauthorized');
-  if (user.role !== 'admin') throw new Error('წვდომა აკრძალულია.');
+  if (user.role !== 'admin') throw new Error('Access denied.');
   return user;
 }
 
@@ -241,7 +241,7 @@ export async function updateSection(
     .where(eq(courseSections.id, data.id))
     .limit(1);
 
-  if (!section) throw new Error('სექცია ვერ მოიძებნა.');
+  if (!section) throw new Error('Section not found.');
 
   await db
     .update(courseSections)
@@ -265,7 +265,7 @@ export async function deleteSection(sectionId: number) {
     .where(eq(courseSections.id, sectionId))
     .limit(1);
 
-  if (!section) throw new Error('სექცია ვერ მოიძებნა.');
+  if (!section) throw new Error('Section not found.');
 
   await db.delete(courseSections).where(eq(courseSections.id, sectionId));
 
@@ -340,7 +340,7 @@ export async function updateLesson(
     .where(eq(lessons.id, data.id))
     .limit(1);
 
-  if (!lesson) throw new Error('გაკვეთილი ვერ მოიძებნა.');
+  if (!lesson) throw new Error('Lesson not found.');
 
   const provider = data.videoUrl ? detectVideoProvider(data.videoUrl) : null;
 
@@ -371,7 +371,7 @@ export async function deleteLesson(lessonId: number) {
     .where(eq(lessons.id, lessonId))
     .limit(1);
 
-  if (!lesson) throw new Error('გაკვეთილი ვერ მოიძებნა.');
+  if (!lesson) throw new Error('Lesson not found.');
 
   await db.delete(lessons).where(eq(lessons.id, lessonId));
   await recalcTotalLessons(lesson.courseId);

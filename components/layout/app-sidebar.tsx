@@ -56,7 +56,7 @@ export function AppSidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white border-r border-gray-200 transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-background border-r border-border transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -75,8 +75,8 @@ export function AppSidebar({
                   variant={isActive(item.href) ? 'secondary' : 'ghost'}
                   className={`w-full justify-start gap-3 ${
                     isActive(item.href)
-                      ? 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                   }`}
                 >
                   <item.icon className="h-5 w-5" />
@@ -91,8 +91,8 @@ export function AppSidebar({
                   variant={isActive('/admin') ? 'secondary' : 'ghost'}
                   className={`w-full justify-start gap-3 ${
                     isActive('/admin')
-                      ? 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                   }`}
                 >
                   <Shield className="h-5 w-5" />
@@ -102,15 +102,15 @@ export function AppSidebar({
             )}
           </div>
 
-          <div className="space-y-1 border-t border-gray-200 pt-4">
+          <div className="space-y-1 border-t border-border pt-4">
             {bottomItems.map((item) => (
               <Link key={item.href} href={item.href} onClick={onClose}>
                 <Button
                   variant={isActive(item.href) ? 'secondary' : 'ghost'}
                   className={`w-full justify-start gap-3 ${
                     isActive(item.href)
-                      ? 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                   }`}
                 >
                   <item.icon className="h-5 w-5" />

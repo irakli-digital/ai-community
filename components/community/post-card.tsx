@@ -5,7 +5,7 @@ import { Heart, MessageCircle, Pin } from 'lucide-react';
 import { t } from '@/lib/i18n/ka';
 import type { FeedPost } from '@/lib/db/community-queries';
 import { formatDistanceToNow } from 'date-fns';
-import { ka } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { LevelBadge } from '@/components/members/level-badge';
 
@@ -13,12 +13,13 @@ interface PostCardProps {
   post: FeedPost;
   onLike?: (postId: number, liked: boolean) => void;
   canLike?: boolean;
+  onClick?: (postId: number) => void;
 }
 
-export function PostCard({ post, onLike, canLike }: PostCardProps) {
+export function PostCard({ post, onLike, canLike, onClick }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
-    locale: ka,
+    locale: enUS,
   });
 
   const contentPreview =
@@ -27,12 +28,12 @@ export function PostCard({ post, onLike, canLike }: PostCardProps) {
       : post.content;
 
   return (
-    <div className="rounded-xl border bg-white p-5 transition-shadow hover:shadow-md">
+    <div className="rounded-lg border border-border bg-card p-5 transition-shadow hover:shadow-md">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           {/* Avatar */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-600">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
             {post.author.avatarUrl ? (
               <img
                 src={post.author.avatarUrl}
@@ -45,17 +46,17 @@ export function PostCard({ post, onLike, canLike }: PostCardProps) {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <Link href={`/members/${post.author.id}`} className="text-sm font-medium text-gray-900 hover:underline">
-                {post.author.name ?? 'მომხმარებელი'}
+              <Link href={`/members/${post.author.id}`} className="text-sm font-medium text-foreground hover:underline">
+                {post.author.name ?? 'User'}
               </Link>
               <LevelBadge level={post.author.level} size="sm" />
             </div>
-            <p className="text-xs text-gray-500">{timeAgo}</p>
+            <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {post.isPinned && (
-            <span className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+            <span className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-foreground">
               <Pin className="h-3 w-3" />
               {t('community.pinnedPost')}
             </span>
@@ -72,17 +73,25 @@ export function PostCard({ post, onLike, canLike }: PostCardProps) {
       </div>
 
       {/* Content */}
-      <Link href={`/community/${post.id}`}>
-        <h3 className="mt-3 text-lg font-semibold text-gray-900 hover:text-gray-700">
+      <Link
+        href={`/community/${post.id}`}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick(post.id);
+          }
+        }}
+      >
+        <h3 className="mt-3 text-lg font-semibold text-foreground hover:text-muted-foreground">
           {post.title}
         </h3>
-        <p className="mt-1 text-sm leading-relaxed text-gray-600">
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           {contentPreview}
         </p>
       </Link>
 
       {/* Footer */}
-      <div className="mt-4 flex items-center gap-4 border-t pt-3">
+      <div className="mt-4 flex items-center gap-4 border-t border-border pt-3">
         <button
           onClick={() => canLike && onLike?.(post.id, post.liked)}
           className={cn(
@@ -90,8 +99,8 @@ export function PostCard({ post, onLike, canLike }: PostCardProps) {
             post.liked
               ? 'text-red-500'
               : canLike
-                ? 'text-gray-500 hover:text-red-500'
-                : 'cursor-default text-gray-400'
+                ? 'text-muted-foreground hover:text-red-500'
+                : 'cursor-default text-muted-foreground'
           )}
           disabled={!canLike}
         >
@@ -102,7 +111,13 @@ export function PostCard({ post, onLike, canLike }: PostCardProps) {
         </button>
         <Link
           href={`/community/${post.id}`}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
+          onClick={(e) => {
+            if (onClick) {
+              e.preventDefault();
+              onClick(post.id);
+            }
+          }}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <MessageCircle className="h-4 w-4" />
           {post.commentsCount}

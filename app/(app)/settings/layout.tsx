@@ -17,7 +17,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('settings.title')}</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">{t('settings.title')}</h1>
       <div className="flex flex-col sm:flex-row gap-6">
         <nav className="flex sm:flex-col gap-1 sm:w-48 overflow-x-auto">
           {settingsNav.map((item) => (
@@ -26,8 +26,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 variant={pathname === item.href ? 'secondary' : 'ghost'}
                 className={`w-full justify-start gap-2 whitespace-nowrap ${
                   pathname === item.href
-                    ? 'bg-orange-50 text-orange-700'
-                    : 'text-gray-700'
+                    ? 'bg-secondary text-primary'
+                    : 'text-foreground'
                 }`}
               >
                 <item.icon className="h-4 w-4" />

@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache';
 async function requireAdmin() {
   const user = await getUser();
   if (!user) throw new Error('Unauthorized');
-  if (user.role !== 'admin') throw new Error('წვდომა აკრძალულია.');
+  if (user.role !== 'admin') throw new Error('Access denied.');
   return user;
 }
 

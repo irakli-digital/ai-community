@@ -43,38 +43,38 @@ export default function NewCoursePage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">ახალი კურსი</h1>
+        <h1 className="text-2xl font-bold text-foreground">New Course</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>კურსის ინფორმაცია</CardTitle>
+          <CardTitle>Course Information</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium">სათაური *</label>
+              <label className="text-sm font-medium">Title *</label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="კურსის სათაური"
+                placeholder="Course title"
                 required
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">აღწერა</label>
+              <label className="text-sm font-medium">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="კურსის აღწერა..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                placeholder="Course description..."
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
                 rows={4}
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">თამბნეილის URL</label>
+              <label className="text-sm font-medium">Thumbnail URL</label>
               <Input
                 value={thumbnailUrl}
                 onChange={(e) => setThumbnailUrl(e.target.value)}
@@ -89,14 +89,14 @@ export default function NewCoursePage() {
                   id="isPaid"
                   checked={isPaid}
                   onChange={(e) => setIsPaid(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
                 />
                 <label htmlFor="isPaid" className="text-sm font-medium">
-                  ფასიანი კურსი
+                  Paid course
                 </label>
               </div>
               <div>
-                <label className="text-sm font-medium">თანმიმდევრობა</label>
+                <label className="text-sm font-medium">Sort Order</label>
                 <Input
                   type="number"
                   value={sortOrder}

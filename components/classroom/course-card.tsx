@@ -18,9 +18,9 @@ export function CourseCard({ course }: { course: CourseWithProgress }) {
 
   return (
     <Link href={`/classroom/${course.slug}`}>
-      <div className="group overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-orange-300 hover:shadow-md">
+      <div className="group overflow-hidden rounded-lg border border-border bg-card transition-all hover:border-primary/50 hover:shadow-md">
         {/* Thumbnail */}
-        <div className="relative aspect-video bg-gray-100">
+        <div className="relative aspect-video bg-secondary">
           {course.thumbnailUrl ? (
             <Image
               src={course.thumbnailUrl}
@@ -32,31 +32,31 @@ export function CourseCard({ course }: { course: CourseWithProgress }) {
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <BookOpen className="h-12 w-12 text-gray-300" />
+              <BookOpen className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
           {course.isPaid && (
             <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded bg-amber-100/90 px-2 py-1 text-xs font-medium text-amber-800 backdrop-blur-sm">
               <Lock className="h-3 w-3" />
-              ფასიანი
+              Premium
             </span>
           )}
         </div>
 
         {/* Content */}
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 line-clamp-2">
+          <h3 className="font-semibold text-foreground group-hover:text-primary line-clamp-2">
             {course.title}
           </h3>
           {course.description && (
-            <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
               {course.description}
             </p>
           )}
-          <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
-            <span>{course.totalLessons} გაკვეთილი</span>
+          <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+            <span>{course.totalLessons} {course.totalLessons === 1 ? 'lesson' : 'lessons'}</span>
             {hasProgress && (
-              <span className="text-orange-600 font-medium">
+              <span className="text-primary font-medium">
                 {course.completedLessons}/{course.totalLessons}
               </span>
             )}
@@ -64,9 +64,9 @@ export function CourseCard({ course }: { course: CourseWithProgress }) {
 
           {/* Progress bar */}
           {hasProgress && (
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
-                className="h-full rounded-full bg-orange-500 transition-all"
+                className="h-full rounded-full bg-primary transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getUser();
     if (!user) {
-      return NextResponse.json({ error: 'არაავტორიზებული.' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     if (!fileName || !contentType || !contentLength) {
       return NextResponse.json(
-        { error: 'fileName, contentType, და contentLength აუცილებელია.' },
+        { error: 'fileName, contentType, and contentLength are required.' },
         { status: 400 }
       );
     }
@@ -33,14 +33,14 @@ export async function POST(request: NextRequest) {
     // Validate
     if (!ALLOWED_MIME_TYPES.includes(contentType)) {
       return NextResponse.json(
-        { error: `ფაილის ტიპი დაუშვებელია. დაშვებულია: ${ALLOWED_MIME_TYPES.join(', ')}` },
+        { error: `File type not allowed. Allowed types: ${ALLOWED_MIME_TYPES.join(', ')}` },
         { status: 400 }
       );
     }
 
     if (contentLength > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: 'ფაილი ძალიან დიდია. მაქსიმუმ 5MB.' },
+        { error: 'File is too large. Maximum 5MB.' },
         { status: 400 }
       );
     }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Upload error:', error);
     const message =
-      error instanceof Error ? error.message : 'ატვირთვის შეცდომა.';
+      error instanceof Error ? error.message : 'Upload error.';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

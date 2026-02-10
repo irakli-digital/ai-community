@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { t } from '@/lib/i18n/ka';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { ka } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import type { PostDetail, CommentWithAuthor } from '@/lib/db/community-queries';
 import { LevelBadge } from '@/components/members/level-badge';
 import {
@@ -59,7 +59,7 @@ function CommentItem({
 
   const timeAgo = formatDistanceToNow(new Date(comment.createdAt), {
     addSuffix: true,
-    locale: ka,
+    locale: enUS,
   });
 
   async function handleLikeComment() {
@@ -74,7 +74,7 @@ function CommentItem({
   }
 
   async function handleDeleteComment() {
-    if (!confirm('ნამდვილად გსურთ კომენტარის წაშლა?')) return;
+    if (!confirm('Are you sure you want to delete this comment?')) return;
     startTransition(async () => {
       await deleteComment(comment.id);
       router.refresh();
@@ -82,9 +82,9 @@ function CommentItem({
   }
 
   return (
-    <div className={cn('border-l-2 border-gray-100 pl-4', depth > 0 && 'ml-4')}>
+    <div className={cn('border-l-2 border-border pl-4', depth > 0 && 'ml-4')}>
       <div className="flex items-start gap-3 py-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
           {comment.author.avatarUrl ? (
             <img
               src={comment.author.avatarUrl}
@@ -97,13 +97,13 @@ function CommentItem({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <Link href={`/members/${comment.author.id}`} className="text-sm font-medium text-gray-900 hover:underline">
-              {comment.author.name ?? 'მომხმარებელი'}
+            <Link href={`/members/${comment.author.id}`} className="text-sm font-medium text-foreground hover:underline">
+              {comment.author.name ?? 'User'}
             </Link>
             <LevelBadge level={comment.author.level} size="sm" />
-            <span className="text-xs text-gray-400">{timeAgo}</span>
+            <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
-          <div className="mt-1 text-sm text-gray-700">
+          <div className="mt-1 text-sm text-foreground">
             <MarkdownContent content={comment.content} />
           </div>
           <div className="mt-2 flex items-center gap-3">
@@ -115,8 +115,8 @@ function CommentItem({
                 comment.liked
                   ? 'text-red-500'
                   : canLike
-                    ? 'text-gray-400 hover:text-red-500'
-                    : 'text-gray-300'
+                    ? 'text-muted-foreground hover:text-red-500'
+                    : 'text-muted-foreground/50'
               )}
             >
               <Heart
@@ -127,18 +127,18 @@ function CommentItem({
             {depth === 0 && userId && (
               <button
                 onClick={() => onReply(comment.id)}
-                className="text-xs text-gray-400 hover:text-gray-600"
+                className="text-xs text-muted-foreground hover:text-foreground"
               >
-                პასუხი
+                Reply
               </button>
             )}
             {canDelete && (
               <button
                 onClick={handleDeleteComment}
                 disabled={isPending}
-                className="text-xs text-gray-400 hover:text-red-500"
+                className="text-xs text-muted-foreground hover:text-destructive"
               >
-                წაშლა
+                Delete
               </button>
             )}
           </div>
@@ -189,7 +189,7 @@ export function PostDetailClient({
 
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
-    locale: ka,
+    locale: enUS,
   });
 
   async function handleLikePost() {
@@ -209,7 +209,7 @@ export function PostDetailClient({
   }
 
   async function handleDeletePost() {
-    if (!confirm('ნამდვილად გსურთ პოსტის წაშლა?')) return;
+    if (!confirm('Are you sure you want to delete this post?')) return;
     startTransition(async () => {
       await deletePost(post.id);
       router.push('/community');
@@ -254,11 +254,11 @@ export function PostDetailClient({
       </Link>
 
       {/* Post */}
-      <article className="rounded-xl border bg-white p-6">
+      <article className="rounded-lg border bg-card p-6">
         {/* Author header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-600">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
               {post.author.avatarUrl ? (
                 <img
                   src={post.author.avatarUrl}
@@ -271,12 +271,12 @@ export function PostDetailClient({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <Link href={`/members/${post.author.id}`} className="text-sm font-medium text-gray-900 hover:underline">
-                  {post.author.name ?? 'მომხმარებელი'}
+                <Link href={`/members/${post.author.id}`} className="text-sm font-medium text-foreground hover:underline">
+                  {post.author.name ?? 'User'}
                 </Link>
                 <LevelBadge level={post.author.level} size="sm" />
               </div>
-              <p className="text-xs text-gray-500">{timeAgo}</p>
+              <p className="text-xs text-muted-foreground">{timeAgo}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -298,10 +298,10 @@ export function PostDetailClient({
         </div>
 
         {/* Title */}
-        <h1 className="mt-4 text-2xl font-bold text-gray-900">{post.title}</h1>
+        <h1 className="mt-4 text-2xl font-bold text-foreground">{post.title}</h1>
 
         {/* Content (markdown) */}
-        <div className="mt-4 prose prose-sm max-w-none text-gray-700">
+        <div className="mt-4 prose prose-sm max-w-none text-foreground">
           <MarkdownContent content={post.content} />
         </div>
 
@@ -328,7 +328,7 @@ export function PostDetailClient({
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-gray-50"
+                className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-accent"
               >
                 {link.imageUrl && (
                   <img
@@ -339,13 +339,13 @@ export function PostDetailClient({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
-                    <p className="truncate text-sm font-medium text-gray-900">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {link.title || link.url}
                     </p>
-                    <ExternalLink className="h-3 w-3 shrink-0 text-gray-400" />
+                    <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
                   </div>
                   {link.description && (
-                    <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                       {link.description}
                     </p>
                   )}
@@ -366,14 +366,14 @@ export function PostDetailClient({
                 liked
                   ? 'text-red-500'
                   : canLike
-                    ? 'text-gray-500 hover:text-red-500'
-                    : 'cursor-default text-gray-400'
+                    ? 'text-muted-foreground hover:text-red-500'
+                    : 'cursor-default text-muted-foreground'
               )}
             >
               <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
               {likesCount}
             </button>
-            <span className="flex items-center gap-1.5 text-sm text-gray-500">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <MessageCircle className="h-4 w-4" />
               {post.commentsCount}
             </span>
@@ -389,12 +389,12 @@ export function PostDetailClient({
                 {post.isPinned ? (
                   <>
                     <PinOff className="h-4 w-4" />
-                    მოხსნა
+                    Unpin
                   </>
                 ) : (
                   <>
                     <Pin className="h-4 w-4" />
-                    მიმაგრება
+                    Pin
                   </>
                 )}
               </Button>
@@ -417,14 +417,14 @@ export function PostDetailClient({
 
       {/* Comment Form */}
       {userId && (
-        <form onSubmit={handleSubmitComment} className="rounded-xl border bg-white p-4">
+        <form onSubmit={handleSubmitComment} className="rounded-lg border bg-card p-4">
           {replyToId && (
-            <div className="mb-2 flex items-center gap-2 text-xs text-gray-500">
-              <span>პასუხობ კომენტარს</span>
+            <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Replying to comment</span>
               <button
                 type="button"
                 onClick={() => setReplyToId(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground hover:text-foreground"
               >
                 ✕
               </button>
@@ -434,9 +434,9 @@ export function PostDetailClient({
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="დაწერეთ კომენტარი..."
+              placeholder="Write a comment..."
               rows={2}
-              className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+              className="flex-1 rounded-md border border-border px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
             />
             <Button
               type="submit"
@@ -444,7 +444,7 @@ export function PostDetailClient({
               disabled={isPending || !commentText.trim()}
               className="self-end"
             >
-              {isPending ? '...' : 'გაგზავნა'}
+              {isPending ? '...' : 'Send'}
             </Button>
           </div>
         </form>
@@ -452,12 +452,12 @@ export function PostDetailClient({
 
       {/* Comments */}
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-gray-900">
-          კომენტარები ({post.commentsCount})
+        <h2 className="text-lg font-semibold text-foreground">
+          Comments ({post.commentsCount})
         </h2>
         {initialComments.length === 0 ? (
-          <p className="py-4 text-sm text-gray-500">
-            ჯერ კომენტარები არ არის.
+          <p className="py-4 text-sm text-muted-foreground">
+            No comments yet.
           </p>
         ) : (
           initialComments.map((comment) => (

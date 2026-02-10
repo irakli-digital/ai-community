@@ -93,7 +93,7 @@ export function LessonContent({
 
       {/* Title & completion */}
       <div className="flex items-start justify-between gap-4">
-        <h2 className="text-xl font-bold text-gray-900">{lesson.title}</h2>
+        <h2 className="text-xl font-bold text-foreground">{lesson.title}</h2>
         <Button
           variant={completed ? 'default' : 'ghost'}
           size="sm"
@@ -102,18 +102,18 @@ export function LessonContent({
           className={
             completed
               ? 'bg-green-600 hover:bg-green-700 text-white'
-              : 'border border-gray-300'
+              : 'border border-border'
           }
         >
           {completed ? (
             <>
               <CheckCircle2 className="mr-1 h-4 w-4" />
-              დასრულებული
+              Completed
             </>
           ) : (
             <>
               <Circle className="mr-1 h-4 w-4" />
-              დასრულებულად მონიშვნა
+              Mark as complete
             </>
           )}
         </Button>
@@ -121,12 +121,12 @@ export function LessonContent({
 
       {/* Description */}
       {lesson.description && (
-        <p className="text-gray-600">{lesson.description}</p>
+        <p className="text-muted-foreground">{lesson.description}</p>
       )}
 
       {/* Markdown content */}
       {lesson.content && (
-        <div className="prose prose-gray max-w-none">
+        <div className="prose prose-invert max-w-none">
           <ReactMarkdown>{lesson.content}</ReactMarkdown>
         </div>
       )}
@@ -134,8 +134,8 @@ export function LessonContent({
       {/* Attachments */}
       {lesson.attachments.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-700">
-            თანდართული ფაილები
+          <h3 className="text-sm font-semibold text-foreground">
+            Attachments
           </h3>
           <div className="space-y-1">
             {lesson.attachments.map((attachment) => {
@@ -143,13 +143,13 @@ export function LessonContent({
               return (
                 <div
                   key={attachment.id}
-                  className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2"
+                  className="flex items-center justify-between rounded-md border border-border bg-secondary px-3 py-2"
                 >
                   <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-gray-400" />
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{attachment.fileName}</span>
                     {attachment.fileSizeBytes && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-muted-foreground">
                         ({formatBytes(attachment.fileSizeBytes)})
                       </span>
                     )}
@@ -159,15 +159,15 @@ export function LessonContent({
                       href={attachment.fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700"
+                      className="flex items-center gap-1 text-sm text-primary hover:text-primary/80"
                     >
                       <Download className="h-4 w-4" />
-                      ჩამოტვირთვა
+                      Download
                     </a>
                   ) : (
-                    <span className="flex items-center gap-1 text-xs text-gray-400">
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Lock className="h-3 w-3" />
-                      ფასიანი
+                      Premium
                     </span>
                   )}
                 </div>
@@ -178,12 +178,12 @@ export function LessonContent({
       )}
 
       {/* Navigation */}
-      <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+      <div className="flex items-center justify-between border-t border-border pt-4">
         {prevLessonId ? (
           <Link href={`/classroom/${courseSlug}/${prevLessonId}`}>
             <Button variant="ghost" size="sm">
               <ChevronLeft className="mr-1 h-4 w-4" />
-              წინა გაკვეთილი
+              Previous lesson
             </Button>
           </Link>
         ) : (
@@ -192,7 +192,7 @@ export function LessonContent({
         {nextLessonId ? (
           <Link href={`/classroom/${courseSlug}/${nextLessonId}`}>
             <Button variant="ghost" size="sm">
-              შემდეგი გაკვეთილი
+              Next lesson
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </Link>

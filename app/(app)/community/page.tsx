@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getUser, isPaidUser } from '@/lib/db/queries';
+import { getUser, isPaidUser, getCommunitySettings, getMemberCount, getOnlineMemberCount } from '@/lib/db/queries';
 import { getCategories } from '@/app/(app)/admin/categories/actions';
 import {
   getFeedPosts,
@@ -8,11 +8,11 @@ import {
 import { CommunityFeed } from './feed-client';
 
 export const metadata: Metadata = {
-  title: 'თემი — AI წრე',
-  description: 'AI წრის საზოგადოების ფიდი — პოსტები, დისკუსიები და რესურსები.',
+  title: 'Community — AI Circle',
+  description: 'AI Circle community feed — posts, discussions, and resources.',
   openGraph: {
-    title: 'თემი — AI წრე',
-    description: 'AI წრის საზოგადოების ფიდი — პოსტები, დისკუსიები და რესურსები.',
+    title: 'Community — AI Circle',
+    description: 'AI Circle community feed — posts, discussions, and resources.',
     type: 'website',
   },
 };
@@ -31,16 +31,14 @@ export default async function CommunityPage({
   const canCreate = paid || user?.role === 'admin';
   const canLike = paid || user?.role === 'admin';
 
-  const pinnedPosts = await getPinnedPosts({
-    categoryId,
-    userId: user?.id,
-  });
-
-  const { posts, nextCursor } = await getFeedPosts({
-    categoryId,
-    userId: user?.id,
-    limit: 20,
-  });
+  const [pinnedPosts, { posts, nextCursor }, communitySettings, memberCount, onlineCount] =
+    await Promise.all([
+      getPinnedPosts({ categoryId, userId: user?.id }),
+      getFeedPosts({ categoryId, userId: user?.id, limit: 20 }),
+      getCommunitySettings(),
+      getMemberCount(),
+      getOnlineMemberCount(),
+    ]);
 
   // Filter out pinned from main feed to avoid duplicates
   const pinnedIds = new Set(pinnedPosts.map((p) => p.id));
@@ -56,6 +54,12 @@ export default async function CommunityPage({
       canCreate={canCreate ?? false}
       canLike={canLike ?? false}
       userId={user?.id ?? null}
+      userRole={user?.role ?? 'member'}
+      communityName={communitySettings?.name ?? 'AI Circle'}
+      communityDescription={communitySettings?.description ?? null}
+      communityLogoUrl={communitySettings?.logoUrl ?? null}
+      memberCount={memberCount}
+      onlineCount={onlineCount}
     />
   );
 }

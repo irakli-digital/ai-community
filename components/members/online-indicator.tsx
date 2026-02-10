@@ -24,12 +24,12 @@ export function OnlineIndicator({
   return (
     <span
       className={cn(
-        'block rounded-full bg-green-500 ring-2 ring-white',
+        'block rounded-full bg-green-500 ring-2 ring-background',
         size === 'sm' && 'h-2.5 w-2.5',
         size === 'md' && 'h-3 w-3',
         className
       )}
-      title="ონლაინ"
+      title="Online"
     />
   );
 }

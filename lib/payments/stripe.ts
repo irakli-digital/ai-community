@@ -91,7 +91,7 @@ export async function createCustomerPortalSession(user: User) {
 
     configuration = await stripe.billingPortal.configurations.create({
       business_profile: {
-        headline: 'გამოწერის მართვა', // Manage your subscription
+        headline: 'Manage your subscription',
       },
       features: {
         subscription_update: {
@@ -174,7 +174,7 @@ export async function handleSubscriptionChange(
     // Send cancellation email
     const periodEndTimestamp = item?.current_period_end;
     const periodEnd = periodEndTimestamp
-      ? new Date(periodEndTimestamp * 1000).toLocaleDateString('ka-GE')
+      ? new Date(periodEndTimestamp * 1000).toLocaleDateString('en-US')
       : undefined;
     const template = subscriptionCancellationEmail({
       name: user.name || undefined,

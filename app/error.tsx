@@ -24,24 +24,24 @@ export default function Error({
             <AlertTriangle className="h-8 w-8 text-red-600" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          რაღაც შეცდომა მოხდა
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">
+          Something went wrong
         </h1>
-        <p className="text-base text-gray-500">
-          გვერდის ჩატვირთვისას შეცდომა მოხდა. გთხოვთ, სცადოთ თავიდან.
+        <p className="text-base text-muted-foreground">
+          An error occurred while loading the page. Please try again.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             onClick={reset}
-            className="bg-orange-500 hover:bg-orange-600 rounded-full gap-2"
+            className="bg-primary hover:bg-primary/90 rounded-md gap-2"
           >
             <RefreshCw className="h-4 w-4" />
-            თავიდან ცდა
+            Try Again
           </Button>
-          <Button variant="outline" asChild className="rounded-full gap-2">
+          <Button variant="outline" asChild className="rounded-md gap-2">
             <Link href="/">
               <Home className="h-4 w-4" />
-              მთავარ გვერდზე დაბრუნება
+              Back to Home
             </Link>
           </Button>
         </div>

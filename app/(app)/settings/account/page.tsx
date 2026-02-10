@@ -91,7 +91,7 @@ export default function AccountSettingsPage() {
             )}
             <Button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
               disabled={isPasswordPending}
             >
               {isPasswordPending ? (
@@ -115,7 +115,7 @@ export default function AccountSettingsPage() {
           <CardTitle>{t('settings.deleteAccount')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             {t('settings.deleteWarning')}
           </p>
           <form action={deleteAction} className="space-y-4">

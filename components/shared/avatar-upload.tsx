@@ -74,7 +74,7 @@ export function AvatarUpload({ currentUrl, fallback, onUpload }: AvatarUploadPro
       // 3. Notify parent
       await onUpload(publicUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'ატვირთვის შეცდომა');
+      setError(err instanceof Error ? err.message : 'Upload error');
       setPreviewUrl(null);
     } finally {
       setUploading(false);
@@ -88,7 +88,7 @@ export function AvatarUpload({ currentUrl, fallback, onUpload }: AvatarUploadPro
       <div className="relative">
         <Avatar className="h-20 w-20">
           <AvatarImage src={displayUrl || undefined} />
-          <AvatarFallback className="bg-orange-100 text-orange-700 text-xl font-medium">
+          <AvatarFallback className="bg-secondary text-foreground text-xl font-medium">
             {fallback}
           </AvatarFallback>
         </Avatar>

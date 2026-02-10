@@ -7,8 +7,8 @@ async function createStripeProducts() {
   console.log('Creating Stripe products and prices...');
 
   const product = await stripe.products.create({
-    name: 'AI წრე — ფასიანი გეგმა',
-    description: 'სრული წვდომა ყველა ფუნქციაზე',
+    name: 'AI Circle — Paid Plan',
+    description: 'Full access to all features',
   });
 
   await stripe.prices.create({
@@ -34,7 +34,7 @@ async function seed() {
       {
         email,
         passwordHash,
-        name: 'ადმინი',
+        name: 'Admin',
         role: 'admin',
       },
     ])
@@ -44,10 +44,10 @@ async function seed() {
 
   // Create initial community settings
   await db.insert(communitySettings).values({
-    name: 'AI წრე',
-    description: 'ქართული AI/ტექნოლოგიური საზოგადოება — ისწავლე, გაუზიარე, გაიზარდე.',
+    name: 'AI Circle',
+    description: 'AI & technology community — learn, share, grow.',
     aboutContent:
-      'AI წრე არის ქართული ტექნოლოგიური საზოგადოება, სადაც შეგიძლია ისწავლო ხელოვნური ინტელექტი, ავტომატიზაცია და თანამედროვე ტექნოლოგიები. შემოგვიერთდი და გახდი ჩვენი თემის ნაწილი!',
+      'AI Circle is a technology community where you can learn about artificial intelligence, automation, and modern technologies. Join us and become part of our community!',
     adminUserId: user.id,
   });
 

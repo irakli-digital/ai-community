@@ -6,7 +6,7 @@
 
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY || '';
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || '';
-const MAILGUN_FROM = process.env.MAILGUN_FROM || `AI წრე <noreply@${MAILGUN_DOMAIN}>`;
+const MAILGUN_FROM = process.env.MAILGUN_FROM || `AI Circle <noreply@${MAILGUN_DOMAIN}>`;
 
 export interface EmailParams {
   to: string;

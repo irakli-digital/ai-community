@@ -74,7 +74,7 @@ export default function ProfileSettingsPage() {
       <Card>
         <CardContent className="py-12">
           <div className="flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -149,7 +149,7 @@ export default function ProfileSettingsPage() {
 
           {/* Social Links */}
           <div className="border-t pt-4 mt-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
+            <h3 className="text-sm font-medium text-foreground mb-3">
               {t('profile.socialLinks')}
             </h3>
             <div className="space-y-3">
@@ -209,7 +209,7 @@ export default function ProfileSettingsPage() {
 
           <Button
             type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
             disabled={saving}
           >
             {saving ? (

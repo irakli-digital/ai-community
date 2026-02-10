@@ -15,7 +15,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
+            className="text-primary hover:underline"
             {...props}
           >
             {children}
@@ -26,7 +26,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
           if (isInline) {
             return (
               <code
-                className="rounded bg-gray-100 px-1 py-0.5 text-sm"
+                className="rounded bg-secondary px-1 py-0.5 text-sm"
                 {...props}
               >
                 {children}
@@ -35,7 +35,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
           }
           return (
             <code
-              className={`block overflow-x-auto rounded bg-gray-100 p-3 text-sm ${className || ''}`}
+              className={`block overflow-x-auto rounded bg-secondary p-3 text-sm ${className || ''}`}
               {...props}
             >
               {children}

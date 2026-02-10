@@ -37,16 +37,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       return (
         <div className="flex flex-col items-center justify-center py-12 px-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-            <AlertTriangle className="h-6 w-6 text-red-600" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 mb-4">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            რაღაც შეცდომა მოხდა
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            Something went wrong
           </h3>
-          <p className="text-sm text-gray-500 text-center mb-4 max-w-md">
+          <p className="text-sm text-muted-foreground text-center mb-4 max-w-md">
             {this.props.sectionName
-              ? `${this.props.sectionName} - ამ სექციის ჩატვირთვა ვერ მოხერხდა.`
-              : 'ამ სექციის ჩატვირთვა ვერ მოხერხდა.'}
+              ? `${this.props.sectionName} — Failed to load this section.`
+              : 'Failed to load this section.'}
           </p>
           <Button
             variant="outline"
@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             className="gap-2"
           >
             <RefreshCw className="h-4 w-4" />
-            თავიდან ცდა
+            Try again
           </Button>
         </div>
       );

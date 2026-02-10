@@ -44,8 +44,8 @@ export default function MembersPage() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Users className="h-7 w-7 text-orange-500" />
-        <h1 className="text-2xl font-bold text-gray-900">
+        <Users className="h-7 w-7 text-primary" />
+        <h1 className="text-2xl font-bold text-foreground">
           {t('members.title')}
         </h1>
       </div>
@@ -53,7 +53,7 @@ export default function MembersPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t('members.searchPlaceholder')}
             value={search}
@@ -61,14 +61,14 @@ export default function MembersPage() {
             className="pl-10"
           />
         </div>
-        <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+        <div className="flex gap-1 rounded-lg bg-secondary p-1">
           <button
             onClick={() => setLevelFilter(null)}
             className={cn(
               'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
               levelFilter === null
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             {t('members.allLevels')}
@@ -80,8 +80,8 @@ export default function MembersPage() {
               className={cn(
                 'rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
                 levelFilter === lvl
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {lvl}
@@ -96,12 +96,12 @@ export default function MembersPage() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="h-40 animate-pulse rounded-xl bg-gray-100"
+              className="h-40 animate-pulse rounded-lg bg-secondary"
             />
           ))}
         </div>
       ) : members.length === 0 ? (
-        <p className="text-center text-gray-500 py-12">
+        <p className="text-center text-muted-foreground py-12">
           {t('members.noMembers')}
         </p>
       ) : (

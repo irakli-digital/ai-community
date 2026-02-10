@@ -43,6 +43,20 @@
       "when": 1770261623812,
       "tag": "0005_noisy_starjammers",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770296258137,
+      "tag": "0006_marvelous_juggernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1770667911195,
+      "tag": "0007_confused_madame_hydra",
+      "breakpoints": true
     }
   ]
 }

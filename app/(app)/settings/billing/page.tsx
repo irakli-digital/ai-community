@@ -13,13 +13,13 @@ export default function BillingSettingsPage() {
         <CardTitle>{t('billing.currentPlan')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-gray-600">
-          გამოწერის მართვისთვის გადახვიდეთ Stripe-ის პორტალზე.
+        <p className="text-sm text-muted-foreground">
+          To manage your subscription, visit the Stripe portal.
         </p>
         <form action={customerPortalAction}>
           <Button
             type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <CreditCard className="mr-2 h-4 w-4" />
             {t('billing.manage')}

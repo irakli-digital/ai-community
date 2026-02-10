@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'ძიება — AI წრე',
-  description: 'მოძებნე პოსტები, კურსები და წევრები AI წრეში.',
+  title: 'Search — AI Circle',
+  description: 'Search for posts, courses, and members in AI Circle.',
 };
 
 export default function SearchLayout({ children }: { children: React.ReactNode }) {

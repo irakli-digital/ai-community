@@ -81,7 +81,7 @@ export default function AdminCategoriesPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('ნამდვილად გსურთ კატეგორიის წაშლა?')) return;
+    if (!confirm('Are you sure you want to delete this category?')) return;
     startTransition(async () => {
       await deleteCategory(id);
       await loadCategories();
@@ -97,7 +97,7 @@ export default function AdminCategoriesPage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {t('admin.categories')}
           </h1>
         </div>
@@ -118,24 +118,24 @@ export default function AdminCategoriesPage() {
           <CardContent>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">სახელი</label>
+                <label className="text-sm font-medium">Name</label>
                 <Input
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="კატეგორიის სახელი"
+                  placeholder="Category name"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">აღწერა</label>
+                <label className="text-sm font-medium">Description</label>
                 <Input
                   value={formDesc}
                   onChange={(e) => setFormDesc(e.target.value)}
-                  placeholder="მოკლე აღწერა"
+                  placeholder="Short description"
                 />
               </div>
               <div className="flex gap-4">
                 <div>
-                  <label className="text-sm font-medium">ფერი</label>
+                  <label className="text-sm font-medium">Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -151,7 +151,7 @@ export default function AdminCategoriesPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">თანმიმდევრობა</label>
+                  <label className="text-sm font-medium">Sort Order</label>
                   <Input
                     type="number"
                     value={formSort}
@@ -186,10 +186,10 @@ export default function AdminCategoriesPage() {
                 <div>
                   <span className="font-medium">{cat.name}</span>
                   {cat.description && (
-                    <p className="text-xs text-gray-500">{cat.description}</p>
+                    <p className="text-xs text-muted-foreground">{cat.description}</p>
                   )}
                 </div>
-                <span className="text-xs text-gray-400">#{cat.sortOrder}</span>
+                <span className="text-xs text-muted-foreground">#{cat.sortOrder}</span>
               </div>
               <div className="flex gap-1">
                 <Button
@@ -211,8 +211,8 @@ export default function AdminCategoriesPage() {
           </Card>
         ))}
         {cats.length === 0 && (
-          <p className="py-8 text-center text-gray-500">
-            კატეგორიები ჯერ არ არის.
+          <p className="py-8 text-center text-muted-foreground">
+            No categories yet.
           </p>
         )}
       </div>

@@ -22,8 +22,8 @@ export function CategoryFilter({
         className={cn(
           'whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
           selectedId === null
-            ? 'bg-gray-900 text-white'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-secondary text-muted-foreground hover:bg-accent'
         )}
       >
         {t('community.allCategories')}
@@ -36,7 +36,7 @@ export function CategoryFilter({
             'whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
             selectedId === cat.id
               ? 'text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-secondary text-muted-foreground hover:bg-accent'
           )}
           style={
             selectedId === cat.id ? { backgroundColor: cat.color } : undefined
