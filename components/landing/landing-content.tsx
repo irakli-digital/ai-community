@@ -43,7 +43,7 @@ export function LandingContent({
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 30%, hsl(0 0% 4%) 75%)',
+            'radial-gradient(ellipse at center, transparent 30%, hsl(25 8% 5%) 75%)',
         }}
       />
 

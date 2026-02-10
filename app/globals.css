@@ -42,40 +42,40 @@
 
 @layer base {
   :root {
-    /* Vercel-style dark monochrome — single dark theme, no light mode */
-    --background: hsl(0 0% 4%);
-    --foreground: hsl(0 0% 93%);
-    --card: hsl(0 0% 7%);
-    --card-foreground: hsl(0 0% 93%);
-    --popover: hsl(0 0% 7%);
-    --popover-foreground: hsl(0 0% 93%);
-    --primary: hsl(0 0% 100%);
-    --primary-foreground: hsl(0 0% 4%);
-    --secondary: hsl(0 0% 11%);
-    --secondary-foreground: hsl(0 0% 93%);
-    --muted: hsl(0 0% 15%);
-    --muted-foreground: hsl(0 0% 53%);
-    --accent: hsl(0 0% 20%);
-    --accent-foreground: hsl(0 0% 93%);
-    --destructive: hsl(0 63% 31%);
-    --destructive-foreground: hsl(0 0% 93%);
-    --border: hsl(0 0% 15%);
-    --input: hsl(0 0% 15%);
-    --ring: hsl(0 0% 53%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
+    /* Claude AI-inspired warm dark palette — single dark theme, no light mode */
+    --background: hsl(25 8% 5%);
+    --foreground: hsl(40 12% 90%);
+    --card: hsl(25 7% 8%);
+    --card-foreground: hsl(40 12% 90%);
+    --popover: hsl(25 7% 8%);
+    --popover-foreground: hsl(40 12% 90%);
+    --primary: hsl(16 53% 50%);
+    --primary-foreground: hsl(40 20% 96%);
+    --secondary: hsl(25 6% 12%);
+    --secondary-foreground: hsl(40 12% 90%);
+    --muted: hsl(25 5% 16%);
+    --muted-foreground: hsl(30 6% 55%);
+    --accent: hsl(25 5% 21%);
+    --accent-foreground: hsl(40 12% 90%);
+    --destructive: hsl(4 60% 33%);
+    --destructive-foreground: hsl(40 12% 90%);
+    --border: hsl(25 5% 16%);
+    --input: hsl(25 5% 16%);
+    --ring: hsl(16 40% 50%);
+    --chart-1: hsl(16 53% 50%);
+    --chart-2: hsl(160 50% 40%);
+    --chart-3: hsl(35 70% 50%);
+    --chart-4: hsl(280 45% 55%);
+    --chart-5: hsl(340 55% 50%);
     --radius: 0.6rem;
-    --sidebar-background: hsl(0 0% 4%);
-    --sidebar-foreground: hsl(0 0% 93%);
-    --sidebar-primary: hsl(0 0% 100%);
-    --sidebar-primary-foreground: hsl(0 0% 4%);
-    --sidebar-accent: hsl(0 0% 15%);
-    --sidebar-accent-foreground: hsl(0 0% 93%);
-    --sidebar-border: hsl(0 0% 15%);
-    --sidebar-ring: hsl(0 0% 53%);
+    --sidebar-background: hsl(25 8% 5%);
+    --sidebar-foreground: hsl(40 12% 90%);
+    --sidebar-primary: hsl(16 53% 50%);
+    --sidebar-primary-foreground: hsl(40 20% 96%);
+    --sidebar-accent: hsl(25 5% 16%);
+    --sidebar-accent-foreground: hsl(40 12% 90%);
+    --sidebar-border: hsl(25 5% 16%);
+    --sidebar-ring: hsl(16 40% 50%);
   }
 }
 
@@ -103,8 +103,8 @@
   /* Vercel-style grid backgrounds */
   .grid-background {
     background-image:
-      linear-gradient(to right, hsl(0 0% 15% / 0.5) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(0 0% 15% / 0.5) 1px, transparent 1px);
+      linear-gradient(to right, hsl(25 5% 16% / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(25 5% 16% / 0.5) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 
@@ -118,8 +118,8 @@
 
   .grid-background-subtle {
     background-image:
-      linear-gradient(to right, hsl(0 0% 15% / 0.3) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(0 0% 15% / 0.3) 1px, transparent 1px);
+      linear-gradient(to right, hsl(25 5% 16% / 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(25 5% 16% / 0.3) 1px, transparent 1px);
     background-size: 48px 48px;
   }
 }

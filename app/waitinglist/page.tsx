@@ -44,7 +44,7 @@ export default function WaitingListPage() {
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 30%, hsl(0 0% 4%) 75%)',
+            'radial-gradient(ellipse at center, transparent 30%, hsl(25 8% 5%) 75%)',
         }}
       />
 
@@ -96,7 +96,7 @@ export default function WaitingListPage() {
 
           {/* Philosophy */}
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl">
-            A community for experimenting with agentic AI — sharing insights, workflows, and automations.
+            A community for experimenting with agentic AI - sharing insights, workflows, and automations.
           </p>
 
           {/* Card with form */}
@@ -118,7 +118,7 @@ export default function WaitingListPage() {
                       You are on the list.
                     </p>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      We will reach out when it is your turn to join the tribe.
+                      We will reach out when we're live.
                     </p>
                   </div>
                 </div>
