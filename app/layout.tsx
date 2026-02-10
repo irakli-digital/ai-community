@@ -18,11 +18,20 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     siteName: 'Agentic Tribe',
+    images: [
+      {
+        url: '/og.jpg',
+        width: 1200,
+        height: 628,
+        alt: 'Agentic Tribe — A community for experimenting with agentic AI',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Agentic Tribe — AI Community',
     description: 'Learn AI, automation, and technology with the Agentic Tribe community.',
+    images: ['/og.jpg'],
   },
   robots: {
     index: true,
