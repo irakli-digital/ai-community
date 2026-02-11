@@ -60,7 +60,7 @@ export function EditPostClient({
     setError('');
     startTransition(async () => {
       try {
-        await updatePost({
+        const result = await updatePost({
           postId,
           title: title.trim(),
           content: content.trim(),
@@ -68,8 +68,8 @@ export function EditPostClient({
           categoryId,
           featuredImageUrl: featuredImageUrl || undefined,
         });
+        router.push(getPostUrl({ slug: result.slug, categorySlug: result.categorySlug }));
       } catch (err: any) {
-        if (typeof err?.digest === 'string' && err.digest.includes('NEXT_REDIRECT')) return;
         setError(err.message || t('error.generic'));
       }
     });
