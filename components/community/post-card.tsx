@@ -85,21 +85,24 @@ export function PostCard({ post, onLike, onDelete, canLike, canDelete, onClick }
             onClick(post.id);
           }
         }}
+        className="mt-3 flex gap-4"
       >
-        <h3 className="mt-3 text-lg font-semibold text-foreground hover:text-muted-foreground">
-          {post.title}
-        </h3>
         {post.featuredImageUrl && (
           <img
             src={getImageVariantUrl(post.featuredImageUrl, 'sm')}
             alt=""
-            className="mt-2 h-40 w-full rounded-lg object-cover"
+            className="h-28 w-40 shrink-0 rounded-lg object-cover sm:h-32 sm:w-48"
             onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.featuredImageUrl!; } }}
           />
         )}
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          {contentPreview}
-        </p>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-lg font-semibold text-foreground hover:text-muted-foreground line-clamp-2">
+            {post.title}
+          </h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground line-clamp-3">
+            {contentPreview}
+          </p>
+        </div>
       </Link>
 
       {/* Footer */}
