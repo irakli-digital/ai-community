@@ -60,7 +60,7 @@ const dictionary = {
   'landing.admin': 'Admin',
   'landing.aboutCommunity': 'About the Community',
   'landing.pricing': 'Pricing',
-  'landing.latestArticles': 'Latest Articles',
+  'landing.latestArticles': 'Latest Posts',
   'landing.readMore': 'Read more',
   'landing.viewAllArticles': 'View All Articles',
   'landing.free': 'Free',

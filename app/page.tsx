@@ -14,10 +14,10 @@ export default async function LandingPage() {
   const communityName = settings?.name || t('common.appName');
   const description =
     settings?.description ||
-    'An AI community — learn, share, and grow together.';
+    'AI community - learn, share, and grow together.';
   const aboutContent =
     settings?.aboutContent ||
-    'Agentic Tribe is an AI community where you can learn artificial intelligence, automation, and modern technologies. Join us and become part of our community!';
+    'Agentic Tribe is an AI community where you can learn Agentic AI, automation, and modern technologies. Join us and become part of our community!';
 
   return (
     <LandingContent

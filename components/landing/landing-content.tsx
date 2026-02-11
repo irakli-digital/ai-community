@@ -146,7 +146,7 @@ export function LandingContent({
         </div>
       </section>
 
-      {/* Latest Articles */}
+      {/* Latest Posts */}
       {latestPosts.length > 0 && (
         <section className="relative z-10 border-t border-border">
           <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
