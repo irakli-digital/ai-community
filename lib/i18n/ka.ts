@@ -210,9 +210,9 @@ const dictionary = {
   'profile.profileUpdated': 'Profile updated successfully.',
 
   // ─── Paywall ──────────────────────────────────────────────────────
-  'paywall.title': 'Join Agentic Tribe to read this post',
-  'paywall.description': 'Sign up for free to unlock all community posts, courses, and more.',
-  'paywall.joinNow': 'Join Now',
+  'paywall.title': 'Join for free to unlock this post',
+  'paywall.description': 'Get free access to all community posts, courses, and more.',
+  'paywall.joinNow': 'Join Free',
   'paywall.alreadyMember': 'Already a member?',
 } as const;
 
