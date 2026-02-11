@@ -162,7 +162,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               results.map((post: any) => (
                 <Link
                   key={post.id}
-                  href={`/community/${post.id}`}
+                  href={post.slug && post.categorySlug ? `/community-post/${post.categorySlug}/${post.slug}` : `/community/${post.id}`}
                   onClick={handleItemClick}
                   className="flex items-start gap-3 px-4 py-3 hover:bg-accent transition-colors"
                 >

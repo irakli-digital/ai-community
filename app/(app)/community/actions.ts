@@ -23,6 +23,9 @@ import {
   notifyPostCommented,
   notifyCommentReplied,
 } from '@/lib/notifications';
+import { generateUniquePostSlug } from '@/lib/utils/slugify-server';
+import { getPostUrl } from '@/lib/utils/post-url';
+import { categories } from '@/lib/db/schema';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -124,6 +127,7 @@ const createPostSchema = z.object({
   title: z.string().min(1).max(300),
   content: z.string().min(1).max(50000),
   categoryId: z.number().nullable().optional(),
+  slug: z.string().max(350).optional(),
   imageUrls: z.array(z.string().url()).optional(),
   linkUrl: z.string().url().optional().or(z.literal('')),
   featuredImageUrl: z.string().url().optional().or(z.literal('')),
@@ -133,12 +137,17 @@ export async function createPost(input: z.infer<typeof createPostSchema>) {
   const user = await requirePaidUser();
   const data = createPostSchema.parse(input);
 
+  const slug = data.slug?.trim()
+    ? await generateUniquePostSlug(data.slug)
+    : await generateUniquePostSlug(data.title);
+
   const [post] = await db
     .insert(posts)
     .values({
       authorId: user.id,
       categoryId: data.categoryId ?? null,
       title: data.title,
+      slug,
       content: data.content,
       featuredImageUrl: data.featuredImageUrl || null,
     })
@@ -167,8 +176,19 @@ export async function createPost(input: z.infer<typeof createPostSchema>) {
     });
   }
 
+  // Look up category slug for redirect
+  let categorySlug: string | null = null;
+  if (data.categoryId) {
+    const [cat] = await db
+      .select({ slug: categories.slug })
+      .from(categories)
+      .where(eq(categories.id, data.categoryId))
+      .limit(1);
+    categorySlug = cat?.slug ?? null;
+  }
+
   revalidatePath('/community');
-  return { postId: post.id };
+  return { postId: post.id, slug: post.slug, categorySlug };
 }
 
 // ─── Update Post ────────────────────────────────────────────────────────────
@@ -178,6 +198,7 @@ const updatePostSchema = z.object({
   title: z.string().min(1).max(300),
   content: z.string().min(1).max(50000),
   categoryId: z.number().nullable().optional(),
+  slug: z.string().max(350).optional(),
   featuredImageUrl: z.string().url().optional().or(z.literal('')).or(z.null()),
 });
 
@@ -196,10 +217,19 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
     throw new Error('You do not have permission to perform this action.');
   }
 
+  // Regenerate slug if title or slug changed
+  let newSlug = post.slug;
+  if (data.slug?.trim() && data.slug.trim() !== post.slug) {
+    newSlug = await generateUniquePostSlug(data.slug.trim(), data.postId);
+  } else if (data.title !== post.title) {
+    newSlug = await generateUniquePostSlug(data.title, data.postId);
+  }
+
   await db
     .update(posts)
     .set({
       title: data.title,
+      slug: newSlug,
       content: data.content,
       categoryId: data.categoryId ?? null,
       featuredImageUrl: data.featuredImageUrl || null,
@@ -207,9 +237,21 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
     })
     .where(eq(posts.id, data.postId));
 
+  // Look up category slug for redirect
+  let categorySlug: string | null = null;
+  const catId = data.categoryId ?? null;
+  if (catId) {
+    const [cat] = await db
+      .select({ slug: categories.slug })
+      .from(categories)
+      .where(eq(categories.id, catId))
+      .limit(1);
+    categorySlug = cat?.slug ?? null;
+  }
+
   revalidatePath('/community');
-  revalidatePath(`/community/${data.postId}`);
-  redirect(`/community/${data.postId}`);
+  revalidatePath(`/community-post`);
+  redirect(getPostUrl({ slug: newSlug, categorySlug }));
 }
 
 // ─── Delete Post ────────────────────────────────────────────────────────────
@@ -260,7 +302,12 @@ export async function likePost(postId: number) {
 
   // Award point to post author (not self)
   const [post] = await db
-    .select({ authorId: posts.authorId, title: posts.title })
+    .select({
+      authorId: posts.authorId,
+      title: posts.title,
+      slug: posts.slug,
+      categoryId: posts.categoryId,
+    })
     .from(posts)
     .where(eq(posts.id, postId))
     .limit(1);
@@ -275,6 +322,17 @@ export async function likePost(postId: number) {
       sourceId: postId,
     });
 
+    // Look up category slug for notification link
+    let catSlug: string | null = null;
+    if (post.categoryId) {
+      const [cat] = await db
+        .select({ slug: categories.slug })
+        .from(categories)
+        .where(eq(categories.id, post.categoryId))
+        .limit(1);
+      catSlug = cat?.slug ?? null;
+    }
+
     // Notify post author
     notifyPostLiked({
       postAuthorId: post.authorId,
@@ -282,6 +340,8 @@ export async function likePost(postId: number) {
       actorName: user.name || 'User',
       postId,
       postTitle: post.title,
+      postSlug: post.slug,
+      categorySlug: catSlug,
     }).catch(() => {}); // fire-and-forget
 
     // Notify level-up if applicable
@@ -292,7 +352,7 @@ export async function likePost(postId: number) {
   }
 
   revalidatePath('/community');
-  revalidatePath(`/community/${postId}`);
+  revalidatePath(`/community-post`, 'layout');
   return { success: true, liked: true };
 }
 
@@ -338,7 +398,7 @@ export async function unlikePost(postId: number) {
   }
 
   revalidatePath('/community');
-  revalidatePath(`/community/${postId}`);
+  revalidatePath(`/community-post`, 'layout');
   return { success: true, liked: false };
 }
 
@@ -374,10 +434,26 @@ export async function createComment(
 
   // Notify post author about new comment (fire-and-forget)
   const [commentedPost] = await db
-    .select({ authorId: posts.authorId, title: posts.title })
+    .select({
+      authorId: posts.authorId,
+      title: posts.title,
+      slug: posts.slug,
+      categoryId: posts.categoryId,
+    })
     .from(posts)
     .where(eq(posts.id, data.postId))
     .limit(1);
+
+  // Look up category slug for notification link
+  let commentCatSlug: string | null = null;
+  if (commentedPost?.categoryId) {
+    const [cat] = await db
+      .select({ slug: categories.slug })
+      .from(categories)
+      .where(eq(categories.id, commentedPost.categoryId))
+      .limit(1);
+    commentCatSlug = cat?.slug ?? null;
+  }
 
   if (commentedPost && commentedPost.authorId !== user.id) {
     notifyPostCommented({
@@ -386,6 +462,8 @@ export async function createComment(
       actorName: user.name || 'User',
       postId: data.postId,
       postTitle: commentedPost.title,
+      postSlug: commentedPost.slug,
+      categorySlug: commentCatSlug,
     }).catch(() => {});
   }
 
@@ -403,11 +481,13 @@ export async function createComment(
         actorId: user.id,
         actorName: user.name || 'User',
         postId: data.postId,
+        postSlug: commentedPost?.slug,
+        categorySlug: commentCatSlug,
       }).catch(() => {});
     }
   }
 
-  revalidatePath(`/community/${data.postId}`);
+  revalidatePath(`/community-post`, 'layout');
   revalidatePath('/community');
   return { commentId: comment.id };
 }
@@ -442,7 +522,7 @@ export async function deleteComment(commentId: number) {
     .set({ commentsCount: sql`GREATEST(${posts.commentsCount} - 1, 0)` })
     .where(eq(posts.id, comment.postId));
 
-  revalidatePath(`/community/${comment.postId}`);
+  revalidatePath(`/community-post`, 'layout');
   return { success: true };
 }
 
@@ -487,6 +567,22 @@ export async function likeComment(commentId: number) {
       sourceId: commentId,
     });
 
+    // Fetch post slug data for notification link
+    let commentLikeCatSlug: string | null = null;
+    const [commentPost] = await db
+      .select({ slug: posts.slug, categoryId: posts.categoryId })
+      .from(posts)
+      .where(eq(posts.id, comment.postId))
+      .limit(1);
+    if (commentPost?.categoryId) {
+      const [cat] = await db
+        .select({ slug: categories.slug })
+        .from(categories)
+        .where(eq(categories.id, commentPost.categoryId))
+        .limit(1);
+      commentLikeCatSlug = cat?.slug ?? null;
+    }
+
     // Notify comment author
     notifyCommentLiked({
       commentAuthorId: comment.authorId,
@@ -494,6 +590,8 @@ export async function likeComment(commentId: number) {
       actorName: user.name || 'User',
       postId: comment.postId,
       commentContent: comment.content,
+      postSlug: commentPost?.slug,
+      categorySlug: commentLikeCatSlug,
     }).catch(() => {});
 
     if (result.leveledUp) {

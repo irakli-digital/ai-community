@@ -108,12 +108,19 @@ export async function notifyPostLiked(params: {
   actorName: string;
   postId: number;
   postTitle: string;
+  postSlug?: string;
+  categorySlug?: string | null;
 }): Promise<void> {
+  const linkUrl = params.postSlug
+    ? params.categorySlug
+      ? `/community-post/${params.categorySlug}/${params.postSlug}`
+      : `/community-post/uncategorized/${params.postSlug}`
+    : `/community/${params.postId}`;
   await createNotification({
     userId: params.postAuthorId,
     type: 'post_like',
     title: `${params.actorName} liked your post: "${truncate(params.postTitle, 50)}"`,
-    linkUrl: `/community/${params.postId}`,
+    linkUrl,
     actorId: params.actorId,
   });
 }
@@ -124,12 +131,19 @@ export async function notifyCommentLiked(params: {
   actorName: string;
   postId: number;
   commentContent: string;
+  postSlug?: string;
+  categorySlug?: string | null;
 }): Promise<void> {
+  const linkUrl = params.postSlug
+    ? params.categorySlug
+      ? `/community-post/${params.categorySlug}/${params.postSlug}`
+      : `/community-post/uncategorized/${params.postSlug}`
+    : `/community/${params.postId}`;
   await createNotification({
     userId: params.commentAuthorId,
     type: 'comment_like',
     title: `${params.actorName} liked your comment: "${truncate(params.commentContent, 50)}"`,
-    linkUrl: `/community/${params.postId}`,
+    linkUrl,
     actorId: params.actorId,
   });
 }
@@ -140,12 +154,19 @@ export async function notifyPostCommented(params: {
   actorName: string;
   postId: number;
   postTitle: string;
+  postSlug?: string;
+  categorySlug?: string | null;
 }): Promise<void> {
+  const linkUrl = params.postSlug
+    ? params.categorySlug
+      ? `/community-post/${params.categorySlug}/${params.postSlug}`
+      : `/community-post/uncategorized/${params.postSlug}`
+    : `/community/${params.postId}`;
   await createNotification({
     userId: params.postAuthorId,
     type: 'post_comment',
     title: `${params.actorName} commented on your post: "${truncate(params.postTitle, 50)}"`,
-    linkUrl: `/community/${params.postId}`,
+    linkUrl,
     actorId: params.actorId,
   });
 }
@@ -155,12 +176,19 @@ export async function notifyCommentReplied(params: {
   actorId: number;
   actorName: string;
   postId: number;
+  postSlug?: string;
+  categorySlug?: string | null;
 }): Promise<void> {
+  const linkUrl = params.postSlug
+    ? params.categorySlug
+      ? `/community-post/${params.categorySlug}/${params.postSlug}`
+      : `/community-post/uncategorized/${params.postSlug}`
+    : `/community/${params.postId}`;
   await createNotification({
     userId: params.commentAuthorId,
     type: 'comment_reply',
     title: `${params.actorName} replied to your comment`,
-    linkUrl: `/community/${params.postId}`,
+    linkUrl,
     actorId: params.actorId,
   });
 }

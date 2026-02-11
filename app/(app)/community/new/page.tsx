@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Image as ImageIcon, Link2, X } from 'lucide-react';
+import { ArrowLeft, Link2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
@@ -13,12 +13,16 @@ import { t } from '@/lib/i18n/ka';
 import { createPost } from '../actions';
 import { getCategories } from '@/app/(app)/admin/categories/actions';
 import type { Category } from '@/lib/db/schema';
+import { getPostUrl } from '@/lib/utils/post-url';
+import { slugify } from '@/lib/utils/slugify';
 
 export default function NewPostPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [categories, setCategories] = useState<Category[]>([]);
   const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [featuredImageUrl, setFeaturedImageUrl] = useState('');
@@ -30,6 +34,16 @@ export default function NewPostPage() {
     getCategories().then(setCategories);
   }, []);
 
+  // Auto-generate slug from title unless manually edited
+  useEffect(() => {
+    if (!slugManuallyEdited) {
+      setSlug(slugify(title));
+    }
+  }, [title, slugManuallyEdited]);
+
+  // Get current category slug for URL preview
+  const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? 'uncategorized';
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
@@ -40,12 +54,16 @@ export default function NewPostPage() {
         const result = await createPost({
           title: title.trim(),
           content: content.trim(),
+          slug: slug.trim() || undefined,
           categoryId,
           linkUrl: linkUrl.trim() || undefined,
           featuredImageUrl: featuredImageUrl || undefined,
         });
         if (result.postId) {
-          router.push(`/community/${result.postId}`);
+          router.push(getPostUrl({
+            slug: result.slug,
+            categorySlug: result.categorySlug,
+          }));
         }
       } catch (err: any) {
         setError(err.message || t('error.generic'));
@@ -68,7 +86,7 @@ export default function NewPostPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </div>
         )}
@@ -80,17 +98,6 @@ export default function NewPostPage() {
               Category
             </label>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setCategoryId(null)}
-                className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                  categoryId === null
-                    ? 'bg-foreground text-background'
-                    : 'bg-secondary text-muted-foreground hover:bg-accent'
-                }`}
-              >
-                None
-              </button>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
@@ -138,6 +145,25 @@ export default function NewPostPage() {
             maxLength={300}
             required
           />
+        </div>
+
+        {/* Slug */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-foreground">
+            URL Slug
+          </label>
+          <Input
+            value={slug}
+            onChange={(e) => {
+              setSlug(e.target.value);
+              setSlugManuallyEdited(true);
+            }}
+            placeholder="post-url-slug"
+            maxLength={350}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            /community-post/{currentCatSlug}/{slug || '...'}
+          </p>
         </div>
 
         {/* Content (Markdown) */}

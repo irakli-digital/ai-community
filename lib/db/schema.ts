@@ -112,6 +112,7 @@ export const posts = pgTable(
       .references(() => users.id),
     categoryId: integer('category_id').references(() => categories.id),
     title: varchar('title', { length: 300 }).notNull(),
+    slug: varchar('slug', { length: 350 }).notNull().unique(),
     content: text('content').notNull(),
     featuredImageUrl: text('featured_image_url'),
     isPinned: boolean('is_pinned').notNull().default(false),
@@ -126,6 +127,7 @@ export const posts = pgTable(
     index('posts_category_id_idx').on(table.categoryId),
     index('posts_created_at_id_idx').on(table.createdAt, table.id),
     index('posts_is_pinned_idx').on(table.isPinned),
+    uniqueIndex('posts_slug_idx').on(table.slug),
   ]
 );
 

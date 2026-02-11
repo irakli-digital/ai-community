@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { db } from '@/lib/db/drizzle';
-import { posts, courses } from '@/lib/db/schema';
+import { posts, courses, categories } from '@/lib/db/schema';
 import { eq, isNull, desc } from 'drizzle-orm';
+import { getPostUrl } from '@/lib/utils/post-url';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
@@ -32,14 +33,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let postPages: MetadataRoute.Sitemap = [];
   try {
     const allPosts = await db
-      .select({ id: posts.id, updatedAt: posts.updatedAt })
+      .select({
+        slug: posts.slug,
+        updatedAt: posts.updatedAt,
+        catSlug: categories.slug,
+      })
       .from(posts)
+      .leftJoin(categories, eq(posts.categoryId, categories.id))
       .where(isNull(posts.deletedAt))
       .orderBy(desc(posts.createdAt))
       .limit(500);
 
     postPages = allPosts.map((post) => ({
-      url: `${baseUrl}/community/${post.id}`,
+      url: `${baseUrl}${getPostUrl({ slug: post.slug, categorySlug: post.catSlug ?? null })}`,
       lastModified: post.updatedAt,
       changeFrequency: 'weekly' as const,
       priority: 0.7,

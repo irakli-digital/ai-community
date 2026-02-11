@@ -26,6 +26,7 @@ import {
 export type FeedPost = {
   id: number;
   title: string;
+  slug: string;
   content: string;
   featuredImageUrl: string | null;
   isPinned: boolean;
@@ -33,6 +34,7 @@ export type FeedPost = {
   commentsCount: number;
   createdAt: Date;
   categoryId: number | null;
+  categorySlug: string | null;
   author: {
     id: number;
     name: string | null;
@@ -52,9 +54,11 @@ export type FeedPost = {
 export type LatestPost = {
   id: number;
   title: string;
+  slug: string;
   content: string;
   featuredImageUrl: string | null;
   createdAt: Date;
+  categorySlug: string | null;
   author: { id: number; name: string | null; avatarUrl: string | null };
   category: { id: number; name: string; color: string } | null;
   commentsCount: number;
@@ -66,6 +70,7 @@ export async function getLatestPosts(limit = 6): Promise<LatestPost[]> {
     .select({
       id: posts.id,
       title: posts.title,
+      slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
       createdAt: posts.createdAt,
@@ -77,6 +82,7 @@ export async function getLatestPosts(limit = 6): Promise<LatestPost[]> {
       catId: categories.id,
       catName: categories.name,
       catColor: categories.color,
+      catSlug: categories.slug,
     })
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
@@ -88,11 +94,13 @@ export async function getLatestPosts(limit = 6): Promise<LatestPost[]> {
   return rows.map((r) => ({
     id: r.id,
     title: r.title,
+    slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
     createdAt: r.createdAt,
     commentsCount: r.commentsCount,
     likesCount: r.likesCount,
+    categorySlug: r.catSlug ?? null,
     author: { id: r.authorId, name: r.authorName, avatarUrl: r.authorAvatar },
     category: r.catId ? { id: r.catId, name: r.catName!, color: r.catColor! } : null,
   }));
@@ -131,6 +139,7 @@ export async function getFeedPosts(params: {
     .select({
       id: posts.id,
       title: posts.title,
+      slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
       isPinned: posts.isPinned,
@@ -145,6 +154,7 @@ export async function getFeedPosts(params: {
       catId: categories.id,
       catName: categories.name,
       catColor: categories.color,
+      catSlug: categories.slug,
     })
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
@@ -175,6 +185,7 @@ export async function getFeedPosts(params: {
   const feedPosts: FeedPost[] = trimmed.map((r) => ({
     id: r.id,
     title: r.title,
+    slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
     isPinned: r.isPinned,
@@ -182,6 +193,7 @@ export async function getFeedPosts(params: {
     commentsCount: r.commentsCount,
     createdAt: r.createdAt,
     categoryId: r.categoryId,
+    categorySlug: r.catSlug ?? null,
     author: {
       id: r.authorId,
       name: r.authorName,
@@ -220,6 +232,7 @@ export async function getPinnedPosts(params: {
     .select({
       id: posts.id,
       title: posts.title,
+      slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
       isPinned: posts.isPinned,
@@ -234,6 +247,7 @@ export async function getPinnedPosts(params: {
       catId: categories.id,
       catName: categories.name,
       catColor: categories.color,
+      catSlug: categories.slug,
     })
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
@@ -259,6 +273,7 @@ export async function getPinnedPosts(params: {
   return rows.map((r) => ({
     id: r.id,
     title: r.title,
+    slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
     isPinned: r.isPinned,
@@ -266,6 +281,7 @@ export async function getPinnedPosts(params: {
     commentsCount: r.commentsCount,
     createdAt: r.createdAt,
     categoryId: r.categoryId,
+    categorySlug: r.catSlug ?? null,
     author: {
       id: r.authorId,
       name: r.authorName,
@@ -300,6 +316,7 @@ export async function getPostById(
     .select({
       id: posts.id,
       title: posts.title,
+      slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
       isPinned: posts.isPinned,
@@ -314,6 +331,7 @@ export async function getPostById(
       catId: categories.id,
       catName: categories.name,
       catColor: categories.color,
+      catSlug: categories.slug,
     })
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
@@ -351,6 +369,7 @@ export async function getPostById(
   return {
     id: r.id,
     title: r.title,
+    slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
     isPinned: r.isPinned,
@@ -358,6 +377,7 @@ export async function getPostById(
     commentsCount: r.commentsCount,
     createdAt: r.createdAt,
     categoryId: r.categoryId,
+    categorySlug: r.catSlug ?? null,
     author: {
       id: r.authorId,
       name: r.authorName,
@@ -482,6 +502,8 @@ export async function getPostComments(
 export type RelatedPost = {
   id: number;
   title: string;
+  slug: string;
+  categorySlug: string | null;
   featuredImageUrl: string | null;
   commentsCount: number;
   likesCount: number;
@@ -505,6 +527,7 @@ export async function getRelatedPosts(
     .select({
       id: posts.id,
       title: posts.title,
+      slug: posts.slug,
       featuredImageUrl: posts.featuredImageUrl,
       commentsCount: posts.commentsCount,
       likesCount: posts.likesCount,
@@ -513,6 +536,7 @@ export async function getRelatedPosts(
       authorAvatar: users.avatarUrl,
       catName: categories.name,
       catColor: categories.color,
+      catSlug: categories.slug,
     })
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
@@ -528,6 +552,7 @@ export async function getRelatedPosts(
       .select({
         id: posts.id,
         title: posts.title,
+        slug: posts.slug,
         featuredImageUrl: posts.featuredImageUrl,
         commentsCount: posts.commentsCount,
         likesCount: posts.likesCount,
@@ -536,6 +561,7 @@ export async function getRelatedPosts(
         authorAvatar: users.avatarUrl,
         catName: categories.name,
         catColor: categories.color,
+        catSlug: categories.slug,
       })
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
@@ -555,6 +581,8 @@ export async function getRelatedPosts(
   return rows.map((r) => ({
     id: r.id,
     title: r.title,
+    slug: r.slug,
+    categorySlug: r.catSlug ?? null,
     featuredImageUrl: r.featuredImageUrl,
     commentsCount: r.commentsCount,
     likesCount: r.likesCount,
@@ -562,4 +590,114 @@ export async function getRelatedPosts(
     author: { name: r.authorName, avatarUrl: r.authorAvatar },
     category: r.catName ? { name: r.catName, color: r.catColor! } : null,
   }));
+}
+
+// ─── Get Post by Category Slug + Post Slug ──────────────────────────────────
+
+export async function getPostBySlugs(
+  categorySlug: string,
+  postSlug: string,
+  userId?: number | null
+): Promise<PostDetail | null> {
+  const isUncategorized = categorySlug === 'uncategorized';
+
+  const conditions = [
+    eq(posts.slug, postSlug),
+    isNull(posts.deletedAt),
+  ];
+
+  if (!isUncategorized) {
+    conditions.push(eq(categories.slug, categorySlug));
+  }
+
+  const rows = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      slug: posts.slug,
+      content: posts.content,
+      featuredImageUrl: posts.featuredImageUrl,
+      isPinned: posts.isPinned,
+      likesCount: posts.likesCount,
+      commentsCount: posts.commentsCount,
+      createdAt: posts.createdAt,
+      categoryId: posts.categoryId,
+      authorId: posts.authorId,
+      authorName: users.name,
+      authorAvatar: users.avatarUrl,
+      authorLevel: users.level,
+      catId: categories.id,
+      catName: categories.name,
+      catColor: categories.color,
+      catSlug: categories.slug,
+    })
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(categories, eq(posts.categoryId, categories.id))
+    .where(and(...conditions))
+    .limit(1);
+
+  if (rows.length === 0) return null;
+  const r = rows[0];
+
+  // Get images
+  const images = await db
+    .select()
+    .from(postImages)
+    .where(eq(postImages.postId, r.id))
+    .orderBy(asc(postImages.sortOrder));
+
+  // Get links
+  const links = await db
+    .select()
+    .from(postLinks)
+    .where(eq(postLinks.postId, r.id));
+
+  // Get like status
+  let liked = false;
+  if (userId) {
+    const [existing] = await db
+      .select()
+      .from(postLikes)
+      .where(and(eq(postLikes.userId, userId), eq(postLikes.postId, r.id)))
+      .limit(1);
+    liked = !!existing;
+  }
+
+  return {
+    id: r.id,
+    title: r.title,
+    slug: r.slug,
+    content: r.content,
+    featuredImageUrl: r.featuredImageUrl,
+    isPinned: r.isPinned,
+    likesCount: r.likesCount,
+    commentsCount: r.commentsCount,
+    createdAt: r.createdAt,
+    categoryId: r.categoryId,
+    categorySlug: r.catSlug ?? null,
+    author: {
+      id: r.authorId,
+      name: r.authorName,
+      avatarUrl: r.authorAvatar,
+      level: r.authorLevel,
+    },
+    category: r.catId
+      ? { id: r.catId, name: r.catName!, color: r.catColor! }
+      : null,
+    liked,
+    images: images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      altText: img.altText,
+      sortOrder: img.sortOrder,
+    })),
+    links: links.map((link) => ({
+      id: link.id,
+      url: link.url,
+      title: link.title,
+      description: link.description,
+      imageUrl: link.imageUrl,
+    })),
+  };
 }

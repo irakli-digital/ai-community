@@ -18,6 +18,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import { getPostUrl } from '@/lib/utils/post-url';
 
 interface Props {
   params: Promise<{ userId: string }>;
@@ -42,12 +43,14 @@ export default async function MemberProfilePage({ params }: Props) {
     .select({
       id: posts.id,
       title: posts.title,
+      slug: posts.slug,
       content: posts.content,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
       createdAt: posts.createdAt,
       catName: categories.name,
       catColor: categories.color,
+      catSlug: categories.slug,
     })
     .from(posts)
     .leftJoin(categories, eq(posts.categoryId, categories.id))
@@ -177,7 +180,7 @@ export default async function MemberProfilePage({ params }: Props) {
             {recentPosts.map((post) => (
               <Link
                 key={post.id}
-                href={`/community/${post.id}`}
+                href={getPostUrl({ slug: post.slug, categorySlug: post.catSlug ?? null })}
                 className="block rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
               >
                 <div className="flex items-start justify-between">

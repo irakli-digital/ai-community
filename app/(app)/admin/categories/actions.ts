@@ -6,6 +6,7 @@ import { categories } from '@/lib/db/schema';
 import { getUser } from '@/lib/db/queries';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { slugify } from '@/lib/utils/slugify';
 
 async function requireAdmin() {
   const user = await getUser();
@@ -13,15 +14,6 @@ async function requireAdmin() {
   const { hasAdminRole } = await import('@/lib/auth/roles');
   if (!hasAdminRole(user.role)) throw new Error('Access denied.');
   return user;
-}
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_]+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
 }
 
 // ─── Get All Categories ─────────────────────────────────────────────────────

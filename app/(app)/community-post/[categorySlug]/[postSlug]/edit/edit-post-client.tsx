@@ -9,15 +9,19 @@ import { Input } from '@/components/ui/input';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { ImageUpload } from '@/components/shared/image-upload';
 import { t } from '@/lib/i18n/ka';
-import { updatePost } from '../../actions';
+import { updatePost } from '@/app/(app)/community/actions';
 import { getCategories } from '@/app/(app)/admin/categories/actions';
 import type { Category } from '@/lib/db/schema';
+import { getPostUrl } from '@/lib/utils/post-url';
+import { slugify } from '@/lib/utils/slugify';
 
 interface EditPostClientProps {
   postId: number;
   initialTitle: string;
   initialContent: string;
+  initialSlug: string;
   initialCategoryId: number | null;
+  initialCategorySlug: string | null;
   initialFeaturedImageUrl: string | null;
 }
 
@@ -25,7 +29,9 @@ export function EditPostClient({
   postId,
   initialTitle,
   initialContent,
+  initialSlug,
   initialCategoryId,
+  initialCategorySlug,
   initialFeaturedImageUrl,
 }: EditPostClientProps) {
   const router = useRouter();
@@ -33,6 +39,7 @@ export function EditPostClient({
   const [categories, setCategories] = useState<Category[]>([]);
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
+  const [slug, setSlug] = useState(initialSlug);
   const [categoryId, setCategoryId] = useState<number | null>(initialCategoryId);
   const [featuredImageUrl, setFeaturedImageUrl] = useState(initialFeaturedImageUrl || '');
   const [error, setError] = useState('');
@@ -40,6 +47,11 @@ export function EditPostClient({
   useEffect(() => {
     getCategories().then(setCategories);
   }, []);
+
+  const backUrl = getPostUrl({ slug: initialSlug, categorySlug: initialCategorySlug });
+
+  // Get current category slug for URL preview
+  const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? initialCategorySlug ?? 'uncategorized';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,12 +64,11 @@ export function EditPostClient({
           postId,
           title: title.trim(),
           content: content.trim(),
+          slug: slug.trim(),
           categoryId,
           featuredImageUrl: featuredImageUrl || undefined,
         });
-        // Server action redirects to post detail page
       } catch (err: any) {
-        // Ignore Next.js redirect "errors" — they're handled by the framework
         if (typeof err?.digest === 'string' && err.digest.includes('NEXT_REDIRECT')) return;
         setError(err.message || t('error.generic'));
       }
@@ -67,7 +78,7 @@ export function EditPostClient({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link href={`/community/${postId}`}>
+        <Link href={backUrl}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -103,17 +114,6 @@ export function EditPostClient({
               Category
             </label>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setCategoryId(null)}
-                className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                  categoryId === null
-                    ? 'bg-foreground text-background'
-                    : 'bg-secondary text-muted-foreground hover:bg-accent'
-                }`}
-              >
-                None
-              </button>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
@@ -151,6 +151,22 @@ export function EditPostClient({
           />
         </div>
 
+        {/* Slug */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-foreground">
+            URL Slug
+          </label>
+          <Input
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="post-url-slug"
+            maxLength={350}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            /community-post/{currentCatSlug}/{slug || slugify(title) || '...'}
+          </p>
+        </div>
+
         {/* Content (Markdown) */}
         <div>
           <label className="mb-1 block text-sm font-medium text-foreground">
@@ -169,7 +185,7 @@ export function EditPostClient({
           <Button type="submit" disabled={isPending || !title || !content}>
             {isPending ? t('common.loading') : 'Save Changes'}
           </Button>
-          <Link href={`/community/${postId}`}>
+          <Link href={backUrl}>
             <Button type="button" variant="ghost">
               {t('common.cancel')}
             </Button>

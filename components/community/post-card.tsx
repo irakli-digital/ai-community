@@ -9,6 +9,7 @@ import { enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { LevelBadge } from '@/components/members/level-badge';
 import { getImageVariantUrl } from '@/lib/storage/image-utils';
+import { getPostUrl } from '@/lib/utils/post-url';
 
 interface PostCardProps {
   post: FeedPost;
@@ -78,7 +79,7 @@ export function PostCard({ post, onLike, onDelete, canLike, canDelete, onClick }
 
       {/* Content */}
       <Link
-        href={`/community/${post.id}`}
+        href={getPostUrl(post)}
         onClick={(e) => {
           if (onClick) {
             e.preventDefault();
@@ -126,7 +127,7 @@ export function PostCard({ post, onLike, onDelete, canLike, canDelete, onClick }
             {post.likesCount}
           </button>
           <Link
-            href={`/community/${post.id}`}
+            href={getPostUrl(post)}
             onClick={(e) => {
               if (onClick) {
                 e.preventDefault();

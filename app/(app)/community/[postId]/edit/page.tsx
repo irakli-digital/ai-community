@@ -1,35 +1,18 @@
-import { notFound } from 'next/navigation';
-import { getUser } from '@/lib/db/queries';
-import { hasModRole } from '@/lib/auth/roles';
+import { permanentRedirect, notFound } from 'next/navigation';
 import { getPostById } from '@/lib/db/community-queries';
-import { EditPostClient } from './edit-post-client';
+import { getPostEditUrl } from '@/lib/utils/post-url';
 
-export default async function EditPostPage({
-  params,
-}: {
+type Props = {
   params: Promise<{ postId: string }>;
-}) {
+};
+
+export default async function OldEditPostPage({ params }: Props) {
   const { postId: postIdStr } = await params;
   const postId = Number(postIdStr);
   if (isNaN(postId)) notFound();
 
-  const user = await getUser();
-  if (!user) notFound();
-
-  const post = await getPostById(postId, user.id);
+  const post = await getPostById(postId);
   if (!post) notFound();
 
-  const isAuthor = user.id === post.author.id;
-  const isAdminOrMod = hasModRole(user.role);
-  if (!isAuthor && !isAdminOrMod) notFound();
-
-  return (
-    <EditPostClient
-      postId={post.id}
-      initialTitle={post.title}
-      initialContent={post.content}
-      initialCategoryId={post.category?.id ?? null}
-      initialFeaturedImageUrl={post.featuredImageUrl}
-    />
-  );
+  permanentRedirect(getPostEditUrl(post));
 }

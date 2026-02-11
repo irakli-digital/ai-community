@@ -16,6 +16,7 @@ import type { Category } from '@/lib/db/schema';
 import { likePost, unlikePost, deletePost } from './actions';
 import { loadMorePosts } from './load-more';
 import { hasModRole } from '@/lib/auth/roles';
+import { getPostUrl } from '@/lib/utils/post-url';
 
 interface CommunityFeedProps {
   initialPinned: FeedPost[];
@@ -128,7 +129,11 @@ export function CommunityFeed({
 
   function handlePostClick(postId: number) {
     setSelectedPostId(postId);
-    window.history.pushState({ postId }, '', `/community/${postId}`);
+    // Find the post to get slug info for the URL
+    const allPosts = [...pinned, ...posts];
+    const clickedPost = allPosts.find((p) => p.id === postId);
+    const url = clickedPost ? getPostUrl(clickedPost) : `/community/${postId}`;
+    window.history.pushState({ postId }, '', url);
   }
 
   // Handle browser back/forward to close/open modal

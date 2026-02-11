@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
 import { hasAdminRole } from '@/lib/auth/roles';
 
-const protectedRoutes = ['/community', '/classroom', '/members', '/leaderboard', '/settings', '/notifications', '/search'];
+const protectedRoutes = ['/community', '/community-post', '/classroom', '/members', '/leaderboard', '/settings', '/notifications', '/search'];
 const adminRoutes = ['/admin'];
 
 export async function middleware(request: NextRequest) {
@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
-  const isPublicPostRoute = /^\/community\/\d+$/.test(pathname);
+  const isPublicPostRoute = /^\/community\/\d+$/.test(pathname) || /^\/community-post\/[^/]+\/[^/]+$/.test(pathname);
 
   if ((isProtectedRoute || isAdminRoute) && !sessionCookie && !isPublicPostRoute) {
     return NextResponse.redirect(new URL('/sign-in', request.url));

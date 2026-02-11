@@ -34,11 +34,12 @@ import {
   deleteComment,
   likeComment,
   unlikeComment,
-} from '../actions';
+} from '@/app/(app)/community/actions';
 import { MarkdownContent } from '@/components/community/markdown-content';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { hasModRole } from '@/lib/auth/roles';
 import { getImageVariantUrl } from '@/lib/storage/image-utils';
+import { getPostUrl, getPostEditUrl } from '@/lib/utils/post-url';
 
 // ─── Comment Component ──────────────────────────────────────────────────────
 
@@ -203,8 +204,9 @@ export function PostDetailClient({
 
   const isGuest = userId === null;
   const postUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/community/${post.id}`
+    ? `${window.location.origin}${getPostUrl(post)}`
     : '';
+  const editUrl = getPostEditUrl(post);
 
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
@@ -212,7 +214,6 @@ export function PostDetailClient({
   });
 
   async function handleLikePost() {
-    // Optimistic
     setLiked(!liked);
     setLikesCount((c) => c + (liked ? -1 : 1));
     try {
@@ -293,7 +294,7 @@ export function PostDetailClient({
         </Link>
         <div className="flex items-center gap-2">
           {(isAuthor || isAdminOrMod) && !isGuest && (
-            <Link href={`/community/${post.id}/edit`}>
+            <Link href={editUrl}>
               <Button variant="ghost" size="sm">
                 <Pencil className="h-4 w-4" />
                 Edit
@@ -585,7 +586,7 @@ export function PostDetailClient({
                 </Button>
               )}
               {(isAuthor || isAdminOrMod) && (
-                <Link href={`/community/${post.id}/edit`}>
+                <Link href={editUrl}>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -693,7 +694,7 @@ export function PostDetailClient({
               {relatedPosts.map((rp) => (
                 <Link
                   key={rp.id}
-                  href={`/community/${rp.id}`}
+                  href={getPostUrl(rp)}
                   className="group block rounded-lg border border-border bg-card p-3 transition-colors hover:bg-accent/50"
                 >
                   {rp.featuredImageUrl && (

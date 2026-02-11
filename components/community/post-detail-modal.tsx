@@ -27,6 +27,7 @@ import type { PostDetail, CommentWithAuthor } from '@/lib/db/community-queries';
 import { LevelBadge } from '@/components/members/level-badge';
 import { MarkdownContent } from '@/components/community/markdown-content';
 import { getImageVariantUrl } from '@/lib/storage/image-utils';
+import { getPostUrl, getPostEditUrl } from '@/lib/utils/post-url';
 import {
   likePost,
   unlikePost,
@@ -200,8 +201,8 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
   const [copied, setCopied] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
-  const postUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/community/${postId}`
+  const postUrl = typeof window !== 'undefined' && post
+    ? `${window.location.origin}${getPostUrl(post)}`
     : '';
 
   const fetchData = useCallback(async () => {
@@ -320,7 +321,7 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
                 size="sm"
                 onClick={() => {
                   onClose();
-                  router.push(`/community/${post.id}/edit`);
+                  router.push(getPostEditUrl(post));
                 }}
               >
                 <Pencil className="h-4 w-4" />
@@ -604,7 +605,7 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
                       size="sm"
                       onClick={() => {
                         onClose();
-                        router.push(`/community/${post.id}/edit`);
+                        router.push(getPostEditUrl(post));
                       }}
                     >
                       <Pencil className="h-4 w-4" />

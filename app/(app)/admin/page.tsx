@@ -96,9 +96,11 @@ async function getAnalytics() {
     db.select({
       id: posts.id,
       title: posts.title,
+      slug: posts.slug,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
       authorName: users.name,
+      categoryId: posts.categoryId,
     })
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
