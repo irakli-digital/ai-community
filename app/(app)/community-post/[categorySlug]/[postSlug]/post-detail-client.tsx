@@ -365,10 +365,10 @@ export function PostDetailClient({
         {/* Content (markdown) — truncated with gradient for guests */}
         {isGuest ? (
           <div className="relative">
-            <div className="mt-4 max-w-none max-h-[400px] overflow-hidden">
+            <div className="mt-4 max-w-none max-h-[120px] overflow-hidden">
               <MarkdownContent content={post.content} />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-card to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card to-transparent" />
           </div>
         ) : (
           <div className="mt-4 max-w-none">
@@ -378,7 +378,7 @@ export function PostDetailClient({
 
         {/* Paywall overlay for guests */}
         {isGuest && (
-          <div className="mt-2 flex flex-col items-center rounded-lg border border-border bg-secondary/50 px-6 py-10 text-center">
+          <div className="-mt-4 flex flex-col items-center rounded-lg border border-border bg-secondary/50 px-6 py-10 text-center">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
               <Lock className="h-6 w-6 text-primary" />
             </div>
