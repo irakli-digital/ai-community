@@ -9,7 +9,9 @@ type Props = {
 };
 
 export default async function EditPostPage({ params }: Props) {
-  const { categorySlug, postSlug } = await params;
+  const rawParams = await params;
+  const categorySlug = decodeURIComponent(rawParams.categorySlug);
+  const postSlug = decodeURIComponent(rawParams.postSlug);
 
   const user = await getUser();
   if (!user) notFound();

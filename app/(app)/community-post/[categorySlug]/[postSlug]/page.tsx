@@ -12,7 +12,9 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const { categorySlug, postSlug } = await params;
+    const rawParams = await params;
+    const categorySlug = decodeURIComponent(rawParams.categorySlug);
+    const postSlug = decodeURIComponent(rawParams.postSlug);
     const post = await getPostBySlugs(categorySlug, postSlug);
     if (!post) return {};
 
@@ -42,7 +44,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PostDetailPage({ params }: Props) {
-  const { categorySlug, postSlug } = await params;
+  const rawParams = await params;
+  const categorySlug = decodeURIComponent(rawParams.categorySlug);
+  const postSlug = decodeURIComponent(rawParams.postSlug);
 
   const user = await getUser();
   const post = await getPostBySlugs(categorySlug, postSlug, user?.id);
