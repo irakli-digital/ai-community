@@ -55,8 +55,10 @@ export function EditPostClient({
           categoryId,
           featuredImageUrl: featuredImageUrl || undefined,
         });
-        router.push(`/community/${postId}`);
+        // Server action redirects to post detail page
       } catch (err: any) {
+        // Ignore Next.js redirect "errors" — they're handled by the framework
+        if (typeof err?.digest === 'string' && err.digest.includes('NEXT_REDIRECT')) return;
         setError(err.message || t('error.generic'));
       }
     });

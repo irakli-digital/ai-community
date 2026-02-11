@@ -14,6 +14,7 @@ import {
 import { getUser, isPaidUser } from '@/lib/db/queries';
 import { eq, and, sql, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { hasAdminRole, hasModRole } from '@/lib/auth/roles';
 import { awardPoints, revokePoints } from '@/lib/gamification';
 import {
@@ -208,7 +209,7 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
 
   revalidatePath('/community');
   revalidatePath(`/community/${data.postId}`);
-  return { success: true };
+  redirect(`/community/${data.postId}`);
 }
 
 // ─── Delete Post ────────────────────────────────────────────────────────────
