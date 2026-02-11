@@ -75,16 +75,16 @@ export function AppHeader() {
         </Link>
 
         {/* Inline nav tabs */}
-        <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+        <nav className="ml-6 flex items-center gap-1 overflow-x-auto scrollbar-none">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                'relative flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors',
                 isNavActive(pathname, item.href)
-                  ? 'bg-accent text-foreground'
-                  : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                  ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <item.icon className="h-4 w-4" />
@@ -95,10 +95,10 @@ export function AppHeader() {
             <Link
               href="/admin"
               className={cn(
-                'flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                'relative flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors',
                 isNavActive(pathname, '/admin')
-                  ? 'bg-accent text-foreground'
-                  : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                  ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Shield className="h-4 w-4" />
