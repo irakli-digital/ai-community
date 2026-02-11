@@ -24,6 +24,7 @@ import { enUS } from 'date-fns/locale';
 import type { PostDetail, CommentWithAuthor } from '@/lib/db/community-queries';
 import { LevelBadge } from '@/components/members/level-badge';
 import { MarkdownContent } from '@/components/community/markdown-content';
+import { getImageVariantUrl } from '@/lib/storage/image-utils';
 import {
   likePost,
   unlikePost,
@@ -93,9 +94,10 @@ function ModalCommentItem({
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
           {comment.author.avatarUrl ? (
             <img
-              src={comment.author.avatarUrl}
+              src={getImageVariantUrl(comment.author.avatarUrl, 'avatar-sm')}
               alt={comment.author.name ?? ''}
               className="h-full w-full rounded-full object-cover"
+              onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = comment.author.avatarUrl!; } }}
             />
           ) : (
             (comment.author.name?.[0] ?? '?').toUpperCase()
@@ -361,9 +363,10 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
                     {post.author.avatarUrl ? (
                       <img
-                        src={post.author.avatarUrl}
+                        src={getImageVariantUrl(post.author.avatarUrl, 'avatar-sm')}
                         alt={post.author.name ?? ''}
                         className="h-full w-full rounded-full object-cover"
+                        onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.author.avatarUrl!; } }}
                       />
                     ) : (
                       (post.author.name?.[0] ?? '?').toUpperCase()
@@ -408,9 +411,10 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
               {/* Featured image */}
               {post.featuredImageUrl && (
                 <img
-                  src={post.featuredImageUrl}
+                  src={getImageVariantUrl(post.featuredImageUrl, 'md')}
                   alt={post.title}
                   className="max-h-[400px] w-full rounded-lg object-cover"
+                  onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.featuredImageUrl!; } }}
                 />
               )}
 

@@ -103,7 +103,7 @@ export function AvatarUpload({ currentUrl, fallback, onUpload }: AvatarUploadPro
         throw new Error(msg);
       }
 
-      const { uploadUrl, publicUrl } = await res.json();
+      const { uploadUrl, publicUrl, key } = await res.json();
 
       // 2. Upload cropped blob directly to S3
       const uploadRes = await fetch(uploadUrl, {
@@ -118,6 +118,13 @@ export function AvatarUpload({ currentUrl, fallback, onUpload }: AvatarUploadPro
 
       // 3. Notify parent
       await onUpload(publicUrl);
+
+      // 4. Trigger background image processing (fire-and-forget)
+      fetch('/api/process-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, category: 'avatar' }),
+      }).catch(() => {});
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('upload.genericError');
       // Detect CORS / network errors

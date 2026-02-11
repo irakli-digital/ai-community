@@ -7,6 +7,7 @@ import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeSlug from 'rehype-slug';
 import type { ComponentPropsWithoutRef } from 'react';
 import { CopyablePreBlock } from './copyable-pre-block';
+import { getImageVariantUrl } from '@/lib/storage/image-utils';
 
 const sanitizeSchema = {
   ...defaultSchema,
@@ -82,12 +83,20 @@ function Anchor(props: ComponentPropsWithoutRef<'a'>) {
   );
 }
 
-/** Images with alt text */
+/** Images with alt text — serves md variant for S3 images */
 function Image(props: ComponentPropsWithoutRef<'img'>) {
-  const { alt, ...rest } = props;
+  const { alt, src, ...rest } = props;
+  const variantSrc = typeof src === 'string' ? getImageVariantUrl(src, 'md') : src;
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img alt={alt || ''} className="max-w-full rounded-lg" loading="lazy" {...rest} />
+    <img
+      alt={alt || ''}
+      src={variantSrc}
+      className="max-w-full rounded-lg"
+      loading="lazy"
+      onError={(e) => { if (typeof src === 'string' && variantSrc !== src && !e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = src; } }}
+      {...rest}
+    />
   );
 }
 

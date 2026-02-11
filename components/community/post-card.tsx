@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { LevelBadge } from '@/components/members/level-badge';
+import { getImageVariantUrl } from '@/lib/storage/image-utils';
 
 interface PostCardProps {
   post: FeedPost;
@@ -38,9 +39,10 @@ export function PostCard({ post, onLike, onDelete, canLike, canDelete, onClick }
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
             {post.author.avatarUrl ? (
               <img
-                src={post.author.avatarUrl}
+                src={getImageVariantUrl(post.author.avatarUrl, 'avatar-sm')}
                 alt={post.author.name ?? ''}
                 className="h-full w-full rounded-full object-cover"
+                onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.author.avatarUrl!; } }}
               />
             ) : (
               (post.author.name?.[0] ?? '?').toUpperCase()
@@ -89,9 +91,10 @@ export function PostCard({ post, onLike, onDelete, canLike, canDelete, onClick }
         </h3>
         {post.featuredImageUrl && (
           <img
-            src={post.featuredImageUrl}
+            src={getImageVariantUrl(post.featuredImageUrl, 'sm')}
             alt=""
             className="mt-2 h-40 w-full rounded-lg object-cover"
+            onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.featuredImageUrl!; } }}
           />
         )}
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">

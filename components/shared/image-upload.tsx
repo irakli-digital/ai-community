@@ -63,7 +63,7 @@ export function ImageUpload({ onUpload, currentUrl, onRemove }: ImageUploadProps
         throw new Error(msg);
       }
 
-      const { uploadUrl, publicUrl } = await res.json();
+      const { uploadUrl, publicUrl, key } = await res.json();
 
       // 2. Upload to S3
       const uploadRes = await fetch(uploadUrl, {
@@ -78,6 +78,13 @@ export function ImageUpload({ onUpload, currentUrl, onRemove }: ImageUploadProps
 
       // 3. Notify parent
       onUpload(publicUrl);
+
+      // 4. Trigger background image processing (fire-and-forget)
+      fetch('/api/process-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, category: 'post' }),
+      }).catch(() => {});
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Upload failed.';
       setError(msg);

@@ -38,6 +38,7 @@ import {
 import { MarkdownContent } from '@/components/community/markdown-content';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { hasModRole } from '@/lib/auth/roles';
+import { getImageVariantUrl } from '@/lib/storage/image-utils';
 
 // ─── Comment Component ──────────────────────────────────────────────────────
 
@@ -94,9 +95,10 @@ function CommentItem({
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
           {comment.author.avatarUrl ? (
             <img
-              src={comment.author.avatarUrl}
+              src={getImageVariantUrl(comment.author.avatarUrl, 'avatar-sm')}
               alt={comment.author.name ?? ''}
               className="h-full w-full rounded-full object-cover"
+              onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = comment.author.avatarUrl!; } }}
             />
           ) : (
             (comment.author.name?.[0] ?? '?').toUpperCase()
@@ -309,9 +311,10 @@ export function PostDetailClient({
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
               {post.author.avatarUrl ? (
                 <img
-                  src={post.author.avatarUrl}
+                  src={getImageVariantUrl(post.author.avatarUrl, 'avatar-sm')}
                   alt={post.author.name ?? ''}
                   className="h-full w-full rounded-full object-cover"
+                  onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.author.avatarUrl!; } }}
                 />
               ) : (
                 (post.author.name?.[0] ?? '?').toUpperCase()
@@ -351,9 +354,10 @@ export function PostDetailClient({
         {/* Featured image */}
         {post.featuredImageUrl && (
           <img
-            src={post.featuredImageUrl}
+            src={getImageVariantUrl(post.featuredImageUrl, 'md')}
             alt={post.title}
             className="mt-4 max-h-[400px] w-full rounded-lg object-cover"
+            onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.featuredImageUrl!; } }}
           />
         )}
 
@@ -694,9 +698,10 @@ export function PostDetailClient({
                 >
                   {rp.featuredImageUrl && (
                     <img
-                      src={rp.featuredImageUrl}
+                      src={getImageVariantUrl(rp.featuredImageUrl, 'thumb')}
                       alt={rp.title}
                       className="mb-2 h-24 w-full rounded object-cover"
+                      onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = rp.featuredImageUrl!; } }}
                     />
                   )}
                   <p className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-primary">

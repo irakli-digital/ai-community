@@ -4,6 +4,7 @@ import { getUser, isPaidUser } from '@/lib/db/queries';
 import { hasAdminRole, hasModRole } from '@/lib/auth/roles';
 import { getPostById, getPostComments, getRelatedPosts } from '@/lib/db/community-queries';
 import { PostDetailClient } from './post-detail-client';
+import { getImageVariantUrl } from '@/lib/storage/image-utils';
 
 type Props = {
   params: Promise<{ postId: string }>;
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ? {
             images: [
               {
-                url: post.featuredImageUrl,
+                url: getImageVariantUrl(post.featuredImageUrl, 'og'),
                 width: 1200,
                 height: 630,
               },

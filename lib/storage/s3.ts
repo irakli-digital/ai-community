@@ -2,6 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -102,4 +103,41 @@ export async function deleteS3Object(key: string): Promise<void> {
   await s3Client.send(command);
 }
 
-export { ALLOWED_MIME_TYPES, MAX_FILE_SIZE };
+/**
+ * Download an object from S3 as a Buffer.
+ */
+export async function downloadFromS3(key: string): Promise<Buffer> {
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
+  const response = await s3Client.send(command);
+  const stream = response.Body;
+  if (!stream) throw new Error('Empty response body from S3');
+
+  // Convert the readable stream to a Buffer
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of stream as AsyncIterable<Uint8Array>) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
+/**
+ * Upload a Buffer to S3.
+ */
+export async function uploadBufferToS3(
+  key: string,
+  body: Buffer,
+  contentType: string
+): Promise<void> {
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+  });
+  await s3Client.send(command);
+}
+
+export { s3Client, bucket, ALLOWED_MIME_TYPES, MAX_FILE_SIZE };
