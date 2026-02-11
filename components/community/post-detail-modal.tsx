@@ -402,104 +402,6 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
                 />
               )}
 
-              {/* Copy for Agent + Share */}
-              {userId && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(post.content);
-                      } catch {
-                        const ta = document.createElement('textarea');
-                        ta.value = post.content;
-                        ta.style.position = 'fixed';
-                        ta.style.opacity = '0';
-                        document.body.appendChild(ta);
-                        ta.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(ta);
-                      }
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }}
-                    className="flex items-center gap-1.5 rounded-md border border-red-500/50 px-3 py-1.5 text-xs text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="h-3.5 w-3.5" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <ClipboardCopy className="h-3.5 w-3.5" />
-                        Copy for Agent
-                      </>
-                    )}
-                  </button>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowShareMenu(!showShareMenu)}
-                      className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                    >
-                      <Share2 className="h-3.5 w-3.5" />
-                      Share
-                    </button>
-                    {showShareMenu && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
-                        <div className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-md border border-border bg-card py-1 shadow-lg">
-                          <a
-                            href={`https://x.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
-                            onClick={() => setShowShareMenu(false)}
-                          >
-                            X (Twitter)
-                          </a>
-                          <a
-                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
-                            onClick={() => setShowShareMenu(false)}
-                          >
-                            Facebook
-                          </a>
-                          <a
-                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
-                            onClick={() => setShowShareMenu(false)}
-                          >
-                            LinkedIn
-                          </a>
-                          <a
-                            href={`https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
-                            onClick={() => setShowShareMenu(false)}
-                          >
-                            Telegram
-                          </a>
-                          <button
-                            className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
-                            onClick={() => {
-                              navigator.clipboard.writeText(postUrl);
-                              setShowShareMenu(false);
-                            }}
-                          >
-                            Copy Link
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Content */}
               <div className="prose prose-sm max-w-none text-foreground">
                 <MarkdownContent content={post.content} />
@@ -690,6 +592,104 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
             </div>
           ) : null}
         </div>
+
+        {/* Sticky Copy/Share footer */}
+        {!loading && post && userId && (
+          <div className="flex items-center gap-2 border-t border-border px-6 py-3">
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(post.content);
+                } catch {
+                  const ta = document.createElement('textarea');
+                  ta.value = post.content;
+                  ta.style.position = 'fixed';
+                  ta.style.opacity = '0';
+                  document.body.appendChild(ta);
+                  ta.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(ta);
+                }
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              className="flex items-center gap-1.5 rounded-md border border-red-500/50 px-3 py-1.5 text-xs text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <ClipboardCopy className="h-3.5 w-3.5" />
+                  Copy for Agent
+                </>
+              )}
+            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Share
+              </button>
+              {showShareMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
+                  <div className="absolute left-0 bottom-full z-20 mb-1 min-w-[160px] rounded-md border border-border bg-card py-1 shadow-lg">
+                    <a
+                      href={`https://x.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      X (Twitter)
+                    </a>
+                    <a
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      Facebook
+                    </a>
+                    <a
+                      href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      LinkedIn
+                    </a>
+                    <a
+                      href={`https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      Telegram
+                    </a>
+                    <button
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => {
+                        navigator.clipboard.writeText(postUrl);
+                        setShowShareMenu(false);
+                      }}
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

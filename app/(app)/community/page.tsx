@@ -47,6 +47,7 @@ export default async function CommunityPage({
 
   return (
     <CommunityFeed
+      key={categoryId ?? 'all'}
       initialPinned={pinnedPosts}
       initialPosts={feedPosts}
       initialCursor={nextCursor}
