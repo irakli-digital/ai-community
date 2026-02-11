@@ -27,6 +27,7 @@ export type FeedPost = {
   id: number;
   title: string;
   content: string;
+  featuredImageUrl: string | null;
   isPinned: boolean;
   likesCount: number;
   commentsCount: number;
@@ -80,6 +81,7 @@ export async function getFeedPosts(params: {
       id: posts.id,
       title: posts.title,
       content: posts.content,
+      featuredImageUrl: posts.featuredImageUrl,
       isPinned: posts.isPinned,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
@@ -123,6 +125,7 @@ export async function getFeedPosts(params: {
     id: r.id,
     title: r.title,
     content: r.content,
+    featuredImageUrl: r.featuredImageUrl,
     isPinned: r.isPinned,
     likesCount: r.likesCount,
     commentsCount: r.commentsCount,
@@ -167,6 +170,7 @@ export async function getPinnedPosts(params: {
       id: posts.id,
       title: posts.title,
       content: posts.content,
+      featuredImageUrl: posts.featuredImageUrl,
       isPinned: posts.isPinned,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
@@ -205,6 +209,7 @@ export async function getPinnedPosts(params: {
     id: r.id,
     title: r.title,
     content: r.content,
+    featuredImageUrl: r.featuredImageUrl,
     isPinned: r.isPinned,
     likesCount: r.likesCount,
     commentsCount: r.commentsCount,
@@ -245,6 +250,7 @@ export async function getPostById(
       id: posts.id,
       title: posts.title,
       content: posts.content,
+      featuredImageUrl: posts.featuredImageUrl,
       isPinned: posts.isPinned,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
@@ -295,6 +301,7 @@ export async function getPostById(
     id: r.id,
     title: r.title,
     content: r.content,
+    featuredImageUrl: r.featuredImageUrl,
     isPinned: r.isPinned,
     likesCount: r.likesCount,
     commentsCount: r.commentsCount,
@@ -417,4 +424,91 @@ export async function getPostComments(
   }
 
   return topLevel;
+}
+
+// ─── Related Posts ──────────────────────────────────────────────────────────
+
+export type RelatedPost = {
+  id: number;
+  title: string;
+  featuredImageUrl: string | null;
+  commentsCount: number;
+  likesCount: number;
+  createdAt: Date;
+  author: { name: string | null; avatarUrl: string | null };
+  category: { name: string; color: string } | null;
+};
+
+export async function getRelatedPosts(
+  postId: number,
+  categoryId: number | null,
+  limit = 5
+): Promise<RelatedPost[]> {
+  // Same category first, then recent posts, excluding the current post
+  const conditions = [isNull(posts.deletedAt), sql`${posts.id} != ${postId}`];
+  if (categoryId) {
+    conditions.push(eq(posts.categoryId, categoryId));
+  }
+
+  let rows = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      featuredImageUrl: posts.featuredImageUrl,
+      commentsCount: posts.commentsCount,
+      likesCount: posts.likesCount,
+      createdAt: posts.createdAt,
+      authorName: users.name,
+      authorAvatar: users.avatarUrl,
+      catName: categories.name,
+      catColor: categories.color,
+    })
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(categories, eq(posts.categoryId, categories.id))
+    .where(and(...conditions))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit);
+
+  // If not enough from same category, backfill with recent posts
+  if (categoryId && rows.length < limit) {
+    const existingIds = [postId, ...rows.map((r) => r.id)];
+    const backfill = await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        featuredImageUrl: posts.featuredImageUrl,
+        commentsCount: posts.commentsCount,
+        likesCount: posts.likesCount,
+        createdAt: posts.createdAt,
+        authorName: users.name,
+        authorAvatar: users.avatarUrl,
+        catName: categories.name,
+        catColor: categories.color,
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(categories, eq(posts.categoryId, categories.id))
+      .where(
+        and(
+          isNull(posts.deletedAt),
+          sql`${posts.id} NOT IN (${sql.join(existingIds.map((id) => sql`${id}`), sql`, `)})`
+        )
+      )
+      .orderBy(desc(posts.createdAt))
+      .limit(limit - rows.length);
+
+    rows = [...rows, ...backfill];
+  }
+
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    featuredImageUrl: r.featuredImageUrl,
+    commentsCount: r.commentsCount,
+    likesCount: r.likesCount,
+    createdAt: r.createdAt,
+    author: { name: r.authorName, avatarUrl: r.authorAvatar },
+    category: r.catName ? { name: r.catName, color: r.catColor! } : null,
+  }));
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "posts" ADD COLUMN "featured_image_url" text;

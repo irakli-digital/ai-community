@@ -1,9 +1,21 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkGithubAlerts from 'remark-github-alerts';
-import rehypeSanitize from 'rehype-sanitize';
+import remarkMark from '@/lib/remark-mark';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeSlug from 'rehype-slug';
 import type { ComponentPropsWithoutRef } from 'react';
+import { CopyablePreBlock } from './copyable-pre-block';
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames || []), 'mark'],
+  attributes: {
+    ...defaultSchema.attributes,
+    mark: ['className'],
+  },
+};
 
 interface MarkdownContentProps {
   content: string;
@@ -15,13 +27,14 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   return (
     <div className="rich-prose">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkGithubAlerts]}
+        remarkPlugins={[remarkGfm, remarkGithubAlerts, remarkMark]}
         rehypePlugins={[
-          rehypeSanitize,
+          rehypeRaw,
+          [rehypeSanitize, sanitizeSchema],
           rehypeSlug,
         ]}
         components={{
-          pre: PreBlock,
+          pre: CopyablePreBlock,
           code: CodeBlock,
           a: Anchor,
           img: Image,
@@ -31,16 +44,6 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
         {content}
       </ReactMarkdown>
     </div>
-  );
-}
-
-/** Styled fenced code block wrapper */
-function PreBlock(props: ComponentPropsWithoutRef<'pre'>) {
-  return (
-    <pre
-      className="overflow-x-auto rounded-lg bg-secondary p-4 text-sm"
-      {...props}
-    />
   );
 }
 

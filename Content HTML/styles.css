@@ -364,6 +364,208 @@ a:hover {
   margin: 1.5rem 0;
 }
 
+/* --- Copy for Agent Button --- */
+.copy-agent-btn {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--secondary);
+  color: var(--fg);
+  font-family: 'Noto Sans Georgian', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--muted);
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.copy-agent-btn:hover {
+  background: var(--accent);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.copy-agent-btn.copied {
+  background: var(--primary);
+  color: var(--primary-fg);
+  border-color: var(--primary);
+}
+
+.copy-agent-btn svg {
+  flex-shrink: 0;
+}
+
+/* --- Share Gate Overlay --- */
+.share-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(5, 4, 3, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.share-gate-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.share-gate {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.share-gate-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--muted-fg);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.share-gate-close:hover {
+  color: var(--fg);
+}
+
+.share-gate-icon {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.share-gate-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 0.5rem;
+}
+
+.share-gate-desc {
+  font-size: 0.82rem;
+  color: var(--muted-fg);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.share-gate-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.25rem;
+  border-radius: var(--radius);
+  font-family: 'Noto Sans Georgian', system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--muted);
+}
+
+.share-btn-x {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.share-btn-x:hover {
+  background: hsl(40 12% 80%);
+}
+
+.share-btn-li {
+  background: #0A66C2;
+  color: #fff;
+  border-color: #0A66C2;
+}
+
+.share-btn-li:hover {
+  background: #004182;
+}
+
+/* --- Countdown --- */
+.share-gate-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.countdown-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.countdown-num {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown-text {
+  font-size: 0.78rem;
+  color: var(--muted-fg);
+}
+
+/* --- Final copy button in modal --- */
+.share-gate-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-family: 'Noto Sans Georgian', system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.share-gate-copy-btn:hover {
+  background: hsl(16 53% 42%);
+}
+
 /* --- Print / PDF Export --- */
 @media print {
   body {
@@ -383,6 +585,10 @@ a:hover {
   }
 
   .account-follow-btn {
+    display: none;
+  }
+
+  .copy-agent-btn {
     display: none;
   }
 

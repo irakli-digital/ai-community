@@ -6,8 +6,11 @@ import Link from 'next/link';
 import { hasModRole } from '@/lib/auth/roles';
 import {
   X,
+  Check,
+  Copy,
   Heart,
   MessageCircle,
+  Pencil,
   Pin,
   PinOff,
   Trash2,
@@ -190,6 +193,7 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
   const [replyToId, setReplyToId] = useState<number | null>(null);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   const fetchData = useCallback(async () => {
     const result = await getPostDetail(postId);
@@ -297,12 +301,50 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
       <div className="relative z-10 mt-8 mb-8 flex max-h-[calc(100vh-4rem)] w-full max-w-2xl flex-col rounded-lg border border-border bg-background shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-foreground truncate mr-2">
             {loading ? t('common.loading') : post?.title}
           </h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {!loading && post && userId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(post.content);
+                  } catch {
+                    const ta = document.createElement('textarea');
+                    ta.value = post.content;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                  }
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            )}
+            {!loading && post && (isAuthor || isAdminOrMod) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  router.push(`/community/${post.id}/edit`);
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Scrollable content */}
@@ -362,6 +404,15 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
                   )}
                 </div>
               </div>
+
+              {/* Featured image */}
+              {post.featuredImageUrl && (
+                <img
+                  src={post.featuredImageUrl}
+                  alt={post.title}
+                  className="max-h-[400px] w-full rounded-lg object-cover"
+                />
+              )}
 
               {/* Content */}
               <div className="prose prose-sm max-w-none text-foreground">
@@ -460,6 +511,19 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
                           Pin
                         </>
                       )}
+                    </Button>
+                  )}
+                  {(isAuthor || isAdminOrMod) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        onClose();
+                        router.push(`/community/${post.id}/edit`);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Edit
                     </Button>
                   )}
                   {(isAuthor || isAdminOrMod) && (

@@ -9,11 +9,33 @@ const adminRoutes = ['/admin'];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Redirect everything to /waitinglist while the site is in pre-launch mode
-  // Only active when PRE_LAUNCH=true (set in production env, not in dev)
+  // Redirect public pages to /waitinglist while the site is in pre-launch mode
+  // Allow /sign-in, /admin, /api, and static assets through so admins can log in
   if (process.env.PRE_LAUNCH === 'true') {
-    if (pathname !== '/waitinglist' && !pathname.includes('.')) {
-      return NextResponse.redirect(new URL('/waitinglist', request.url));
+    const allowedInPreLaunch =
+      pathname === '/waitinglist' ||
+      pathname.startsWith('/sign-in') ||
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/api') ||
+      pathname.includes('.');
+
+    if (!allowedInPreLaunch) {
+      // If user is logged in as admin, let them through
+      const session = request.cookies.get('session');
+      if (session) {
+        try {
+          const parsed = await verifyToken(session.value);
+          if (hasAdminRole(parsed.user.role)) {
+            // Admin — skip pre-launch redirect
+          } else {
+            return NextResponse.redirect(new URL('/waitinglist', request.url));
+          }
+        } catch {
+          return NextResponse.redirect(new URL('/waitinglist', request.url));
+        }
+      } else {
+        return NextResponse.redirect(new URL('/waitinglist', request.url));
+      }
     }
   }
 

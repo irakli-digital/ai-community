@@ -125,6 +125,7 @@ const createPostSchema = z.object({
   categoryId: z.number().nullable().optional(),
   imageUrls: z.array(z.string().url()).optional(),
   linkUrl: z.string().url().optional().or(z.literal('')),
+  featuredImageUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export async function createPost(input: z.infer<typeof createPostSchema>) {
@@ -138,6 +139,7 @@ export async function createPost(input: z.infer<typeof createPostSchema>) {
       categoryId: data.categoryId ?? null,
       title: data.title,
       content: data.content,
+      featuredImageUrl: data.featuredImageUrl || null,
     })
     .returning();
 
@@ -175,6 +177,7 @@ const updatePostSchema = z.object({
   title: z.string().min(1).max(300),
   content: z.string().min(1).max(50000),
   categoryId: z.number().nullable().optional(),
+  featuredImageUrl: z.string().url().optional().or(z.literal('')),
 });
 
 export async function updatePost(input: z.infer<typeof updatePostSchema>) {
@@ -198,6 +201,7 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
       title: data.title,
       content: data.content,
       categoryId: data.categoryId ?? null,
+      featuredImageUrl: data.featuredImageUrl || null,
       updatedAt: new Date(),
     })
     .where(eq(posts.id, data.postId));

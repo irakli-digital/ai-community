@@ -113,6 +113,7 @@ export const posts = pgTable(
     categoryId: integer('category_id').references(() => categories.id),
     title: varchar('title', { length: 300 }).notNull(),
     content: text('content').notNull(),
+    featuredImageUrl: text('featured_image_url'),
     isPinned: boolean('is_pinned').notNull().default(false),
     likesCount: integer('likes_count').notNull().default(0),
     commentsCount: integer('comments_count').notNull().default(0),

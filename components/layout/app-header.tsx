@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { hasAdminRole } from '@/lib/auth/roles';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +26,8 @@ import { t } from '@/lib/i18n/ka';
 import useSWR, { mutate } from 'swr';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { SearchModal } from '@/components/search/search-modal';
+import { navItems, isNavActive } from '@/components/layout/app-nav-tabs';
+import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -34,6 +36,7 @@ import { useEffect } from 'react';
 export function AppHeader() {
   const { data: user } = useSWR<User>('/api/user', fetcher);
   const router = useRouter();
+  const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
 
   // Cmd+K shortcut
@@ -65,19 +68,50 @@ export function AppHeader() {
   return (
     <>
     <header className="sticky top-0 z-50 border-b border-border bg-background">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        {/* Left: logo */}
-        <div className="flex items-center gap-3">
-          <Link href="/community" className="flex items-center gap-2">
-            <img src="/logo.svg" alt={t('common.appName')} className="h-8 w-8" />
-            <span className="text-lg font-semibold text-foreground hidden sm:inline">
-              {t('common.appName')}
-            </span>
-          </Link>
-        </div>
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-1 px-4 sm:px-6">
+        {/* Logo */}
+        <Link href="/community" className="flex items-center mr-2">
+          <img src="/logo.svg" alt={t('common.appName')} className="h-7 w-7" />
+        </Link>
+
+        {/* Inline nav tabs */}
+        <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                isNavActive(pathname, item.href)
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {t(item.labelKey)}
+            </Link>
+          ))}
+          {hasAdminRole(user?.role) && (
+            <Link
+              href="/admin"
+              className={cn(
+                'flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                isNavActive(pathname, '/admin')
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+              )}
+            >
+              <Shield className="h-4 w-4" />
+              {t('nav.admin')}
+            </Link>
+          )}
+        </nav>
+
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Right: search, notifications, user menu */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
             <Search className="h-5 w-5 text-muted-foreground" />
           </Button>
@@ -87,10 +121,10 @@ export function AppHeader() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="user-menu">
-                  <Avatar className="h-9 w-9">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="user-menu">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage src={user.avatarUrl || undefined} alt={user.name || ''} />
-                    <AvatarFallback className="bg-secondary text-foreground text-sm font-medium">
+                    <AvatarFallback className="bg-secondary text-foreground text-xs font-medium">
                       {initials}
                     </AvatarFallback>
                   </Avatar>

@@ -13,8 +13,9 @@ import { PostDetailModal } from '@/components/community/post-detail-modal';
 import { t } from '@/lib/i18n/ka';
 import type { FeedPost } from '@/lib/db/community-queries';
 import type { Category } from '@/lib/db/schema';
-import { likePost, unlikePost } from './actions';
+import { likePost, unlikePost, deletePost } from './actions';
 import { loadMorePosts } from './load-more';
+import { hasModRole } from '@/lib/auth/roles';
 
 interface CommunityFeedProps {
   initialPinned: FeedPost[];
@@ -127,6 +128,28 @@ export function CommunityFeed({
 
   function handlePostClick(postId: number) {
     setSelectedPostId(postId);
+    window.history.pushState({ postId }, '', `/community/${postId}`);
+  }
+
+  // Handle browser back/forward to close/open modal
+  useEffect(() => {
+    function handlePopState(e: PopStateEvent) {
+      if (e.state?.postId) {
+        setSelectedPostId(e.state.postId);
+      } else {
+        setSelectedPostId(null);
+      }
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const canDelete = hasModRole(userRole);
+
+  async function handleDelete(postId: number) {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    setPinned((prev) => prev.filter((p) => p.id !== postId));
+    await deletePost(postId);
   }
 
   return (
@@ -169,7 +192,9 @@ export function CommunityFeed({
                   key={`pinned-${post.id}`}
                   post={post}
                   onLike={handleLike}
+                  onDelete={handleDelete}
                   canLike={canLike}
+                  canDelete={canDelete}
                   onClick={handlePostClick}
                 />
               ))}
@@ -183,7 +208,9 @@ export function CommunityFeed({
                 key={post.id}
                 post={post}
                 onLike={handleLike}
+                onDelete={handleDelete}
                 canLike={canLike}
+                canDelete={canDelete}
                 onClick={handlePostClick}
               />
             ))}
@@ -206,7 +233,7 @@ export function CommunityFeed({
 
         {/* Right column: sidebar */}
         <div className="hidden lg:block">
-          <div className="sticky top-[8.5rem]">
+          <div className="sticky top-[5rem]">
             <CommunitySidebar
               name={communityName}
               description={communityDescription}
@@ -222,7 +249,10 @@ export function CommunityFeed({
       {selectedPostId && (
         <PostDetailModal
           postId={selectedPostId}
-          onClose={() => setSelectedPostId(null)}
+          onClose={() => {
+            setSelectedPostId(null);
+            window.history.pushState(null, '', '/community');
+          }}
           onPostDeleted={() => {
             setPosts((prev) => prev.filter((p) => p.id !== selectedPostId));
             setPinned((prev) => prev.filter((p) => p.id !== selectedPostId));

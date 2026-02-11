@@ -301,10 +301,36 @@
       margin: 1.25rem 0;
     }
 
-    /* Pre / code block wrapper — shiki provides the <pre>, we just ensure spacing */
+    /* Pre / code block wrapper — spacing handled by CopyablePreBlock wrapper div */
     & pre {
-      margin: 1.25rem 0;
       border-radius: 0.5rem;
+    }
+
+    /* Text highlight / marker */
+    & mark,
+    & mark * {
+      color: hsl(0 0% 5%) !important;
+    }
+    & mark {
+      background: hsl(16 70% 55%);
+      padding: 0.1rem 0.3rem;
+      border-radius: 0.15rem;
+
+      &.mark-yellow {
+        background: hsl(48 96% 55%);
+      }
+      &.mark-green {
+        background: hsl(152 80% 42%);
+      }
+      &.mark-blue {
+        background: hsl(215 90% 62%);
+      }
+      &.mark-red {
+        background: hsl(4 85% 58%);
+      }
+      &.mark-purple {
+        background: hsl(275 75% 62%);
+      }
     }
 
     /* First child has no top margin */
@@ -335,10 +361,10 @@
     }
   }
   .markdown-alert-note {
-    border-left-color: var(--accent);
-    background: hsl(25 5% 21% / 0.3);
+    border-left-color: hsl(152 55% 45%);
+    background: hsl(152 50% 40% / 0.1);
     & .markdown-alert-title {
-      color: var(--accent-foreground);
+      color: hsl(152 55% 50%);
     }
   }
   .markdown-alert-tip {

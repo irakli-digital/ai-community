@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
       case 'avatar':
         key = getAvatarKey(user.id, extension);
         break;
+      case 'post':
+        key = `posts/featured/${user.id}/${Date.now()}.${extension}`;
+        break;
       default:
         key = `uploads/${user.id}/${Date.now()}.${extension}`;
         break;

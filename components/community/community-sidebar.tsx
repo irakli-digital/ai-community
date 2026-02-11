@@ -45,22 +45,11 @@ export function CommunitySidebar({
     <aside className="space-y-4">
       {/* Community info */}
       <div className="rounded-lg border border-border bg-card p-5">
-        <div className="flex items-center gap-3">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={name}
-              className="h-12 w-12 rounded-lg object-cover"
-            />
-          ) : (
-            <img src="/logo.svg" alt="Agentic Tribe" className="h-12 w-12" />
+        <div>
+          <h2 className="font-semibold text-foreground">{name}</h2>
+          {description && (
+            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{description}</p>
           )}
-          <div>
-            <h2 className="font-semibold text-foreground">{name}</h2>
-            {description && (
-              <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>
-            )}
-          </div>
         </div>
 
         {/* Stats */}

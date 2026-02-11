@@ -22,6 +22,11 @@ All HTML files must use the shared `styles.css` in this folder. The CSS mirrors 
 | `--secondary`     | `hsl(25 6% 12%)`      | Elevated surface     |
 | `--accent`        | `hsl(25 5% 21%)`      | Hover / highlight    |
 
+## Layout
+- Every content page uses **A4 proportions** with a fixed container: `width: 1080px; height: 1528px` (ratio 1:1.414)
+- The container class is `.page-a4` — all elements must fit within this fixed frame with no overflow
+- Use `padding: 3rem` inside the container; adjust font sizes and spacing so content fills the page without scrolling
+
 ## Rules
 - Always link `styles.css` — never inline theme colors
 - Use Georgian (ka) for all user-facing text
@@ -30,3 +35,4 @@ All HTML files must use the shared `styles.css` in this folder. The CSS mirrors 
 - Optimize for both screen viewing and PDF export (use `@media print` styles from the shared CSS)
 - Include the Agentic Tribe branding footer in every post
 - Font stack: `"BPG Nino Mtavruli", "BPG Arial", system-ui, sans-serif` for Georgian text
+- To convert HTML files to PDF, run `node convert-to-pdf.js` (requires Playwright — install with `npx playwright install chromium`)

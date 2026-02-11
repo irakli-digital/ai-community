@@ -141,18 +141,49 @@ export async function getMemberCount() {
 }
 
 export async function getOnlineMemberCount() {
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-  const result = await db
+  // Simulated online count based on total members + Georgia timezone (UTC+4)
+  const totalResult = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(users)
-    .where(
-      and(
-        isNull(users.deletedAt),
-        sql`${users.lastSeenAt} > ${fiveMinutesAgo}::timestamp`
-      )
-    );
+    .where(isNull(users.deletedAt));
 
-  return result[0]?.count ?? 0;
+  const totalMembers = totalResult[0]?.count ?? 0;
+  if (totalMembers === 0) return 0;
+
+  // Get Georgia time (UTC+4)
+  const now = new Date();
+  const georgiaHour = (now.getUTCHours() + 4) % 24;
+
+  // Determine percentage range based on time of day
+  let minPct: number;
+  let maxPct: number;
+
+  if (georgiaHour >= 9 && georgiaHour <= 22) {
+    // Daytime: 15-20%
+    minPct = 15;
+    maxPct = 20;
+  } else if (
+    (georgiaHour >= 7 && georgiaHour < 9) ||
+    georgiaHour === 23
+  ) {
+    // Transition: 5-10%
+    minPct = 5;
+    maxPct = 10;
+  } else {
+    // Night (0-6h): 1-3%
+    minPct = 1;
+    maxPct = 3;
+  }
+
+  // Stable per 20-minute window using seeded pseudo-random (LCG)
+  const intervalIndex = Math.floor(now.getTime() / (20 * 60 * 1000));
+  const seed = intervalIndex * 2654435761; // Knuth multiplicative hash
+  const pseudoRandom = ((seed & 0x7fffffff) % 1000) / 1000; // 0..1
+
+  const pct = minPct + pseudoRandom * (maxPct - minPct);
+  const onlineCount = Math.max(1, Math.round(totalMembers * (pct / 100)));
+
+  return onlineCount;
 }
 
 export async function isPaidUser(userId: number): Promise<boolean> {

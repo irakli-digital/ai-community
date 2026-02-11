@@ -15,7 +15,7 @@
     }
     .square {
       width: 1080px;
-      height: 1080px;
+      height: 1528px;
       background: var(--bg);
       border: 1px solid var(--muted);
       border-radius: var(--radius-lg);
@@ -62,19 +62,18 @@
       line-height: 1.5;
     }
 
-    /* Two-column layout */
+    /* Single-column body */
     .sq-body {
       flex: 1;
       display: flex;
-      gap: 2rem;
+      flex-direction: column;
+      gap: 1.25rem;
       min-height: 0;
     }
 
-    /* Steps column */
-    .steps-col {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+    /* Steps section */
+    .steps-section {
+      flex-shrink: 0;
     }
     .steps-label {
       font-size: 0.7rem;
@@ -82,42 +81,43 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--primary);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
       padding-bottom: 0.4rem;
       border-bottom: 1px solid var(--muted);
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.3rem 1.5rem;
     }
     .step {
       display: flex;
       align-items: flex-start;
-      gap: 0.75rem;
-      padding: 0.65rem 0;
-      border-bottom: 1px solid hsl(25 5% 10%);
-    }
-    .step:last-child {
-      border-bottom: none;
+      gap: 0.6rem;
+      padding: 0.45rem 0;
     }
     .step-num {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 1.65rem;
-      height: 1.65rem;
+      min-width: 1.5rem;
+      height: 1.5rem;
       background: var(--primary);
       color: var(--primary-fg);
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       border-radius: 50%;
       flex-shrink: 0;
       margin-top: 0.05rem;
     }
     .step-text {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--fg);
-      line-height: 1.5;
+      line-height: 1.45;
     }
     .step-text .dim {
       color: var(--muted-fg);
-      font-size: 0.78rem;
+      font-size: 0.75rem;
     }
 
     /* Result box */
@@ -125,22 +125,23 @@
       background: var(--secondary);
       border: 1px solid var(--muted);
       border-radius: var(--radius);
-      padding: 1rem 1.1rem;
-      margin-top: auto;
-      font-size: 0.85rem;
+      padding: 0.8rem 1rem;
+      margin-top: 0.5rem;
+      font-size: 0.82rem;
       color: var(--fg);
-      line-height: 1.6;
+      line-height: 1.5;
     }
     .result-box strong {
       color: var(--primary);
     }
 
-    /* Image column */
-    .demo-col {
+    /* Demo image section */
+    .demo-section {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.5rem;
+      min-height: 0;
     }
     .demo-label {
       font-size: 0.7rem;
@@ -150,6 +151,7 @@
       color: var(--primary);
       padding-bottom: 0.4rem;
       border-bottom: 1px solid var(--muted);
+      flex-shrink: 0;
     }
     .demo-img-wrap {
       flex: 1;
@@ -161,8 +163,8 @@
     .demo-img-wrap img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      object-position: top right;
+      object-fit: contain;
+      object-position: center top;
       display: block;
     }
 
@@ -201,63 +203,65 @@
     <div class="sq-header">
       <div class="sq-badge">გაიდი</div>
       <h1>AI აგენტი, რომელიც <span class="accent">X</span>-ს<br>ჩემს მაგივრად კითხულობს</h1>
-      <p class="sq-subtitle">ყოველდღიური AI დაიჯესტი თელეგრამზე — 5 ნაბიჯით</p>
+      <p class="sq-subtitle">ყოველდღიური AI დაიჯესტი ტელეგრამზე - 5 საფეხური</p>
     </div>
 
-    <!-- Body: steps + demo image -->
+    <!-- Body: steps on top, image below -->
     <div class="sq-body">
 
-      <!-- Left: Steps -->
-      <div class="steps-col">
+      <!-- Steps -->
+      <div class="steps-section">
         <div class="steps-label">როგორ მუშაობს</div>
 
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-text">
-            X API-ზე წვდომის მიღება
-            <div class="dim">დეველოპერ ექაუნთი</div>
+        <div class="steps-grid">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">
+              X API-ზე წვდომის მიღება
+              <div class="dim">დეველოპერ ექაუნთი</div>
+            </div>
           </div>
-        </div>
 
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-text">
-            .md კონფიგურაციის დაწერა
-            <div class="dim">რომელ ექაუნთებს ადევნოს თვალი და როგორ გაფილტროს</div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">
+              .md კონფიგურაციის დაწერა
+              <div class="dim">რომელ ექაუნთებს ადევნოს თვალი</div>
+            </div>
           </div>
-        </div>
 
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-text">
-            ტელეგრამ არხის შექმნა
-            <div class="dim">დაიჯესტისთვის</div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text">
+              ტელეგრამ არხის შექმნა
+              <div class="dim">დაიჯესტისთვის</div>
+            </div>
           </div>
-        </div>
 
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-text">
-            AI აგენტის დაკავშირება არხთან
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text">
+              AI აგენტის დაკავშირება არხთან
+            </div>
           </div>
-        </div>
 
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-text">
-            Cron job-ის დაყენება
-            <div class="dim">დღეში ერთხელ ან ორჯერ</div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-text">
+              Cron job-ის დაყენება
+              <div class="dim">დღეში ერთხელ ან ორჯერ</div>
+            </div>
           </div>
         </div>
 
         <div class="result-box">
-          აგენტი კითხულობს, აჯამებს და აგზავნის.<br>
+          აგენტი კითხულობს, აჯამებს და აგზავნის.
           <strong>ყოველ დილით ახალი AI ბრიფინგით იღვიძებ.</strong>
         </div>
       </div>
 
-      <!-- Right: Demo image -->
-      <div class="demo-col">
+      <!-- Demo image -->
+      <div class="demo-section">
         <div class="demo-label">თელეგრამ დაიჯესტი</div>
         <div class="demo-img-wrap">
           <img src="x-digest-demo.png" alt="X Digest Telegram Bot Demo">

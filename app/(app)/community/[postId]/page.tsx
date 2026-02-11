@@ -1,8 +1,43 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getUser, isPaidUser } from '@/lib/db/queries';
 import { hasAdminRole, hasModRole } from '@/lib/auth/roles';
-import { getPostById, getPostComments } from '@/lib/db/community-queries';
+import { getPostById, getPostComments, getRelatedPosts } from '@/lib/db/community-queries';
 import { PostDetailClient } from './post-detail-client';
+
+type Props = {
+  params: Promise<{ postId: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { postId: postIdStr } = await params;
+  const postId = Number(postIdStr);
+  if (isNaN(postId)) return {};
+
+  const post = await getPostById(postId);
+  if (!post) return {};
+
+  return {
+    title: `${post.title} — Agentic Tribe`,
+    description: post.content.slice(0, 160),
+    openGraph: {
+      title: post.title,
+      description: post.content.slice(0, 160),
+      type: 'article',
+      ...(post.featuredImageUrl
+        ? {
+            images: [
+              {
+                url: post.featuredImageUrl,
+                width: 1200,
+                height: 630,
+              },
+            ],
+          }
+        : {}),
+    },
+  };
+}
 
 export default async function PostDetailPage({
   params,
@@ -17,7 +52,10 @@ export default async function PostDetailPage({
   const post = await getPostById(postId, user?.id);
   if (!post) notFound();
 
-  const comments = await getPostComments(postId, user?.id);
+  const [comments, relatedPosts] = await Promise.all([
+    getPostComments(postId, user?.id),
+    getRelatedPosts(postId, post.categoryId ?? null),
+  ]);
   const paid = user ? await isPaidUser(user.id) : false;
   const canLike = paid || hasAdminRole(user?.role);
   const isAuthor = user?.id === post.author.id;
@@ -27,6 +65,7 @@ export default async function PostDetailPage({
     <PostDetailClient
       post={post}
       comments={comments}
+      relatedPosts={relatedPosts}
       canLike={canLike ?? false}
       isAuthor={isAuthor}
       isAdminOrMod={isAdminOrMod ?? false}

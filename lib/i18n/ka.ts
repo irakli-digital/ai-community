@@ -162,6 +162,11 @@ const dictionary = {
   'upload.uploading': 'Uploading...',
   'upload.invalidType': 'File type is not allowed.',
   'upload.tooLarge': 'File is too large. Maximum 5MB.',
+  'upload.cropConfirm': 'Crop & Upload',
+  'upload.presignFailed': 'Failed to prepare upload. Check S3 configuration.',
+  'upload.s3Failed': 'Upload to storage failed. Check S3 CORS settings.',
+  'upload.networkError': 'Network error — check S3 bucket CORS configuration (must allow PUT from your domain).',
+  'upload.genericError': 'Upload failed. Please try again.',
 
   // ─── Admin ──────────────────────────────────────────────────────────
   'admin.title': 'Admin Panel',

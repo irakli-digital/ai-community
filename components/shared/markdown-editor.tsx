@@ -12,6 +12,8 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkGithubAlerts from 'remark-github-alerts';
+import remarkMark from '@/lib/remark-mark';
+import rehypeRaw from 'rehype-raw';
 import { cn } from '@/lib/utils';
 import {
   Bold,
@@ -25,6 +27,7 @@ import {
   ImageIcon,
   Table,
   Minus,
+  Highlighter,
   MessageSquare,
   Eye,
   Columns2,
@@ -190,6 +193,19 @@ export function MarkdownEditor({
   );
 
   const [showCalloutMenu, setShowCalloutMenu] = useState(false);
+  const [showHighlightMenu, setShowHighlightMenu] = useState(false);
+
+  const highlightColors = useMemo(
+    () => [
+      { prefix: '', label: 'Default', css: 'bg-primary/20' },
+      { prefix: 'yellow:', label: 'Yellow', css: 'bg-yellow-500/25' },
+      { prefix: 'green:', label: 'Green', css: 'bg-green-500/25' },
+      { prefix: 'blue:', label: 'Blue', css: 'bg-blue-500/25' },
+      { prefix: 'red:', label: 'Red', css: 'bg-red-500/25' },
+      { prefix: 'purple:', label: 'Purple', css: 'bg-purple-500/25' },
+    ],
+    []
+  );
 
   /** Handle keyboard shortcuts */
   const handleKeyDown = useCallback(
@@ -253,11 +269,47 @@ export function MarkdownEditor({
           </button>
         ))}
 
+        {/* Highlight color dropdown */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => {
+              setShowHighlightMenu(!showHighlightMenu);
+              setShowCalloutMenu(false);
+            }}
+            title="Highlight"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Highlighter className="h-4 w-4" />
+          </button>
+          {showHighlightMenu && (
+            <div className="absolute left-0 top-full z-10 mt-1 min-w-[140px] rounded-md border border-border bg-card py-1 shadow-lg">
+              {highlightColors.map((hc) => (
+                <button
+                  key={hc.prefix || 'default'}
+                  type="button"
+                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                  onClick={() => {
+                    wrapSelection(`==${hc.prefix}`, '==');
+                    setShowHighlightMenu(false);
+                  }}
+                >
+                  <span className={cn('inline-block h-3 w-3 rounded-sm', hc.css)} />
+                  {hc.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Callout dropdown */}
         <div className="relative">
           <button
             type="button"
-            onClick={() => setShowCalloutMenu(!showCalloutMenu)}
+            onClick={() => {
+              setShowCalloutMenu(!showCalloutMenu);
+              setShowHighlightMenu(false);
+            }}
             title="Callout"
             className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
@@ -350,7 +402,10 @@ export function MarkdownEditor({
           >
             {debouncedValue ? (
               <div className="rich-prose">
-                <ReactMarkdown remarkPlugins={[remarkGfm, remarkGithubAlerts]}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkGithubAlerts, remarkMark]}
+                  rehypePlugins={[rehypeRaw]}
+                >
                   {debouncedValue}
                 </ReactMarkdown>
               </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Heart, MessageCircle, Pin } from 'lucide-react';
+import { Heart, MessageCircle, Pin, Trash2 } from 'lucide-react';
 import { t } from '@/lib/i18n/ka';
 import type { FeedPost } from '@/lib/db/community-queries';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,11 +12,13 @@ import { LevelBadge } from '@/components/members/level-badge';
 interface PostCardProps {
   post: FeedPost;
   onLike?: (postId: number, liked: boolean) => void;
+  onDelete?: (postId: number) => void;
   canLike?: boolean;
+  canDelete?: boolean;
   onClick?: (postId: number) => void;
 }
 
-export function PostCard({ post, onLike, canLike, onClick }: PostCardProps) {
+export function PostCard({ post, onLike, onDelete, canLike, canDelete, onClick }: PostCardProps) {
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
     locale: enUS,
@@ -85,43 +87,64 @@ export function PostCard({ post, onLike, canLike, onClick }: PostCardProps) {
         <h3 className="mt-3 text-lg font-semibold text-foreground hover:text-muted-foreground">
           {post.title}
         </h3>
+        {post.featuredImageUrl && (
+          <img
+            src={post.featuredImageUrl}
+            alt=""
+            className="mt-2 h-40 w-full rounded-lg object-cover"
+          />
+        )}
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           {contentPreview}
         </p>
       </Link>
 
       {/* Footer */}
-      <div className="mt-4 flex items-center gap-4 border-t border-border pt-3">
-        <button
-          onClick={() => canLike && onLike?.(post.id, post.liked)}
-          className={cn(
-            'flex items-center gap-1.5 text-sm transition-colors',
-            post.liked
-              ? 'text-red-500'
-              : canLike
-                ? 'text-muted-foreground hover:text-red-500'
-                : 'cursor-default text-muted-foreground'
-          )}
-          disabled={!canLike}
-        >
-          <Heart
-            className={cn('h-4 w-4', post.liked && 'fill-current')}
-          />
-          {post.likesCount}
-        </button>
-        <Link
-          href={`/community/${post.id}`}
-          onClick={(e) => {
-            if (onClick) {
-              e.preventDefault();
-              onClick(post.id);
-            }
-          }}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <MessageCircle className="h-4 w-4" />
-          {post.commentsCount}
-        </Link>
+      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => canLike && onLike?.(post.id, post.liked)}
+            className={cn(
+              'flex items-center gap-1.5 text-sm transition-colors',
+              post.liked
+                ? 'text-red-500'
+                : canLike
+                  ? 'text-muted-foreground hover:text-red-500'
+                  : 'cursor-default text-muted-foreground'
+            )}
+            disabled={!canLike}
+          >
+            <Heart
+              className={cn('h-4 w-4', post.liked && 'fill-current')}
+            />
+            {post.likesCount}
+          </button>
+          <Link
+            href={`/community/${post.id}`}
+            onClick={(e) => {
+              if (onClick) {
+                e.preventDefault();
+                onClick(post.id);
+              }
+            }}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <MessageCircle className="h-4 w-4" />
+            {post.commentsCount}
+          </Link>
+        </div>
+        {canDelete && (
+          <button
+            onClick={() => {
+              if (confirm('Are you sure you want to delete this post?')) {
+                onDelete?.(post.id);
+              }
+            }}
+            className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

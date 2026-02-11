@@ -7,7 +7,6 @@ import {
   MessageSquare,
   GraduationCap,
   Users,
-  Trophy,
   Shield,
 } from 'lucide-react';
 import { t } from '@/lib/i18n/ka';
@@ -17,21 +16,21 @@ import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const navItems = [
+export const navItems = [
   { href: '/community', icon: MessageSquare, labelKey: 'nav.community' as const },
   { href: '/classroom', icon: GraduationCap, labelKey: 'nav.classroom' as const },
   // { href: '/members', icon: Users, labelKey: 'nav.members' as const },
-  { href: '/leaderboard', icon: Trophy, labelKey: 'nav.leaderboard' as const },
+  // { href: '/leaderboard', icon: Trophy, labelKey: 'nav.leaderboard' as const },
 ];
+
+export function isNavActive(pathname: string, href: string) {
+  if (href === '/community') return pathname === '/community' || pathname.startsWith('/community/');
+  return pathname.startsWith(href);
+}
 
 export function AppNavTabs() {
   const pathname = usePathname();
   const { data: user } = useSWR<User>('/api/user', fetcher);
-
-  const isActive = (href: string) => {
-    if (href === '/community') return pathname === '/community' || pathname.startsWith('/community/');
-    return pathname.startsWith(href);
-  };
 
   return (
     <div className="sticky top-16 z-40 border-b border-border bg-background">
@@ -43,7 +42,7 @@ export function AppNavTabs() {
               href={item.href}
               className={cn(
                 'flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors',
-                isActive(item.href)
+                isNavActive(pathname, item.href)
                   ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
               )}
@@ -57,7 +56,7 @@ export function AppNavTabs() {
               href="/admin"
               className={cn(
                 'flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors',
-                isActive('/admin')
+                isNavActive(pathname, '/admin')
                   ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
               )}

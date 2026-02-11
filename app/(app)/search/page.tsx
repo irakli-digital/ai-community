@@ -5,17 +5,15 @@ import { useSearchParams } from 'next/navigation';
 import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LevelBadge } from '@/components/members/level-badge';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 
-type SearchTab = 'posts' | 'courses' | 'members';
+type SearchTab = 'posts' | 'courses';
 
 const tabs: { key: SearchTab; label: string }[] = [
   { key: 'posts', label: 'Posts' },
   { key: 'courses', label: 'Courses' },
-  { key: 'members', label: 'Members' },
 ];
 
 function SearchPageInner() {
@@ -85,7 +83,7 @@ function SearchPageInner() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search posts, courses, members..."
+          placeholder="Search posts, courses..."
           className="w-full rounded-lg border border-border bg-card pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
           autoFocus
         />
@@ -193,31 +191,6 @@ function SearchPageInner() {
             </Link>
           ))}
 
-        {/* Member results */}
-        {activeTab === 'members' &&
-          results.map((member: any) => (
-            <Link
-              key={member.id}
-              href={`/members/${member.id}`}
-              className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:border-primary/50 transition-colors"
-            >
-              <Avatar className="h-10 w-10 flex-shrink-0">
-                <AvatarImage src={member.avatarUrl || undefined} />
-                <AvatarFallback>
-                  {member.name?.[0] || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground">
-                    {member.name || 'Unnamed'}
-                  </p>
-                  <LevelBadge level={member.level} />
-                </div>
-                <p className="text-xs text-muted-foreground">{member.points} points</p>
-              </div>
-            </Link>
-          ))}
       </div>
 
       {/* Load more */}

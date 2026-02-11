@@ -1,29 +1,40 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Image as ImageIcon, Link2, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { ImageUpload } from '@/components/shared/image-upload';
 import { t } from '@/lib/i18n/ka';
-import { createPost } from '../actions';
+import { updatePost } from '../../actions';
 import { getCategories } from '@/app/(app)/admin/categories/actions';
 import type { Category } from '@/lib/db/schema';
 
-export default function NewPostPage() {
+interface EditPostClientProps {
+  postId: number;
+  initialTitle: string;
+  initialContent: string;
+  initialCategoryId: number | null;
+  initialFeaturedImageUrl: string | null;
+}
+
+export function EditPostClient({
+  postId,
+  initialTitle,
+  initialContent,
+  initialCategoryId,
+  initialFeaturedImageUrl,
+}: EditPostClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [featuredImageUrl, setFeaturedImageUrl] = useState('');
-  const [linkUrl, setLinkUrl] = useState('');
-  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [title, setTitle] = useState(initialTitle);
+  const [content, setContent] = useState(initialContent);
+  const [categoryId, setCategoryId] = useState<number | null>(initialCategoryId);
+  const [featuredImageUrl, setFeaturedImageUrl] = useState(initialFeaturedImageUrl || '');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -37,16 +48,14 @@ export default function NewPostPage() {
     setError('');
     startTransition(async () => {
       try {
-        const result = await createPost({
+        await updatePost({
+          postId,
           title: title.trim(),
           content: content.trim(),
           categoryId,
-          linkUrl: linkUrl.trim() || undefined,
           featuredImageUrl: featuredImageUrl || undefined,
         });
-        if (result.postId) {
-          router.push(`/community/${result.postId}`);
-        }
+        router.push(`/community/${postId}`);
       } catch (err: any) {
         setError(err.message || t('error.generic'));
       }
@@ -56,22 +65,34 @@ export default function NewPostPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/community">
+        <Link href={`/community/${postId}`}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <h1 className="text-2xl font-bold text-foreground">
-          {t('community.newPost')}
+          Edit Post
         </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </div>
         )}
+
+        {/* Featured Image */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-foreground">
+            Featured Image
+          </label>
+          <ImageUpload
+            currentUrl={featuredImageUrl || null}
+            onUpload={setFeaturedImageUrl}
+            onRemove={() => setFeaturedImageUrl('')}
+          />
+        </div>
 
         {/* Category */}
         {categories.length > 0 && (
@@ -114,18 +135,6 @@ export default function NewPostPage() {
           </div>
         )}
 
-        {/* Featured Image */}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-foreground">
-            Featured Image
-          </label>
-          <ImageUpload
-            currentUrl={featuredImageUrl || null}
-            onUpload={setFeaturedImageUrl}
-            onRemove={() => setFeaturedImageUrl('')}
-          />
-        </div>
-
         {/* Title */}
         <div>
           <label className="mb-1 block text-sm font-medium text-foreground">
@@ -153,48 +162,12 @@ export default function NewPostPage() {
           />
         </div>
 
-        {/* Link embed */}
-        {showLinkInput ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              placeholder="https://example.com"
-              type="url"
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setShowLinkInput(false);
-                setLinkUrl('');
-              }}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowLinkInput(true)}
-            >
-              <Link2 className="h-4 w-4" />
-              Add Link
-            </Button>
-          </div>
-        )}
-
         {/* Submit */}
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={isPending || !title || !content}>
-            {isPending ? t('common.loading') : 'Publish'}
+            {isPending ? t('common.loading') : 'Save Changes'}
           </Button>
-          <Link href="/community">
+          <Link href={`/community/${postId}`}>
             <Button type="button" variant="ghost">
               {t('common.cancel')}
             </Button>

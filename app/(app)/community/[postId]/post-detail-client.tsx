@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  Check,
+  ClipboardCopy,
   Heart,
   Lock,
   MessageCircle,
+  Pencil,
   Pin,
   PinOff,
+  Share2,
   Trash2,
   ExternalLink,
 } from 'lucide-react';
@@ -18,7 +22,7 @@ import { t } from '@/lib/i18n/ka';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import type { PostDetail, CommentWithAuthor } from '@/lib/db/community-queries';
+import type { PostDetail, CommentWithAuthor, RelatedPost } from '@/lib/db/community-queries';
 import { LevelBadge } from '@/components/members/level-badge';
 import {
   likePost,
@@ -169,6 +173,7 @@ function CommentItem({
 export function PostDetailClient({
   post,
   comments: initialComments,
+  relatedPosts,
   canLike,
   isAuthor,
   isAdminOrMod,
@@ -177,6 +182,7 @@ export function PostDetailClient({
 }: {
   post: PostDetail;
   comments: CommentWithAuthor[];
+  relatedPosts: RelatedPost[];
   canLike: boolean;
   isAuthor: boolean;
   isAdminOrMod: boolean;
@@ -190,8 +196,13 @@ export function PostDetailClient({
   const [liked, setLiked] = useState(post.liked);
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [authModal, setAuthModal] = useState<{ open: boolean; mode: 'signin' | 'signup' }>({ open: false, mode: 'signup' });
+  const [copied, setCopied] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const isGuest = userId === null;
+  const postUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/community/${post.id}`
+    : '';
 
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
     addSuffix: true,
@@ -249,15 +260,46 @@ export function PostDetailClient({
     });
   }
 
+  async function handleCopyContent() {
+    try {
+      await navigator.clipboard.writeText(post.content);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = post.content;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Back */}
-      <Link href="/community">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="h-4 w-4" />
-          {t('common.back')}
-        </Button>
-      </Link>
+    <div className="flex gap-6">
+      {/* Main column */}
+      <div className="min-w-0 flex-1 space-y-6 lg:max-w-[720px]">
+      {/* Top bar: Back + actions */}
+      <div className="flex items-center justify-between">
+        <Link href="/community">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="h-4 w-4" />
+            {t('common.back')}
+          </Button>
+        </Link>
+        <div className="flex items-center gap-2">
+          {(isAuthor || isAdminOrMod) && !isGuest && (
+            <Link href={`/community/${post.id}/edit`}>
+              <Button variant="ghost" size="sm">
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+          )}
+        </div>
+      </div>
 
       {/* Post */}
       <article className="rounded-lg border bg-card p-6">
@@ -305,6 +347,98 @@ export function PostDetailClient({
 
         {/* Title */}
         <h1 className="mt-4 text-2xl font-bold text-foreground">{post.title}</h1>
+
+        {/* Featured image */}
+        {post.featuredImageUrl && (
+          <img
+            src={post.featuredImageUrl}
+            alt={post.title}
+            className="mt-4 max-h-[400px] w-full rounded-lg object-cover"
+          />
+        )}
+
+        {/* Copy for Agent + Share */}
+        {!isGuest && (
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={handleCopyContent}
+              className="flex items-center gap-1.5 rounded-md border border-red-500/50 px-3 py-1.5 text-xs text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <ClipboardCopy className="h-3.5 w-3.5" />
+                  Copy for Agent
+                </>
+              )}
+            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                Share
+              </button>
+              {showShareMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
+                  <div className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-md border border-border bg-card py-1 shadow-lg">
+                    <a
+                      href={`https://x.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      X (Twitter)
+                    </a>
+                    <a
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      Facebook
+                    </a>
+                    <a
+                      href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      LinkedIn
+                    </a>
+                    <a
+                      href={`https://t.me/share/url?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => setShowShareMenu(false)}
+                    >
+                      Telegram
+                    </a>
+                    <button
+                      className="block w-full px-3 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                      onClick={() => {
+                        navigator.clipboard.writeText(postUrl);
+                        setShowShareMenu(false);
+                      }}
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Content (markdown) — truncated with gradient for guests */}
         {isGuest ? (
@@ -447,6 +581,17 @@ export function PostDetailClient({
                 </Button>
               )}
               {(isAuthor || isAdminOrMod) && (
+                <Link href={`/community/${post.id}/edit`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </Button>
+                </Link>
+              )}
+              {(isAuthor || isAdminOrMod) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -531,6 +676,56 @@ export function PostDetailClient({
         onClose={() => setAuthModal({ open: false, mode: 'signup' })}
         defaultMode={authModal.mode}
       />
+      </div>
+
+      {/* Right sidebar — Related Posts */}
+      <aside className="hidden w-72 shrink-0 lg:block">
+        <div className="sticky top-20 space-y-4">
+          <h3 className="text-sm font-semibold text-foreground">Related Posts</h3>
+          {relatedPosts.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No related posts yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {relatedPosts.map((rp) => (
+                <Link
+                  key={rp.id}
+                  href={`/community/${rp.id}`}
+                  className="group block rounded-lg border border-border bg-card p-3 transition-colors hover:bg-accent/50"
+                >
+                  {rp.featuredImageUrl && (
+                    <img
+                      src={rp.featuredImageUrl}
+                      alt={rp.title}
+                      className="mb-2 h-24 w-full rounded object-cover"
+                    />
+                  )}
+                  <p className="line-clamp-2 text-sm font-medium text-foreground group-hover:text-primary">
+                    {rp.title}
+                  </p>
+                  <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Heart className="h-3 w-3" />
+                      {rp.likesCount}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MessageCircle className="h-3 w-3" />
+                      {rp.commentsCount}
+                    </span>
+                  </div>
+                  {rp.category && (
+                    <span
+                      className="mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
+                      style={{ backgroundColor: rp.category.color }}
+                    >
+                      {rp.category.name}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </aside>
     </div>
   );
 }
