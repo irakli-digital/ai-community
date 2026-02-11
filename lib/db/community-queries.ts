@@ -47,6 +47,57 @@ export type FeedPost = {
   liked: boolean; // whether current user liked it
 };
 
+// ─── Get Latest Posts (public, no auth context) ────────────────────────────
+
+export type LatestPost = {
+  id: number;
+  title: string;
+  content: string;
+  featuredImageUrl: string | null;
+  createdAt: Date;
+  author: { id: number; name: string | null; avatarUrl: string | null };
+  category: { id: number; name: string; color: string } | null;
+  commentsCount: number;
+  likesCount: number;
+};
+
+export async function getLatestPosts(limit = 6): Promise<LatestPost[]> {
+  const rows = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      content: posts.content,
+      featuredImageUrl: posts.featuredImageUrl,
+      createdAt: posts.createdAt,
+      commentsCount: posts.commentsCount,
+      likesCount: posts.likesCount,
+      authorId: posts.authorId,
+      authorName: users.name,
+      authorAvatar: users.avatarUrl,
+      catId: categories.id,
+      catName: categories.name,
+      catColor: categories.color,
+    })
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(categories, eq(posts.categoryId, categories.id))
+    .where(isNull(posts.deletedAt))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit);
+
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    content: r.content,
+    featuredImageUrl: r.featuredImageUrl,
+    createdAt: r.createdAt,
+    commentsCount: r.commentsCount,
+    likesCount: r.likesCount,
+    author: { id: r.authorId, name: r.authorName, avatarUrl: r.authorAvatar },
+    category: r.catId ? { id: r.catId, name: r.catName!, color: r.catColor! } : null,
+  }));
+}
+
 // ─── Get Feed Posts ─────────────────────────────────────────────────────────
 
 export async function getFeedPosts(params: {

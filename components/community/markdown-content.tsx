@@ -5,6 +5,7 @@ import remarkMark from '@/lib/remark-mark';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeSlug from 'rehype-slug';
+import rehypeHighlight from 'rehype-highlight';
 import type { ComponentPropsWithoutRef } from 'react';
 import { CopyablePreBlock } from './copyable-pre-block';
 import { getImageVariantUrl } from '@/lib/storage/image-utils';
@@ -14,6 +15,7 @@ const sanitizeSchema = {
   tagNames: [...(defaultSchema.tagNames || []), 'mark'],
   attributes: {
     ...defaultSchema.attributes,
+    div: [...(defaultSchema.attributes?.div || []), 'className'],
     mark: ['className'],
   },
 };
@@ -33,6 +35,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
           rehypeRaw,
           [rehypeSanitize, sanitizeSchema],
           rehypeSlug,
+          rehypeHighlight,
         ]}
         components={{
           pre: CopyablePreBlock,
@@ -48,11 +51,11 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   );
 }
 
-/** Inline and block code */
+/** Inline and block code — rehype-highlight adds hljs class to block code */
 function CodeBlock(props: ComponentPropsWithoutRef<'code'>) {
   const { className, children, ...rest } = props;
-  const isInline = !className;
-  if (isInline) {
+  const isBlock = className && (className.includes('hljs') || className.includes('language-'));
+  if (!isBlock) {
     return (
       <code className="rounded bg-secondary px-1 py-0.5 text-sm" {...rest}>
         {children}

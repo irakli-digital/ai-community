@@ -1,12 +1,14 @@
 import { getCommunitySettings, getMemberCount, getOnlineMemberCount } from '@/lib/db/queries';
+import { getLatestPosts } from '@/lib/db/community-queries';
 import { t } from '@/lib/i18n/ka';
 import { LandingContent } from '@/components/landing/landing-content';
 
 export default async function LandingPage() {
-  const [settings, memberCount, onlineCount] = await Promise.all([
+  const [settings, memberCount, onlineCount, latestPosts] = await Promise.all([
     getCommunitySettings(),
     getMemberCount(),
     getOnlineMemberCount(),
+    getLatestPosts(6),
   ]);
 
   const communityName = settings?.name || t('common.appName');
@@ -26,6 +28,10 @@ export default async function LandingPage() {
       onlineCount={onlineCount}
       logoUrl={settings?.logoUrl}
       coverImageUrl={settings?.coverImageUrl}
+      latestPosts={latestPosts.map((p) => ({
+        ...p,
+        createdAt: p.createdAt.toISOString(),
+      }))}
     />
   );
 }

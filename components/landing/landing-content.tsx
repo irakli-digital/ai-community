@@ -1,10 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Wifi, Check, ArrowRight } from 'lucide-react';
+import { Users, Wifi, ArrowRight, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { t } from '@/lib/i18n/ka';
+
+type SerializedPost = {
+  id: number;
+  title: string;
+  content: string;
+  featuredImageUrl: string | null;
+  createdAt: string;
+  author: { id: number; name: string | null; avatarUrl: string | null };
+  category: { id: number; name: string; color: string } | null;
+  commentsCount: number;
+  likesCount: number;
+};
 
 interface LandingContentProps {
   communityName: string;
@@ -14,6 +26,7 @@ interface LandingContentProps {
   onlineCount: number;
   logoUrl?: string | null;
   coverImageUrl?: string | null;
+  latestPosts: SerializedPost[];
 }
 
 export function LandingContent({
@@ -24,6 +37,7 @@ export function LandingContent({
   onlineCount,
   logoUrl,
   coverImageUrl,
+  latestPosts,
 }: LandingContentProps) {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
@@ -132,79 +146,104 @@ export function LandingContent({
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="relative z-10 bg-card border-t border-border">
-        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-          <h2 className="text-2xl font-bold text-foreground text-center mb-12">
-            {t('landing.pricing')}
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Free Plan */}
-            <div className="rounded-lg border border-border bg-secondary p-8">
-              <h3 className="text-xl font-semibold text-foreground">
-                {t('landing.free')}
-              </h3>
-              <p className="mt-2 text-3xl font-bold text-foreground">₾0</p>
-              <p className="text-sm text-muted-foreground mt-1">{t('landing.freePlanDesc')}</p>
-              <ul className="mt-6 space-y-3">
-                {([
-                  'pricing.free.viewPosts',
-                  'pricing.free.comment',
-                  'pricing.free.viewCourses',
-                  'pricing.free.viewLeaderboard',
-                  'pricing.free.memberDirectory',
-                ] as const).map((key) => (
-                  <li key={key} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">{t(key)}</span>
-                  </li>
-                ))}
-              </ul>
+      {/* Latest Articles */}
+      {latestPosts.length > 0 && (
+        <section className="relative z-10 border-t border-border">
+          <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+            <h2 className="text-2xl font-bold text-foreground mb-8">
+              {t('landing.latestArticles')}
+            </h2>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {latestPosts.map((post) => {
+                const preview =
+                  post.content.length > 120
+                    ? post.content.slice(0, 120) + '...'
+                    : post.content;
+                const date = new Date(post.createdAt).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                });
+
+                return (
+                  <article
+                    key={post.id}
+                    className="group flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-shadow hover:shadow-md cursor-pointer"
+                    onClick={() => openAuth('signup')}
+                  >
+                    {post.featuredImageUrl && (
+                      <div className="h-40 overflow-hidden">
+                        <img
+                          src={post.featuredImageUrl}
+                          alt=""
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        {post.category && (
+                          <span
+                            className="rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                            style={{ backgroundColor: post.category.color }}
+                          >
+                            {post.category.name}
+                          </span>
+                        )}
+                        <span className="text-xs text-muted-foreground">{date}</span>
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <p className="mt-1.5 text-sm text-muted-foreground line-clamp-3 flex-1">
+                        {preview}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-medium text-muted-foreground">
+                            {post.author.avatarUrl ? (
+                              <img
+                                src={post.author.avatarUrl}
+                                alt=""
+                                className="h-full w-full rounded-full object-cover"
+                              />
+                            ) : (
+                              (post.author.name?.[0] ?? '?').toUpperCase()
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {post.author.name ?? 'User'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Heart className="h-3.5 w-3.5" />
+                            {post.likesCount}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            {post.commentsCount}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+            <div className="mt-8 text-center">
               <Button
                 variant="outline"
                 onClick={() => openAuth('signup')}
-                className="w-full mt-8 rounded-md"
+                className="rounded-md"
               >
-                {t('landing.join')}
-              </Button>
-            </div>
-
-            {/* Paid Plan */}
-            <div className="rounded-lg border-2 border-primary bg-secondary p-8 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
-                Recommended
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">
-                {t('landing.paid')}
-              </h3>
-              <p className="mt-2 text-3xl font-bold text-foreground">
-                ₾?? <span className="text-base font-normal text-muted-foreground">{t('landing.perMonth')}</span>
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">{t('landing.paidPlanDesc')}</p>
-              <ul className="mt-6 space-y-3">
-                {([
-                  'pricing.paid.allFreeFeatures',
-                  'pricing.paid.createPosts',
-                  'pricing.paid.likePosts',
-                  'pricing.paid.accessCourses',
-                  'pricing.paid.leaderboard',
-                ] as const).map((key) => (
-                  <li key={key} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">{t(key)}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => openAuth('signup')}
-                className="w-full mt-8 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
-              >
-                {t('landing.join')}
+                {t('landing.viewAllArticles')}
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border bg-background">

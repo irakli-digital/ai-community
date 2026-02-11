@@ -36,7 +36,7 @@ export function CopyablePreBlock(props: ComponentPropsWithoutRef<'pre'>) {
       <button
         type="button"
         onClick={handleCopy}
-        className="absolute right-2 top-2 rounded-md bg-background/80 p-1.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+        className="absolute right-2 top-2 rounded-md bg-background/80 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
         title="Copy code"
       >
         {copied ? (

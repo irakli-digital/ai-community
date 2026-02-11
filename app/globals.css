@@ -395,4 +395,85 @@
       color: var(--ring);
     }
   }
+
+  /* ─── Syntax Highlighting (rehype-highlight / highlight.js) ────── */
+  /* Warm dark palette matching the Shiki theme used in classroom    */
+
+  .hljs {
+    color: #e6dfd4;
+  }
+  .hljs-comment,
+  .hljs-quote {
+    color: #6b6158;
+    font-style: italic;
+  }
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-tag {
+    color: #c4704a;
+  }
+  .hljs-string,
+  .hljs-template-tag,
+  .hljs-template-variable {
+    color: #d4a053;
+  }
+  .hljs-number,
+  .hljs-literal,
+  .hljs-symbol,
+  .hljs-bullet {
+    color: #8fbc7a;
+  }
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-section {
+    color: #e6dfd4;
+  }
+  .hljs-type,
+  .hljs-title.class_,
+  .hljs-built_in {
+    color: #d4a053;
+  }
+  .hljs-attr,
+  .hljs-attribute {
+    color: #d4a053;
+  }
+  .hljs-variable,
+  .hljs-variable.language_,
+  .hljs-variable.constant_ {
+    color: #c9bfb0;
+  }
+  .hljs-params {
+    color: #e6dfd4;
+  }
+  .hljs-regexp {
+    color: #b89fcc;
+  }
+  .hljs-operator,
+  .hljs-punctuation {
+    color: #8a7f72;
+  }
+  .hljs-meta,
+  .hljs-meta .hljs-keyword {
+    color: #b89fcc;
+  }
+  .hljs-selector-class,
+  .hljs-selector-id,
+  .hljs-selector-attr {
+    color: #c4704a;
+  }
+  .hljs-name {
+    color: #c4704a;
+  }
+  .hljs-addition {
+    color: #8fbc7a;
+  }
+  .hljs-deletion {
+    color: #c75050;
+  }
+  .hljs-emphasis {
+    font-style: italic;
+  }
+  .hljs-strong {
+    font-weight: bold;
+  }
 }
