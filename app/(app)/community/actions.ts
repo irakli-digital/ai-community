@@ -177,7 +177,7 @@ const updatePostSchema = z.object({
   title: z.string().min(1).max(300),
   content: z.string().min(1).max(50000),
   categoryId: z.number().nullable().optional(),
-  featuredImageUrl: z.string().url().optional().or(z.literal('')),
+  featuredImageUrl: z.string().url().optional().or(z.literal('')).or(z.null()),
 });
 
 export async function updatePost(input: z.infer<typeof updatePostSchema>) {

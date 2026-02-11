@@ -11,33 +11,37 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { postId: postIdStr } = await params;
-  const postId = Number(postIdStr);
-  if (isNaN(postId)) return {};
+  try {
+    const { postId: postIdStr } = await params;
+    const postId = Number(postIdStr);
+    if (isNaN(postId)) return {};
 
-  const post = await getPostById(postId);
-  if (!post) return {};
+    const post = await getPostById(postId);
+    if (!post) return {};
 
-  return {
-    title: `${post.title} — Agentic Tribe`,
-    description: post.content.slice(0, 160),
-    openGraph: {
-      title: post.title,
+    return {
+      title: `${post.title} — Agentic Tribe`,
       description: post.content.slice(0, 160),
-      type: 'article',
-      ...(post.featuredImageUrl
-        ? {
-            images: [
-              {
-                url: getImageVariantUrl(post.featuredImageUrl, 'og'),
-                width: 1200,
-                height: 630,
-              },
-            ],
-          }
-        : {}),
-    },
-  };
+      openGraph: {
+        title: post.title,
+        description: post.content.slice(0, 160),
+        type: 'article',
+        ...(post.featuredImageUrl
+          ? {
+              images: [
+                {
+                  url: getImageVariantUrl(post.featuredImageUrl, 'og'),
+                  width: 1200,
+                  height: 630,
+                },
+              ],
+            }
+          : {}),
+      },
+    };
+  } catch {
+    return {};
+  }
 }
 
 export default async function PostDetailPage({
