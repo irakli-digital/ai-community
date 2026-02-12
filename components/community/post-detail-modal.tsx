@@ -28,6 +28,7 @@ import { LevelBadge } from '@/components/members/level-badge';
 import { MarkdownContent } from '@/components/community/markdown-content';
 import { getImageVariantUrl } from '@/lib/storage/image-utils';
 import { getPostUrl, getPostEditUrl } from '@/lib/utils/post-url';
+import { UserAvatar } from '@/components/shared/user-avatar';
 import {
   likePost,
   unlikePost,
@@ -94,18 +95,7 @@ function ModalCommentItem({
   return (
     <div className={cn('border-l-2 border-border pl-4', depth > 0 && 'ml-4')}>
       <div className="flex items-start gap-3 py-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
-          {comment.author.avatarUrl ? (
-            <img
-              src={getImageVariantUrl(comment.author.avatarUrl, 'avatar-sm')}
-              alt={comment.author.name ?? ''}
-              className="h-full w-full rounded-full object-cover"
-              onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = comment.author.avatarUrl!; } }}
-            />
-          ) : (
-            (comment.author.name?.[0] ?? '?').toUpperCase()
-          )}
-        </div>
+        <UserAvatar avatarUrl={comment.author.avatarUrl} name={comment.author.name} size="sm" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <Link
@@ -344,18 +334,7 @@ export function PostDetailModal({ postId, onClose, onPostDeleted }: PostDetailMo
               {/* Author header */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
-                    {post.author.avatarUrl ? (
-                      <img
-                        src={getImageVariantUrl(post.author.avatarUrl, 'avatar-sm')}
-                        alt={post.author.name ?? ''}
-                        className="h-full w-full rounded-full object-cover"
-                        onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.author.avatarUrl!; } }}
-                      />
-                    ) : (
-                      (post.author.name?.[0] ?? '?').toUpperCase()
-                    )}
-                  </div>
+                  <UserAvatar avatarUrl={post.author.avatarUrl} name={post.author.name} size="md" />
                   <div>
                     <div className="flex items-center gap-1.5">
                       <Link

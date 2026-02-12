@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { LevelBadge } from '@/components/members/level-badge';
 import { getImageVariantUrl } from '@/lib/storage/image-utils';
 import { getPostUrl } from '@/lib/utils/post-url';
+import { UserAvatar } from '@/components/shared/user-avatar';
 
 interface PostCardProps {
   post: FeedPost;
@@ -36,19 +37,7 @@ export function PostCard({ post, onLike, onDelete, canLike, canDelete, onClick }
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          {/* Avatar */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-muted-foreground">
-            {post.author.avatarUrl ? (
-              <img
-                src={getImageVariantUrl(post.author.avatarUrl, 'avatar-sm')}
-                alt={post.author.name ?? ''}
-                className="h-full w-full rounded-full object-cover"
-                onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.author.avatarUrl!; } }}
-              />
-            ) : (
-              (post.author.name?.[0] ?? '?').toUpperCase()
-            )}
-          </div>
+          <UserAvatar avatarUrl={post.author.avatarUrl} name={post.author.name} size="md" />
           <div>
             <div className="flex items-center gap-1.5">
               <Link href={`/members/${post.author.id}`} className="text-sm font-medium text-foreground hover:underline">
