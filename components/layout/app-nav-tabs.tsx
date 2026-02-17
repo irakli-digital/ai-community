@@ -24,7 +24,7 @@ export const navItems = [
 ];
 
 export function isNavActive(pathname: string, href: string) {
-  if (href === '/community') return pathname === '/community' || pathname.startsWith('/community/') || pathname.startsWith('/community-post/');
+  if (href === '/community') return pathname === '/community' || pathname.startsWith('/community/') || pathname.startsWith('/community/post/');
   return pathname.startsWith(href);
 }
 

@@ -122,7 +122,7 @@ function SearchPageInner() {
           results.map((post: any) => (
             <Link
               key={post.id}
-              href={post.slug && post.categorySlug ? `/community-post/${post.categorySlug}/${post.slug}` : `/community/${post.id}`}
+              href={post.slug && post.categorySlug ? `/community/post/${post.categorySlug}/${post.slug}` : `/community/${post.id}`}
               className="flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:border-primary/50 transition-colors"
             >
               <Avatar className="h-9 w-9 flex-shrink-0 mt-0.5">

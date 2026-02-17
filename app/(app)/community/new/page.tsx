@@ -166,7 +166,7 @@ export default function NewPostPage() {
             maxLength={350}
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            /community-post/{currentCatSlug}/{slug || '...'}
+            /community/post/{currentCatSlug}/{slug || '...'}
           </p>
         </div>
 

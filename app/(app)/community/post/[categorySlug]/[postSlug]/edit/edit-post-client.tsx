@@ -165,7 +165,7 @@ export function EditPostClient({
             maxLength={350}
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            /community-post/{currentCatSlug}/{slug || slugify(title) || '...'}
+            /community/post/{currentCatSlug}/{slug || slugify(title) || '...'}
           </p>
         </div>
 

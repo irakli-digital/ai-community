@@ -4,9 +4,9 @@ export function getPostUrl(post: {
 }): string {
   if (!post.categorySlug) {
     // Fallback for posts without a category
-    return `/community-post/uncategorized/${post.slug}`;
+    return `/community/post/uncategorized/${post.slug}`;
   }
-  return `/community-post/${post.categorySlug}/${post.slug}`;
+  return `/community/post/${post.categorySlug}/${post.slug}`;
 }
 
 export function getPostEditUrl(post: {

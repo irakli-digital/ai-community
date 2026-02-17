@@ -113,8 +113,8 @@ export async function notifyPostLiked(params: {
 }): Promise<void> {
   const linkUrl = params.postSlug
     ? params.categorySlug
-      ? `/community-post/${params.categorySlug}/${params.postSlug}`
-      : `/community-post/uncategorized/${params.postSlug}`
+      ? `/community/post/${params.categorySlug}/${params.postSlug}`
+      : `/community/post/uncategorized/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.postAuthorId,
@@ -136,8 +136,8 @@ export async function notifyCommentLiked(params: {
 }): Promise<void> {
   const linkUrl = params.postSlug
     ? params.categorySlug
-      ? `/community-post/${params.categorySlug}/${params.postSlug}`
-      : `/community-post/uncategorized/${params.postSlug}`
+      ? `/community/post/${params.categorySlug}/${params.postSlug}`
+      : `/community/post/uncategorized/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.commentAuthorId,
@@ -159,8 +159,8 @@ export async function notifyPostCommented(params: {
 }): Promise<void> {
   const linkUrl = params.postSlug
     ? params.categorySlug
-      ? `/community-post/${params.categorySlug}/${params.postSlug}`
-      : `/community-post/uncategorized/${params.postSlug}`
+      ? `/community/post/${params.categorySlug}/${params.postSlug}`
+      : `/community/post/uncategorized/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.postAuthorId,
@@ -181,8 +181,8 @@ export async function notifyCommentReplied(params: {
 }): Promise<void> {
   const linkUrl = params.postSlug
     ? params.categorySlug
-      ? `/community-post/${params.categorySlug}/${params.postSlug}`
-      : `/community-post/uncategorized/${params.postSlug}`
+      ? `/community/post/${params.categorySlug}/${params.postSlug}`
+      : `/community/post/uncategorized/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.commentAuthorId,

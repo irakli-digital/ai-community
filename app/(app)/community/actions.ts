@@ -239,7 +239,7 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
   }
 
   revalidatePath('/community');
-  revalidatePath('/community-post', 'layout');
+  revalidatePath('/community/post', 'layout');
   revalidatePath(`/community/${data.postId}`);
 
   return { slug: newSlug, categorySlug };
@@ -343,7 +343,7 @@ export async function likePost(postId: number) {
   }
 
   revalidatePath('/community');
-  revalidatePath(`/community-post`, 'layout');
+  revalidatePath(`/community/post`, 'layout');
   return { success: true, liked: true };
 }
 
@@ -389,7 +389,7 @@ export async function unlikePost(postId: number) {
   }
 
   revalidatePath('/community');
-  revalidatePath(`/community-post`, 'layout');
+  revalidatePath(`/community/post`, 'layout');
   return { success: true, liked: false };
 }
 
@@ -478,7 +478,7 @@ export async function createComment(
     }
   }
 
-  revalidatePath(`/community-post`, 'layout');
+  revalidatePath(`/community/post`, 'layout');
   revalidatePath('/community');
   return { commentId: comment.id };
 }
@@ -513,7 +513,7 @@ export async function deleteComment(commentId: number) {
     .set({ commentsCount: sql`GREATEST(${posts.commentsCount} - 1, 0)` })
     .where(eq(posts.id, comment.postId));
 
-  revalidatePath(`/community-post`, 'layout');
+  revalidatePath(`/community/post`, 'layout');
   return { success: true };
 }
 

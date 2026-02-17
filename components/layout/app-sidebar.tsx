@@ -41,7 +41,7 @@ export function AppSidebar({
   const { data: user } = useSWR<User>('/api/user', fetcher);
 
   const isActive = (href: string) => {
-    if (href === '/community') return pathname === '/community' || pathname.startsWith('/community/') || pathname.startsWith('/community-post/');
+    if (href === '/community') return pathname === '/community' || pathname.startsWith('/community/') || pathname.startsWith('/community/post/');
     return pathname.startsWith(href);
   };
 
