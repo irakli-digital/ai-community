@@ -76,6 +76,15 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   const foundUser = userResult[0];
 
+  // OAuth-only users have no password
+  if (!foundUser.passwordHash) {
+    return {
+      error: 'This account uses Google sign-in. Please use the Google button.',
+      email,
+      password: '',
+    };
+  }
+
   const isPasswordValid = await comparePasswords(
     password,
     foundUser.passwordHash
@@ -201,6 +210,15 @@ export const updatePassword = validatedActionWithUser(
   async (data, _, user) => {
     const { currentPassword, newPassword, confirmPassword } = data;
 
+    if (!user.passwordHash) {
+      return {
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        error: 'Cannot change password for Google sign-in accounts.',
+      };
+    }
+
     const isPasswordValid = await comparePasswords(
       currentPassword,
       user.passwordHash
@@ -258,6 +276,13 @@ export const deleteAccount = validatedActionWithUser(
   async (data, _, user) => {
     const { password } = data;
 
+    if (!user.passwordHash) {
+      return {
+        password: '',
+        error: 'Use the confirmation method for Google sign-in accounts.',
+      };
+    }
+
     const isPasswordValid = await comparePasswords(password, user.passwordHash);
     if (!isPasswordValid) {
       return {
@@ -269,6 +294,34 @@ export const deleteAccount = validatedActionWithUser(
     await logActivity(user.id, ActivityType.DELETE_ACCOUNT);
 
     // Soft delete
+    await db
+      .update(users)
+      .set({
+        deletedAt: sql`CURRENT_TIMESTAMP`,
+        email: sql`CONCAT(email, '-', id, '-deleted')`,
+      })
+      .where(eq(users.id, user.id));
+
+    (await cookies()).delete('session');
+    redirect('/sign-in');
+  }
+);
+
+const deleteAccountOAuthSchema = z.object({
+  confirmation: z.literal('DELETE', {
+    errorMap: () => ({ message: 'Please type DELETE to confirm.' }),
+  }),
+});
+
+export const deleteAccountOAuth = validatedActionWithUser(
+  deleteAccountOAuthSchema,
+  async (_data, _, user) => {
+    if (user.passwordHash) {
+      return { error: 'Use password to delete your account.' };
+    }
+
+    await logActivity(user.id, ActivityType.DELETE_ACCOUNT);
+
     await db
       .update(users)
       .set({

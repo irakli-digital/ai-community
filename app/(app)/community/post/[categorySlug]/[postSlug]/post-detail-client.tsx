@@ -8,7 +8,7 @@ import {
   Check,
   ClipboardCopy,
   Heart,
-  Lock,
+  Sparkles,
   MessageCircle,
   Pencil,
   Pin,
@@ -344,10 +344,10 @@ export function PostDetailClient({
         {/* Content (markdown) — truncated with gradient for guests */}
         {isGuest ? (
           <div className="relative">
-            <div className="mt-4 max-w-none max-h-[120px] overflow-hidden">
+            <div className="mt-4 max-w-none max-h-[280px] overflow-hidden">
               <MarkdownContent content={post.content} />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-card to-transparent" />
           </div>
         ) : (
           <div className="mt-4 max-w-none">
@@ -357,23 +357,23 @@ export function PostDetailClient({
 
         {/* Paywall overlay for guests */}
         {isGuest && (
-          <div className="-mt-4 flex flex-col items-center rounded-lg border border-border bg-secondary/50 px-6 py-10 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Lock className="h-6 w-6 text-primary" />
+          <div className="-mt-8 flex flex-col items-center rounded-2xl border border-primary/20 bg-card/70 backdrop-blur-xl px-6 py-10 text-center">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground">
+            <h3 className="text-xl font-bold text-foreground">
               {t('paywall.title')}
             </h3>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+            <p className="mt-3 max-w-md text-sm text-muted-foreground">
               {t('paywall.description')}
             </p>
             <Button
-              className="mt-6"
+              className="mt-6 rounded-full px-8 shadow-lg transition-shadow hover:shadow-[0_0_24px_rgba(198,99,54,0.35)]"
               onClick={() => setAuthModal({ open: true, mode: 'signup' })}
             >
               {t('paywall.joinNow')}
             </Button>
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-4 text-sm text-muted-foreground">
               {t('paywall.alreadyMember')}{' '}
               <button
                 type="button"

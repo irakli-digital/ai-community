@@ -19,7 +19,8 @@ export const users = pgTable(
     name: varchar('name', { length: 100 }),
     lastName: varchar('last_name', { length: 100 }),
     email: varchar('email', { length: 255 }).notNull().unique(),
-    passwordHash: text('password_hash').notNull(),
+    passwordHash: text('password_hash'),
+    googleId: text('google_id').unique(),
     role: varchar('role', { length: 20 }).notNull().default('member'),
     // Profile fields
     avatarUrl: text('avatar_url'),

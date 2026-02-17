@@ -210,9 +210,9 @@ const dictionary = {
   'profile.profileUpdated': 'Profile updated successfully.',
 
   // ─── Paywall ──────────────────────────────────────────────────────
-  'paywall.title': 'Join for free to unlock this post',
-  'paywall.description': 'Get free access to all community posts, courses, and more.',
-  'paywall.joinNow': 'Join Free',
+  'paywall.title': 'See the full Article',
+  'paywall.description': 'Join 100+ creators learning AI workflows. Free access to all posts, courses, and prompt blueprints.',
+  'paywall.joinNow': 'Read Full Article',
   'paywall.alreadyMember': 'Already a member?',
 } as const;
 
