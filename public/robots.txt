@@ -1,9 +1,0 @@
-# Agentic Tribe - Robots.txt
-User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /settings
-Disallow: /api/
-Disallow: /notifications
-
-Sitemap: https://agentictribe.ge/sitemap.xml

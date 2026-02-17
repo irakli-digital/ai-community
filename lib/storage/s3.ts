@@ -54,6 +54,7 @@ export async function getPresignedUploadUrl({
     Key: key,
     ContentType: contentType,
     ContentLength: contentLength,
+    CacheControl: 'public, max-age=31536000, immutable',
   });
 
   const url = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // 5 min
@@ -136,6 +137,7 @@ export async function uploadBufferToS3(
     Key: key,
     Body: body,
     ContentType: contentType,
+    CacheControl: 'public, max-age=31536000, immutable',
   });
   await s3Client.send(command);
 }

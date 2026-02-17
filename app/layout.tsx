@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { getUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
@@ -37,10 +37,6 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-};
-
-export const viewport: Viewport = {
-  maximumScale: 1,
 };
 
 const inter = Inter({

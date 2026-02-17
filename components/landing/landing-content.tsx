@@ -5,6 +5,7 @@ import { Users, Wifi, ArrowRight, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { t } from '@/lib/i18n/ka';
+import { getImageVariantUrl } from '@/lib/storage/image-utils';
 
 type SerializedPost = {
   id: number;
@@ -87,9 +88,13 @@ export function LandingContent({
       {/* Hero / Cover */}
       <div className="relative z-10">
         {coverImageUrl && (
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-20"
-            style={{ backgroundImage: `url(${coverImageUrl})` }}
+          <img
+            src={getImageVariantUrl(coverImageUrl, 'lg')}
+            alt=""
+            role="presentation"
+            fetchPriority="high"
+            className="absolute inset-0 h-full w-full object-cover opacity-20"
+            onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = coverImageUrl; } }}
           />
         )}
         <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
@@ -174,9 +179,11 @@ export function LandingContent({
                     {post.featuredImageUrl && (
                       <div className="h-40 overflow-hidden">
                         <img
-                          src={post.featuredImageUrl}
+                          src={getImageVariantUrl(post.featuredImageUrl, 'sm')}
                           alt=""
+                          loading="lazy"
                           className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.featuredImageUrl!; } }}
                         />
                       </div>
                     )}
@@ -203,9 +210,11 @@ export function LandingContent({
                           <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-medium text-muted-foreground">
                             {post.author.avatarUrl ? (
                               <img
-                                src={post.author.avatarUrl}
+                                src={getImageVariantUrl(post.author.avatarUrl, 'avatar-sm')}
                                 alt=""
+                                loading="lazy"
                                 className="h-full w-full rounded-full object-cover"
+                                onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = post.author.avatarUrl!; } }}
                               />
                             ) : (
                               (post.author.name?.[0] ?? '?').toUpperCase()
