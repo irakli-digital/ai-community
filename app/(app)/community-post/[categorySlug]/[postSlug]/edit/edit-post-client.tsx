@@ -70,11 +70,7 @@ export function EditPostClient({
           featuredImageUrl: featuredImageUrl || undefined,
           isDraft,
         });
-        if (isDraft) {
-          router.push('/community');
-        } else {
-          router.push(getPostUrl({ slug: result.slug, categorySlug: result.categorySlug }));
-        }
+        router.push(getPostUrl({ slug: result.slug, categorySlug: result.categorySlug }));
       } catch (err: any) {
         setError(err.message || t('error.generic'));
       }

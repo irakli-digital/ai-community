@@ -12,10 +12,11 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { db } from '@/lib/db/drizzle';
-import { users, posts, comments, postLikes, commentLikes, subscriptions } from '@/lib/db/schema';
+import { users, posts, comments, postLikes, commentLikes, subscriptions, categories } from '@/lib/db/schema';
 import { sql, isNull, eq, gte, and } from 'drizzle-orm';
 import { getUser } from '@/lib/db/queries';
 import { redirect } from 'next/navigation';
+import { getPostUrl } from '@/lib/utils/post-url';
 
 async function requireAdmin() {
   const user = await getUser();
@@ -45,6 +46,7 @@ async function getAnalytics() {
     likes7dResult,
     paidSubscribersResult,
     popularPostsResult,
+    draftPostsResult,
     signupsPerDayResult,
   ] = await Promise.all([
     // Total members
@@ -68,14 +70,14 @@ async function getAnalytics() {
     // New members 30d
     db.select({ count: sql<number>`count(*)::int` }).from(users)
       .where(and(isNull(users.deletedAt), gte(users.createdAt, thirtyDaysAgo))),
-    // Total posts
-    db.select({ count: sql<number>`count(*)::int` }).from(posts).where(isNull(posts.deletedAt)),
-    // Posts 7d
+    // Total posts (published only)
+    db.select({ count: sql<number>`count(*)::int` }).from(posts).where(and(isNull(posts.deletedAt), eq(posts.isDraft, false))),
+    // Posts 7d (published only)
     db.select({ count: sql<number>`count(*)::int` }).from(posts)
-      .where(and(isNull(posts.deletedAt), gte(posts.createdAt, sevenDaysAgo))),
-    // Posts 30d
+      .where(and(isNull(posts.deletedAt), eq(posts.isDraft, false), gte(posts.createdAt, sevenDaysAgo))),
+    // Posts 30d (published only)
     db.select({ count: sql<number>`count(*)::int` }).from(posts)
-      .where(and(isNull(posts.deletedAt), gte(posts.createdAt, thirtyDaysAgo))),
+      .where(and(isNull(posts.deletedAt), eq(posts.isDraft, false), gte(posts.createdAt, thirtyDaysAgo))),
     // Total comments
     db.select({ count: sql<number>`count(*)::int` }).from(comments).where(isNull(comments.deletedAt)),
     // Comments 7d
@@ -92,7 +94,7 @@ async function getAnalytics() {
     // Paid subscribers
     db.select({ count: sql<number>`count(*)::int` }).from(subscriptions)
       .where(eq(subscriptions.status, 'active')),
-    // Popular posts (top 5 by likes)
+    // Popular posts (top 5 by likes, published only)
     db.select({
       id: posts.id,
       title: posts.title,
@@ -104,9 +106,24 @@ async function getAnalytics() {
     })
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
-      .where(isNull(posts.deletedAt))
+      .where(and(isNull(posts.deletedAt), eq(posts.isDraft, false)))
       .orderBy(sql`${posts.likesCount} DESC`)
       .limit(5),
+    // Draft posts (up to 10, most recent first)
+    db.select({
+      id: posts.id,
+      title: posts.title,
+      slug: posts.slug,
+      authorName: users.name,
+      categorySlug: categories.slug,
+      createdAt: posts.createdAt,
+    })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(categories, eq(posts.categoryId, categories.id))
+      .where(and(isNull(posts.deletedAt), eq(posts.isDraft, true)))
+      .orderBy(sql`${posts.createdAt} DESC`)
+      .limit(10),
     // Signups per day (last 14 days)
     db.select({
       date: sql<string>`to_char(${users.createdAt}, 'MM/DD')`,
@@ -133,6 +150,7 @@ async function getAnalytics() {
     likes7d: likes7dResult[0]?.count ?? 0,
     paidSubscribers: paidSubscribersResult[0]?.count ?? 0,
     popularPosts: popularPostsResult,
+    draftPosts: draftPostsResult,
     signupsPerDay: signupsPerDayResult,
   };
 }
@@ -287,6 +305,49 @@ export default async function AdminPage() {
                   </p>
                 </div>
               </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Draft posts */}
+      {analytics.draftPosts.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Draft Posts ({analytics.draftPosts.length})
+          </h2>
+          <div className="rounded-lg border border-border bg-card divide-y divide-border">
+            {analytics.draftPosts.map((post) => (
+              <div
+                key={post.id}
+                className="flex items-center gap-3 px-4 py-3"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
+                  D
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {post.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {post.authorName} • {new Date(post.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    href={getPostUrl({ slug: post.slug, categorySlug: post.categorySlug })}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    View
+                  </Link>
+                  <Link
+                    href={`/community-post/${post.categorySlug || 'uncategorized'}/${post.slug}/edit`}
+                    className="text-xs text-primary hover:text-primary/80 transition-colors"
+                  >
+                    Edit
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         </div>

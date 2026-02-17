@@ -1,4 +1,4 @@
-import { permanentRedirect, notFound } from 'next/navigation';
+import { redirect, notFound } from 'next/navigation';
 import { getPostById } from '@/lib/db/community-queries';
 import { getPostUrl } from '@/lib/utils/post-url';
 
@@ -14,5 +14,5 @@ export default async function OldPostDetailPage({ params }: Props) {
   const post = await getPostById(postId);
   if (!post) notFound();
 
-  permanentRedirect(getPostUrl(post));
+  redirect(getPostUrl(post));
 }

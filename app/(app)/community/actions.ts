@@ -240,6 +240,7 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
 
   revalidatePath('/community');
   revalidatePath('/community-post', 'layout');
+  revalidatePath(`/community/${data.postId}`);
 
   return { slug: newSlug, categorySlug };
 }
