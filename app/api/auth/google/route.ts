@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     return NextResponse.json(
@@ -20,6 +20,18 @@ export async function GET() {
     maxAge: 60 * 10, // 10 minutes
     path: '/',
   });
+
+  // Store return URL so callback can redirect back to the original page
+  const returnTo = request.nextUrl.searchParams.get('returnTo');
+  if (returnTo) {
+    cookieStore.set('google_oauth_return_to', returnTo, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 10,
+      path: '/',
+    });
+  }
 
   const redirectUri = `${process.env.BASE_URL}/api/auth/google/callback`;
 

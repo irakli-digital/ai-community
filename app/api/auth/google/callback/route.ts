@@ -139,7 +139,12 @@ export async function GET(request: NextRequest) {
     // Set JWT session
     await setSession({ id: user.id, role: user.role });
 
-    return NextResponse.redirect(`${baseUrl}/community`);
+    // Redirect to the page the user was on, or /community as fallback
+    const returnTo = cookieStore.get('google_oauth_return_to')?.value;
+    cookieStore.delete('google_oauth_return_to');
+    const redirectTo = returnTo && returnTo.startsWith('/') ? returnTo : '/community';
+
+    return NextResponse.redirect(`${baseUrl}${redirectTo}`);
   } catch (error) {
     console.error('[Google OAuth] Callback error:', error);
     return NextResponse.redirect(`${baseUrl}/sign-in`);
