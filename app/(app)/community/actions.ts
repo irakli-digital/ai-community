@@ -69,7 +69,7 @@ async function fetchOGMetadata(
     const response = await fetch(url, {
       signal: controller.signal,
       redirect: 'follow',
-      headers: { 'User-Agent': 'AI-Circle-Bot/1.0' },
+      headers: { 'User-Agent': 'AgenticTribe-Bot/1.0' },
     });
     clearTimeout(timeout);
 

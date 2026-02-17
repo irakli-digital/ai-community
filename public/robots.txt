@@ -6,4 +6,4 @@ Disallow: /settings
 Disallow: /api/
 Disallow: /notifications
 
-Sitemap: https://aiwre.ge/sitemap.xml
+Sitemap: https://agentictribe.ge/sitemap.xml

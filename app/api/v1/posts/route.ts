@@ -59,7 +59,7 @@ async function downloadImageFromUrl(url: string): Promise<{ buffer: Buffer; exte
     const response = await fetch(url, {
       signal: controller.signal,
       redirect: 'follow',
-      headers: { 'User-Agent': 'AI-Circle-Bot/1.0' },
+      headers: { 'User-Agent': 'AgenticTribe-Bot/1.0' },
     });
 
     if (!response.ok) {
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
 
   revalidatePath('/community');
 
-  const baseUrl = process.env.BASE_URL || 'https://aicircle.ge';
+  const baseUrl = process.env.BASE_URL || 'https://agentictribe.ge';
   const postPath = getPostUrl({
     slug: post.slug,
     categorySlug: resolvedCategorySlug,
