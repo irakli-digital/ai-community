@@ -115,6 +115,7 @@ export const posts = pgTable(
     slug: varchar('slug', { length: 350 }).notNull().unique(),
     content: text('content').notNull(),
     featuredImageUrl: text('featured_image_url'),
+    isDraft: boolean('is_draft').notNull().default(false),
     isPinned: boolean('is_pinned').notNull().default(false),
     likesCount: integer('likes_count').notNull().default(0),
     commentsCount: integer('comments_count').notNull().default(0),

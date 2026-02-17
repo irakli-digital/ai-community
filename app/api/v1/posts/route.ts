@@ -24,6 +24,7 @@ const requestSchema = z.object({
   slug: z.string().max(350).optional(),
   categorySlug: z.string().max(100).optional(),
   image: z.string().optional(),
+  isDraft: z.boolean().optional().default(true),
 });
 
 function authenticateRequest(request: NextRequest): boolean {
@@ -155,7 +156,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { title, content, slug: requestSlug, categorySlug, image } = parsed.data;
+  const { title, content, slug: requestSlug, categorySlug, image, isDraft } = parsed.data;
 
   // Resolve author
   const authorId = parseInt(process.env.API_AUTHOR_USER_ID || '1', 10);
@@ -245,6 +246,7 @@ export async function POST(request: NextRequest) {
       slug,
       content,
       featuredImageUrl,
+      isDraft,
     })
     .returning();
 
@@ -265,6 +267,7 @@ export async function POST(request: NextRequest) {
         title: post.title,
         categorySlug: resolvedCategorySlug,
         featuredImageUrl: post.featuredImageUrl,
+        isDraft: post.isDraft,
         url: `${baseUrl}${postPath}`,
         createdAt: post.createdAt.toISOString(),
       },

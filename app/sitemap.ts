@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { db } from '@/lib/db/drizzle';
 import { posts, courses, categories } from '@/lib/db/schema';
-import { eq, isNull, desc } from 'drizzle-orm';
+import { eq, and, isNull, not, desc } from 'drizzle-orm';
 import { getPostUrl } from '@/lib/utils/post-url';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -40,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
       .from(posts)
       .leftJoin(categories, eq(posts.categoryId, categories.id))
-      .where(isNull(posts.deletedAt))
+      .where(and(isNull(posts.deletedAt), not(posts.isDraft)))
       .orderBy(desc(posts.createdAt))
       .limit(500);
 

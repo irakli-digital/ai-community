@@ -19,6 +19,7 @@ import {
   or,
   sql,
   inArray,
+  not,
 } from 'drizzle-orm';
 
 // ─── Feed types ─────────────────────────────────────────────────────────────
@@ -87,7 +88,7 @@ export async function getLatestPosts(limit = 6): Promise<LatestPost[]> {
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
     .leftJoin(categories, eq(posts.categoryId, categories.id))
-    .where(isNull(posts.deletedAt))
+    .where(and(isNull(posts.deletedAt), not(posts.isDraft)))
     .orderBy(desc(posts.createdAt))
     .limit(limit);
 
@@ -117,7 +118,7 @@ export async function getFeedPosts(params: {
   const limit = params.limit ?? 20;
 
   // Build conditions
-  const conditions = [isNull(posts.deletedAt)];
+  const conditions = [isNull(posts.deletedAt), not(posts.isDraft)];
 
   if (params.categoryId) {
     conditions.push(eq(posts.categoryId, params.categoryId));
@@ -222,7 +223,7 @@ export async function getPinnedPosts(params: {
   categoryId?: number | null;
   userId?: number | null;
 }): Promise<FeedPost[]> {
-  const conditions = [isNull(posts.deletedAt), eq(posts.isPinned, true)];
+  const conditions = [isNull(posts.deletedAt), not(posts.isDraft), eq(posts.isPinned, true)];
 
   if (params.categoryId) {
     conditions.push(eq(posts.categoryId, params.categoryId));
@@ -518,7 +519,7 @@ export async function getRelatedPosts(
   limit = 5
 ): Promise<RelatedPost[]> {
   // Same category first, then recent posts, excluding the current post
-  const conditions = [isNull(posts.deletedAt), sql`${posts.id} != ${postId}`];
+  const conditions = [isNull(posts.deletedAt), not(posts.isDraft), sql`${posts.id} != ${postId}`];
   if (categoryId) {
     conditions.push(eq(posts.categoryId, categoryId));
   }
@@ -569,6 +570,7 @@ export async function getRelatedPosts(
       .where(
         and(
           isNull(posts.deletedAt),
+          not(posts.isDraft),
           sql`${posts.id} NOT IN (${sql.join(existingIds.map((id) => sql`${id}`), sql`, `)})`
         )
       )

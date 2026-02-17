@@ -54,7 +54,7 @@ export default async function MemberProfilePage({ params }: Props) {
     })
     .from(posts)
     .leftJoin(categories, eq(posts.categoryId, categories.id))
-    .where(and(eq(posts.authorId, userId), isNull(posts.deletedAt)))
+    .where(and(eq(posts.authorId, userId), isNull(posts.deletedAt), eq(posts.isDraft, false)))
     .orderBy(desc(posts.createdAt))
     .limit(10);
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/drizzle';
 import { posts, courses, users } from '@/lib/db/schema';
-import { sql, and, isNull, eq } from 'drizzle-orm';
+import { sql, and, isNull, not, eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             isNull(posts.deletedAt),
+            not(posts.isDraft),
             sql`${posts}.search_vector @@ to_tsquery('simple', ${tsQuery})`
           )
         )
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             isNull(posts.deletedAt),
+            not(posts.isDraft),
             sql`${posts}.search_vector @@ to_tsquery('simple', ${tsQuery})`
           )
         );
