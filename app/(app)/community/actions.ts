@@ -116,6 +116,7 @@ const createPostSchema = z.object({
   imageUrls: z.array(z.string().url()).optional(),
   linkUrl: z.string().url().optional().or(z.literal('')),
   featuredImageUrl: z.string().url().optional().or(z.literal('')),
+  isDraft: z.boolean().optional().default(false),
 });
 
 export async function createPost(input: z.infer<typeof createPostSchema>) {
@@ -135,6 +136,7 @@ export async function createPost(input: z.infer<typeof createPostSchema>) {
       slug,
       content: data.content,
       featuredImageUrl: data.featuredImageUrl || null,
+      isDraft: data.isDraft,
     })
     .returning();
 
@@ -185,6 +187,7 @@ const updatePostSchema = z.object({
   categoryId: z.number().nullable().optional(),
   slug: z.string().max(350).optional(),
   featuredImageUrl: z.string().url().optional().or(z.literal('')).or(z.null()),
+  isDraft: z.boolean().optional(),
 });
 
 export async function updatePost(input: z.infer<typeof updatePostSchema>) {
@@ -218,6 +221,7 @@ export async function updatePost(input: z.infer<typeof updatePostSchema>) {
       content: data.content,
       categoryId: data.categoryId ?? null,
       featuredImageUrl: data.featuredImageUrl || null,
+      ...(data.isDraft !== undefined ? { isDraft: data.isDraft } : {}),
       updatedAt: new Date(),
     })
     .where(eq(posts.id, data.postId));

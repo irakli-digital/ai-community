@@ -23,6 +23,7 @@ interface EditPostClientProps {
   initialCategoryId: number | null;
   initialCategorySlug: string | null;
   initialFeaturedImageUrl: string | null;
+  initialIsDraft: boolean;
 }
 
 export function EditPostClient({
@@ -33,6 +34,7 @@ export function EditPostClient({
   initialCategoryId,
   initialCategorySlug,
   initialFeaturedImageUrl,
+  initialIsDraft,
 }: EditPostClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -53,8 +55,7 @@ export function EditPostClient({
   // Get current category slug for URL preview
   const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? initialCategorySlug ?? 'uncategorized';
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSave(isDraft: boolean) {
     if (!title.trim() || !content.trim()) return;
 
     setError('');
@@ -67,8 +68,13 @@ export function EditPostClient({
           slug: slug.trim(),
           categoryId,
           featuredImageUrl: featuredImageUrl || undefined,
+          isDraft,
         });
-        router.push(getPostUrl({ slug: result.slug, categorySlug: result.categorySlug }));
+        if (isDraft) {
+          router.push('/community');
+        } else {
+          router.push(getPostUrl({ slug: result.slug, categorySlug: result.categorySlug }));
+        }
       } catch (err: any) {
         setError(err.message || t('error.generic'));
       }
@@ -88,7 +94,7 @@ export function EditPostClient({
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
@@ -182,8 +188,20 @@ export function EditPostClient({
 
         {/* Submit */}
         <div className="flex gap-3 pt-2">
-          <Button type="submit" disabled={isPending || !title || !content}>
-            {isPending ? t('common.loading') : 'Save Changes'}
+          <Button
+            type="button"
+            disabled={isPending || !title || !content}
+            onClick={() => handleSave(false)}
+          >
+            {isPending ? t('common.loading') : initialIsDraft ? 'Publish' : 'Save Changes'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isPending || !title || !content}
+            onClick={() => handleSave(true)}
+          >
+            {isPending ? t('common.loading') : 'Save as Draft'}
           </Button>
           <Link href={backUrl}>
             <Button type="button" variant="ghost">

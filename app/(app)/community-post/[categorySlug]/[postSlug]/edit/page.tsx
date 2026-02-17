@@ -32,6 +32,7 @@ export default async function EditPostPage({ params }: Props) {
       initialCategoryId={post.category?.id ?? null}
       initialCategorySlug={post.categorySlug}
       initialFeaturedImageUrl={post.featuredImageUrl}
+      initialIsDraft={post.isDraft}
     />
   );
 }

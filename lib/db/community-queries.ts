@@ -30,6 +30,7 @@ export type FeedPost = {
   slug: string;
   content: string;
   featuredImageUrl: string | null;
+  isDraft: boolean;
   isPinned: boolean;
   likesCount: number;
   commentsCount: number;
@@ -143,6 +144,7 @@ export async function getFeedPosts(params: {
       slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
+      isDraft: posts.isDraft,
       isPinned: posts.isPinned,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
@@ -189,6 +191,7 @@ export async function getFeedPosts(params: {
     slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
+    isDraft: r.isDraft,
     isPinned: r.isPinned,
     likesCount: r.likesCount,
     commentsCount: r.commentsCount,
@@ -236,6 +239,7 @@ export async function getPinnedPosts(params: {
       slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
+      isDraft: posts.isDraft,
       isPinned: posts.isPinned,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
@@ -277,6 +281,7 @@ export async function getPinnedPosts(params: {
     slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
+    isDraft: r.isDraft,
     isPinned: r.isPinned,
     likesCount: r.likesCount,
     commentsCount: r.commentsCount,
@@ -320,6 +325,7 @@ export async function getPostById(
       slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
+      isDraft: posts.isDraft,
       isPinned: posts.isPinned,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
@@ -373,6 +379,7 @@ export async function getPostById(
     slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
+    isDraft: r.isDraft,
     isPinned: r.isPinned,
     likesCount: r.likesCount,
     commentsCount: r.commentsCount,
@@ -619,6 +626,7 @@ export async function getPostBySlugs(
       slug: posts.slug,
       content: posts.content,
       featuredImageUrl: posts.featuredImageUrl,
+      isDraft: posts.isDraft,
       isPinned: posts.isPinned,
       likesCount: posts.likesCount,
       commentsCount: posts.commentsCount,
@@ -672,6 +680,7 @@ export async function getPostBySlugs(
     slug: r.slug,
     content: r.content,
     featuredImageUrl: r.featuredImageUrl,
+    isDraft: r.isDraft,
     isPinned: r.isPinned,
     likesCount: r.likesCount,
     commentsCount: r.commentsCount,

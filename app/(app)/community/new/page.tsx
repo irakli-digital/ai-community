@@ -44,8 +44,7 @@ export default function NewPostPage() {
   // Get current category slug for URL preview
   const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? 'uncategorized';
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSave(isDraft: boolean) {
     if (!title.trim() || !content.trim()) return;
 
     setError('');
@@ -58,12 +57,17 @@ export default function NewPostPage() {
           categoryId,
           linkUrl: linkUrl.trim() || undefined,
           featuredImageUrl: featuredImageUrl || undefined,
+          isDraft,
         });
         if (result.postId) {
-          router.push(getPostUrl({
-            slug: result.slug,
-            categorySlug: result.categorySlug,
-          }));
+          if (isDraft) {
+            router.push('/community');
+          } else {
+            router.push(getPostUrl({
+              slug: result.slug,
+              categorySlug: result.categorySlug,
+            }));
+          }
         }
       } catch (err: any) {
         setError(err.message || t('error.generic'));
@@ -84,7 +88,7 @@ export default function NewPostPage() {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
@@ -217,8 +221,20 @@ export default function NewPostPage() {
 
         {/* Submit */}
         <div className="flex gap-3 pt-2">
-          <Button type="submit" disabled={isPending || !title || !content}>
+          <Button
+            type="button"
+            disabled={isPending || !title || !content}
+            onClick={() => handleSave(false)}
+          >
             {isPending ? t('common.loading') : 'Publish'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isPending || !title || !content}
+            onClick={() => handleSave(true)}
+          >
+            {isPending ? t('common.loading') : 'Save as Draft'}
           </Button>
           <Link href="/community">
             <Button type="button" variant="ghost">
