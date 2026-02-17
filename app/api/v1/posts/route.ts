@@ -7,7 +7,6 @@ import { getUserById } from '@/lib/db/queries';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { uploadBufferToS3, getPublicUrl } from '@/lib/storage/s3';
-import { processUploadedImage } from '@/lib/storage/image-processing';
 import { generateUniquePostSlug } from '@/lib/utils/slugify-server';
 import { getPostUrl } from '@/lib/utils/post-url';
 import { isPrivateIP } from '@/lib/utils/network';
@@ -219,7 +218,8 @@ export async function POST(request: NextRequest) {
       const mimeType = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg';
       await uploadBufferToS3(s3Key, imageBuffer, mimeType);
 
-      // Generate WebP variants
+      // Generate WebP variants (dynamic import to avoid bundling sharp eagerly)
+      const { processUploadedImage } = await import('@/lib/storage/image-processing');
       await processUploadedImage(s3Key, 'post');
 
       featuredImageUrl = getPublicUrl(s3Key);
