@@ -58,16 +58,8 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
         {mode === 'signin' ? 'Sign in to Agentic Tribe' : 'Join Agentic Tribe'}
       </p>
 
-      {inAppBrowser ? (
-        <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-center">
-          <p className="text-sm font-medium text-amber-800 mb-1">
-            Google-ით შესვლა ამ ბრაუზერში არ მუშაობს
-          </p>
-          <p className="text-xs text-amber-700">
-            დააჭირე ⋮ ან <ExternalLink className="inline h-3 w-3" /> მენიუს და აირჩიე <strong>&quot;Open in Browser&quot;</strong>
-          </p>
-        </div>
-      ) : (
+      {!inAppBrowser && (
+      <>
       <a
         href={`/api/auth/google?returnTo=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/community')}`}
         className="flex w-full items-center justify-center gap-3 rounded-md border border-border bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
@@ -80,7 +72,6 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
         </svg>
         Continue with Google
       </a>
-      )}
 
       <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
@@ -90,6 +81,8 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
           <span className="bg-card px-2 text-muted-foreground">or</span>
         </div>
       </div>
+      </>
+      )}
 
       <form className="space-y-4" action={formAction} key={mode}>
         {mode === 'signup' && (
