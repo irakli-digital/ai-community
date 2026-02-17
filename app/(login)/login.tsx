@@ -1,15 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ExternalLink } from 'lucide-react';
 import { signIn, signUp } from './actions';
 import { ActionState } from '@/lib/auth/middleware';
 import { t } from '@/lib/i18n/ka';
+import { isInAppBrowser } from '@/lib/utils/detect-webview';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
@@ -32,6 +33,20 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        {isInAppBrowser() ? (
+          <button
+            type="button"
+            onClick={() => {
+              const url = window.location.href;
+              window.open(url, '_system');
+              navigator.clipboard?.writeText(url).catch(() => {});
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 hover:bg-amber-100 transition-colors"
+          >
+            <ExternalLink className="h-4 w-4" />
+            გახსენი ბრაუზერში Google-ით შესასვლელად
+          </button>
+        ) : (
         <a
           href={`/api/auth/google${redirect ? `?returnTo=${encodeURIComponent(redirect)}` : ''}`}
           className="flex w-full items-center justify-center gap-3 rounded-md border border-border bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
@@ -44,6 +59,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           </svg>
           Continue with Google
         </a>
+        )}
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">

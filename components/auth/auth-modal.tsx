@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useActionState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { useState, useActionState, useEffect, useMemo } from 'react';
+import { X, Loader2, ExternalLink } from 'lucide-react';
 import { signIn, signUp } from '@/app/(login)/actions';
 import type { ActionState } from '@/lib/auth/middleware';
 import { t } from '@/lib/i18n/ka';
+import { isInAppBrowser } from '@/lib/utils/detect-webview';
 
 interface AuthModalProps {
   open: boolean;
@@ -42,6 +43,8 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
     setMode(defaultMode);
   }, [defaultMode]);
 
+  const inAppBrowser = useMemo(() => isInAppBrowser(), []);
+
   return (
     <div className="p-8">
       <div className="flex justify-center mb-6">
@@ -55,6 +58,22 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
         {mode === 'signin' ? 'Sign in to Agentic Tribe' : 'Join Agentic Tribe'}
       </p>
 
+      {inAppBrowser ? (
+        <button
+          type="button"
+          onClick={() => {
+            // Try to open in system browser; copy URL as fallback
+            const url = window.location.href;
+            window.open(url, '_system');
+            // Also try to copy to clipboard for manual paste
+            navigator.clipboard?.writeText(url).catch(() => {});
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 hover:bg-amber-100 transition-colors"
+        >
+          <ExternalLink className="h-4 w-4" />
+          გახსენი ბრაუზერში Google-ით შესასვლელად
+        </button>
+      ) : (
       <a
         href={`/api/auth/google?returnTo=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/community')}`}
         className="flex w-full items-center justify-center gap-3 rounded-md border border-border bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
@@ -67,6 +86,7 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
         </svg>
         Continue with Google
       </a>
+      )}
 
       <div className="relative my-4">
         <div className="absolute inset-0 flex items-center">
