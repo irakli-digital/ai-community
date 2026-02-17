@@ -10,6 +10,18 @@ type Props = {
   params: Promise<{ categorySlug: string; postSlug: string }>;
 };
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // [text](url) → text
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')   // ![alt](url) → remove
+    .replace(/#{1,6}\s+/g, '')                 // headings
+    .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1') // bold/italic
+    .replace(/`{1,3}[^`]*`{1,3}/g, '')        // inline code
+    .replace(/\n+/g, ' ')                      // newlines → space
+    .replace(/\s+/g, ' ')                      // collapse whitespace
+    .trim();
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const rawParams = await params;
@@ -18,12 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const post = await getPostBySlugs(categorySlug, postSlug);
     if (!post) return {};
 
+    const description = stripMarkdown(post.content).slice(0, 160);
+
     return {
       title: `${post.title} — Agentic Tribe`,
-      description: post.content.slice(0, 160),
+      description,
       openGraph: {
         title: post.title,
-        description: post.content.slice(0, 160),
+        description,
         type: 'article',
         ...(post.featuredImageUrl
           ? {
