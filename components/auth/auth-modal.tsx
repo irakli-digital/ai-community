@@ -59,20 +59,14 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
       </p>
 
       {inAppBrowser ? (
-        <button
-          type="button"
-          onClick={() => {
-            // Try to open in system browser; copy URL as fallback
-            const url = window.location.href;
-            window.open(url, '_system');
-            // Also try to copy to clipboard for manual paste
-            navigator.clipboard?.writeText(url).catch(() => {});
-          }}
-          className="flex w-full items-center justify-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 hover:bg-amber-100 transition-colors"
-        >
-          <ExternalLink className="h-4 w-4" />
-          გახსენი ბრაუზერში Google-ით შესასვლელად
-        </button>
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-center">
+          <p className="text-sm font-medium text-amber-800 mb-1">
+            Google-ით შესვლა ამ ბრაუზერში არ მუშაობს
+          </p>
+          <p className="text-xs text-amber-700">
+            დააჭირე ⋮ ან <ExternalLink className="inline h-3 w-3" /> მენიუს და აირჩიე <strong>&quot;Open in Browser&quot;</strong>
+          </p>
+        </div>
       ) : (
       <a
         href={`/api/auth/google?returnTo=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '/community')}`}
