@@ -54,12 +54,17 @@ export async function middleware(request: NextRequest) {
     try {
       const parsed = await verifyToken(sessionCookie.value);
 
+      // Redirect logged-in users from homepage to community
+      if (pathname === '/') {
+        return NextResponse.redirect(new URL('/community', request.url));
+      }
+
       // Admin route protection
       if (isAdminRoute && !hasAdminRole(parsed.user.role)) {
         return NextResponse.redirect(new URL('/community', request.url));
       }
 
-      const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const expiresInOneDay = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       res.cookies.set({
         name: 'session',
