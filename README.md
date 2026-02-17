@@ -72,7 +72,7 @@ pnpm dev
 
 ```env
 # ─── აუცილებელი ─────────────────────────────────
-POSTGRES_URL=postgresql://user:pass@localhost:5432/aicircle
+POSTGRES_URL=postgresql://user:pass@localhost:5432/agentictribe
 AUTH_SECRET=your-secret-key-min-32-chars
 BASE_URL=http://localhost:3000
 
