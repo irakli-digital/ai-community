@@ -678,7 +678,7 @@ export function PostDetailClient({
                 >
                   {rp.featuredImageUrl && (
                     <img
-                      src={getImageVariantUrl(rp.featuredImageUrl, 'thumb')}
+                      src={getImageVariantUrl(rp.featuredImageUrl, 'sm')}
                       alt={rp.title}
                       className="mb-2 h-24 w-full rounded object-cover"
                       onError={(e) => { if (!e.currentTarget.dataset.fallback) { e.currentTarget.dataset.fallback = '1'; e.currentTarget.src = rp.featuredImageUrl!; } }}
