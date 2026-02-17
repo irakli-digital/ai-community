@@ -24,6 +24,7 @@ import {
 } from '@/lib/notifications';
 import { generateUniquePostSlug } from '@/lib/utils/slugify-server';
 import { getPostUrl } from '@/lib/utils/post-url';
+import { isPrivateIP } from '@/lib/utils/network';
 import { categories } from '@/lib/db/schema';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -52,21 +53,6 @@ async function requireAdminOrMod() {
 }
 
 // ─── SSRF-safe OG fetch ─────────────────────────────────────────────────────
-
-function isPrivateIP(hostname: string): boolean {
-  // Block private/reserved IP ranges
-  const parts = hostname.split('.').map(Number);
-  if (parts.length === 4 && parts.every((p) => !isNaN(p))) {
-    if (parts[0] === 10) return true;
-    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-    if (parts[0] === 192 && parts[1] === 168) return true;
-    if (parts[0] === 127) return true;
-    if (parts[0] === 0) return true;
-    if (parts[0] === 169 && parts[1] === 254) return true;
-  }
-  if (hostname === 'localhost' || hostname === '::1') return true;
-  return false;
-}
 
 async function fetchOGMetadata(
   url: string

@@ -3,7 +3,7 @@
  * Returns { subject, html, text } for each template.
  */
 
-const BASE_URL = process.env.BASE_URL || 'https://aiwre.ge';
+const BASE_URL = process.env.BASE_URL || 'https://agentictribe.ge';
 
 function wrap(content: string): string {
   return `

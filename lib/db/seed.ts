@@ -24,7 +24,7 @@ async function createStripeProducts() {
 }
 
 async function seed() {
-  const email = process.env.ADMIN_EMAIL ?? 'admin@aicircle.ge';
+  const email = process.env.ADMIN_EMAIL ?? 'admin@agentictribe.ge';
   const password = process.env.ADMIN_PASSWORD ?? 'admin123';
   const passwordHash = await hashPassword(password);
 

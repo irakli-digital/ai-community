@@ -1,4 +1,4 @@
-# AI წრე - Robots.txt
+# Agentic Tribe - Robots.txt
 User-agent: *
 Allow: /
 Disallow: /admin
