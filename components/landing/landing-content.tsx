@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Users, Wifi, ArrowRight, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthModal } from '@/components/auth/auth-modal';
@@ -10,9 +11,11 @@ import { getImageVariantUrl } from '@/lib/storage/image-utils';
 type SerializedPost = {
   id: number;
   title: string;
+  slug: string;
   content: string;
   featuredImageUrl: string | null;
   createdAt: string;
+  categorySlug: string | null;
   author: { id: number; name: string | null; avatarUrl: string | null };
   category: { id: number; name: string; color: string } | null;
   commentsCount: number;
@@ -171,10 +174,10 @@ export function LandingContent({
                 });
 
                 return (
-                  <article
+                  <Link
                     key={post.id}
-                    className="group flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-shadow hover:shadow-md cursor-pointer"
-                    onClick={() => openAuth('signup')}
+                    href={post.categorySlug ? `/community/post/${post.categorySlug}/${post.slug}` : `/community/post/uncategorized/${post.slug}`}
+                    className="group flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-shadow hover:shadow-md"
                   >
                     {post.featuredImageUrl && (
                       <div className="h-40 overflow-hidden">
@@ -236,19 +239,20 @@ export function LandingContent({
                         </div>
                       </div>
                     </div>
-                  </article>
+                  </Link>
                 );
               })}
             </div>
             <div className="mt-8 text-center">
-              <Button
-                variant="outline"
-                onClick={() => openAuth('signup')}
-                className="rounded-md"
-              >
-                {t('landing.viewAllArticles')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/community">
+                <Button
+                  variant="outline"
+                  className="rounded-md"
+                >
+                  {t('landing.viewAllArticles')}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
