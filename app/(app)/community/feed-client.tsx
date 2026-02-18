@@ -9,7 +9,6 @@ import { CategoryFilter } from '@/components/community/category-filter';
 import { PostCard } from '@/components/community/post-card';
 import { WriteBar } from '@/components/community/write-bar';
 import { CommunitySidebar } from '@/components/community/community-sidebar';
-import { PostDetailModal } from '@/components/community/post-detail-modal';
 import { t } from '@/lib/i18n/ka';
 import type { FeedPost } from '@/lib/db/community-queries';
 import type { Category } from '@/lib/db/schema';
@@ -56,7 +55,6 @@ export function CommunityFeed({
   const [pinned, setPinned] = useState(initialPinned);
   const [cursor, setCursor] = useState(initialCursor);
   const [loading, setLoading] = useState(false);
-  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   // Infinite scroll
@@ -128,26 +126,11 @@ export function CommunityFeed({
   }
 
   function handlePostClick(postId: number) {
-    setSelectedPostId(postId);
-    // Find the post to get slug info for the URL
     const allPosts = [...pinned, ...posts];
     const clickedPost = allPosts.find((p) => p.id === postId);
     const url = clickedPost ? getPostUrl(clickedPost) : `/community/${postId}`;
-    window.history.pushState({ postId }, '', url);
+    router.push(url);
   }
-
-  // Handle browser back/forward to close/open modal
-  useEffect(() => {
-    function handlePopState(e: PopStateEvent) {
-      if (e.state?.postId) {
-        setSelectedPostId(e.state.postId);
-      } else {
-        setSelectedPostId(null);
-      }
-    }
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
 
   const canDelete = hasModRole(userRole);
 
@@ -250,20 +233,6 @@ export function CommunityFeed({
         </div>
       </div>
 
-      {/* Post detail modal */}
-      {selectedPostId && (
-        <PostDetailModal
-          postId={selectedPostId}
-          onClose={() => {
-            setSelectedPostId(null);
-            window.history.pushState(null, '', '/community');
-          }}
-          onPostDeleted={() => {
-            setPosts((prev) => prev.filter((p) => p.id !== selectedPostId));
-            setPinned((prev) => prev.filter((p) => p.id !== selectedPostId));
-          }}
-        />
-      )}
     </>
   );
 }
