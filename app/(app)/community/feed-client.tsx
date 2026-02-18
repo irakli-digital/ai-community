@@ -9,6 +9,7 @@ import { CategoryFilter } from '@/components/community/category-filter';
 import { PostCard } from '@/components/community/post-card';
 import { WriteBar } from '@/components/community/write-bar';
 import { CommunitySidebar } from '@/components/community/community-sidebar';
+import { PostDetailModal } from '@/components/community/post-detail-modal';
 import { t } from '@/lib/i18n/ka';
 import type { FeedPost } from '@/lib/db/community-queries';
 import type { Category } from '@/lib/db/schema';
@@ -53,6 +54,7 @@ export function CommunityFeed({
   const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [pinned, setPinned] = useState(initialPinned);
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [cursor, setCursor] = useState(initialCursor);
   const [loading, setLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -129,8 +131,28 @@ export function CommunityFeed({
     const allPosts = [...pinned, ...posts];
     const clickedPost = allPosts.find((p) => p.id === postId);
     const url = clickedPost ? getPostUrl(clickedPost) : `/community/${postId}`;
-    router.push(url);
+
+    // Mobile: navigate to full page. Desktop: open modal overlay.
+    if (window.innerWidth < 768) {
+      router.push(url);
+    } else {
+      setSelectedPostId(postId);
+      window.history.pushState({ postId }, '', url);
+    }
   }
+
+  // Handle browser back/forward to close/open modal (desktop only)
+  useEffect(() => {
+    function handlePopState(e: PopStateEvent) {
+      if (e.state?.postId) {
+        setSelectedPostId(e.state.postId);
+      } else {
+        setSelectedPostId(null);
+      }
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const canDelete = hasModRole(userRole);
 
@@ -233,6 +255,20 @@ export function CommunityFeed({
         </div>
       </div>
 
+      {/* Post detail modal (desktop only) */}
+      {selectedPostId && (
+        <PostDetailModal
+          postId={selectedPostId}
+          onClose={() => {
+            setSelectedPostId(null);
+            window.history.pushState(null, '', '/community');
+          }}
+          onPostDeleted={() => {
+            setPosts((prev) => prev.filter((p) => p.id !== selectedPostId));
+            setPinned((prev) => prev.filter((p) => p.id !== selectedPostId));
+          }}
+        />
+      )}
     </>
   );
 }
