@@ -4,11 +4,17 @@ import { db } from '@/lib/db/drizzle';
 import { magicLinks, users, activityLogs, ActivityType } from '@/lib/db/schema';
 import { setSession } from '@/lib/auth/session';
 
+const BASE_URL = process.env.BASE_URL || 'https://agentictribe.ge';
+
+function redirectTo(path: string) {
+  return NextResponse.redirect(`${BASE_URL}${path}`);
+}
+
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token');
 
   if (!token) {
-    return NextResponse.redirect(new URL('/auth/magic?error=invalid', request.url));
+    return redirectTo('/auth/magic?error=invalid');
   }
 
   // Look up the magic link
@@ -19,15 +25,15 @@ export async function GET(request: NextRequest) {
     .limit(1);
 
   if (!magicLink) {
-    return NextResponse.redirect(new URL('/auth/magic?error=invalid', request.url));
+    return redirectTo('/auth/magic?error=invalid');
   }
 
   if (magicLink.usedAt) {
-    return NextResponse.redirect(new URL('/auth/magic?error=used', request.url));
+    return redirectTo('/auth/magic?error=used');
   }
 
   if (new Date() > magicLink.expiresAt) {
-    return NextResponse.redirect(new URL('/auth/magic?error=expired', request.url));
+    return redirectTo('/auth/magic?error=expired');
   }
 
   // Mark token as used
@@ -50,7 +56,7 @@ export async function GET(request: NextRequest) {
       userId: existingUser.id,
       action: ActivityType.SIGN_IN,
     });
-    return NextResponse.redirect(new URL(magicLink.redirectUrl, request.url));
+    return redirectTo(magicLink.redirectUrl);
   }
 
   // New user: redirect to registration page with email + redirectUrl
@@ -58,5 +64,5 @@ export async function GET(request: NextRequest) {
     email: magicLink.email,
     redirectUrl: magicLink.redirectUrl,
   });
-  return NextResponse.redirect(new URL(`/auth/magic?${params.toString()}`, request.url));
+  return redirectTo(`/auth/magic?${params.toString()}`);
 }
