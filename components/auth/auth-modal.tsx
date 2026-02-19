@@ -135,6 +135,16 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
             className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
             placeholder={t('auth.passwordPlaceholder')}
           />
+          {mode === 'signin' && (
+            <div className="mt-1.5 text-right">
+              <a
+                href="/auth/forgot-password"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                {t('auth.forgotPassword')}
+              </a>
+            </div>
+          )}
         </div>
 
         {state?.error && (

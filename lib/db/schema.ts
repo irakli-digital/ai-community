@@ -353,6 +353,7 @@ export const magicLinks = pgTable(
     id: serial('id').primaryKey(),
     email: varchar('email', { length: 255 }).notNull(),
     token: varchar('token', { length: 255 }).notNull().unique(),
+    type: varchar('type', { length: 20 }).notNull().default('access'),
     redirectUrl: text('redirect_url').notNull(),
     isNewUser: boolean('is_new_user').notNull().default(false),
     usedAt: timestamp('used_at'),

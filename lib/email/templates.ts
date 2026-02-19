@@ -109,6 +109,27 @@ export function magicLinkEmail(params: { token: string; redirectUrl: string }) {
   };
 }
 
+// ─── Password Reset ─────────────────────────────────────────────────────────
+
+export function passwordResetEmail(params: { token: string }) {
+  const resetUrl = `${BASE_URL}/api/auth/reset-password/verify?token=${params.token}`;
+  return {
+    subject: 'Reset your password — Agentic Tribe',
+    html: wrap(`
+      <p style="margin:0 0 8px;font-size:14px;font-weight:500;color:#c05a2c;text-transform:uppercase;letter-spacing:0.5px;">Password Reset</p>
+      <h1 style="margin:0 0 16px;font-size:24px;font-weight:700;color:#F4F0E4;">Reset your password</h1>
+      <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:#c4bdb4;">Tap the button below to set a new password for your account. This link expires in 15 minutes.</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr><td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background-color:#c05a2c;border-radius:8px;">
+          <a href="${resetUrl}" style="display:inline-block;padding:14px 40px;font-size:16px;font-weight:600;color:#F4F0E4;text-decoration:none;">Reset Password &rarr;</a>
+        </td></tr></table>
+      </td></tr></table>
+      <p style="margin:28px 0 0;font-size:12px;color:#6b6460;line-height:1.5;">If you didn't request this, you can safely ignore this email. Your password will not change.</p>
+    `),
+    text: `Reset your password\n\nClick the link below to set a new password:\n${resetUrl}\n\nThis link expires in 15 minutes.\n\nIf you didn't request this, you can safely ignore this email.`,
+  };
+}
+
 // ─── Subscription Cancellation ──────────────────────────────────────────────
 
 export function subscriptionCancellationEmail(params: {

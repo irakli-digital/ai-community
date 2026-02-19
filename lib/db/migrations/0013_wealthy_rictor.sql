@@ -1,0 +1,1 @@
+ALTER TABLE "magic_links" ADD COLUMN "type" varchar(20) DEFAULT 'access' NOT NULL;

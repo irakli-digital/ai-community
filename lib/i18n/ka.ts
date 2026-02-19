@@ -232,6 +232,22 @@ const dictionary = {
   'auth.magic.completeRegistration': 'Complete your registration',
   'auth.magic.emailVerified': 'Email verified',
   'auth.magic.setPassword': 'Set a password for your account',
+
+  // ─── Forgot / Reset Password ─────────────────────────────────────
+  'auth.forgotPassword': 'Forgot password?',
+  'auth.forgotPassword.title': 'Reset your password',
+  'auth.forgotPassword.description':
+    "Enter your email and we'll send you a reset link.",
+  'auth.forgotPassword.submit': 'Send reset link',
+  'auth.forgotPassword.sent': 'Check your email!',
+  'auth.forgotPassword.sentDescription':
+    'We sent a password reset link to {email}.',
+  'auth.resetPassword.title': 'Set new password',
+  'auth.resetPassword.submit': 'Reset password',
+  'auth.resetPassword.success':
+    'Password reset successfully. Please sign in.',
+  'auth.resetPassword.expired': 'This reset link has expired.',
+  'auth.resetPassword.used': 'This reset link has already been used.',
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

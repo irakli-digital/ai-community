@@ -16,6 +16,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
+  const message = searchParams.get('message');
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     mode === 'signin' ? signIn : signUp,
     { error: '' }
@@ -33,6 +34,11 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        {message === 'password-reset' && (
+          <div className="mb-4 rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-center text-sm text-foreground">
+            {t('auth.resetPassword.success')}
+          </div>
+        )}
         {!isInAppBrowser() && (
         <>
         <a
@@ -154,6 +160,16 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 placeholder={t('auth.passwordPlaceholder')}
               />
             </div>
+            {mode === 'signin' && (
+              <div className="mt-1.5 text-right">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('auth.forgotPassword')}
+                </Link>
+              </div>
+            )}
           </div>
 
           {state?.error && (

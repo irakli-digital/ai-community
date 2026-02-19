@@ -92,6 +92,13 @@
       "when": 1771515276449,
       "tag": "0012_cultured_gabe_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1771519303878,
+      "tag": "0013_wealthy_rictor",
+      "breakpoints": true
     }
   ]
 }
