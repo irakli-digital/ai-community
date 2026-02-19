@@ -214,6 +214,24 @@ const dictionary = {
   'paywall.description': 'Join 100+ creators learning AI workflows. Free access to all posts, courses, and prompt blueprints.',
   'paywall.joinNow': 'Read Full Article',
   'paywall.alreadyMember': 'Already a member?',
+
+  // ─── Paywall Webview ─────────────────────────────────────────────
+  'paywall.webview.title': 'Unlock this article',
+  'paywall.webview.emailPlaceholder': 'Enter your email',
+  'paywall.webview.submit': 'Unlock Article',
+  'paywall.webview.sending': 'Sending...',
+  'paywall.webview.sent': 'Check your email!',
+  'paywall.webview.sentDescription': 'We sent a link to {email}. Open it from your email app to continue reading.',
+  'paywall.webview.resend': 'Resend link',
+  'paywall.webview.tryDifferent': 'Try different email',
+
+  // ─── Magic Link Auth ─────────────────────────────────────────────
+  'auth.magic.expired': 'This link has expired. Please try again.',
+  'auth.magic.used': 'This link has already been used.',
+  'auth.magic.invalid': 'Invalid magic link.',
+  'auth.magic.completeRegistration': 'Complete your registration',
+  'auth.magic.emailVerified': 'Email verified',
+  'auth.magic.setPassword': 'Set a password for your account',
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

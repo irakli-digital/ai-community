@@ -346,6 +346,25 @@ export const courseProgress = pgTable(
   ]
 );
 
+// ─── Magic Links ────────────────────────────────────────────────────────────
+export const magicLinks = pgTable(
+  'magic_links',
+  {
+    id: serial('id').primaryKey(),
+    email: varchar('email', { length: 255 }).notNull(),
+    token: varchar('token', { length: 255 }).notNull().unique(),
+    redirectUrl: text('redirect_url').notNull(),
+    isNewUser: boolean('is_new_user').notNull().default(false),
+    usedAt: timestamp('used_at'),
+    expiresAt: timestamp('expires_at').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('magic_links_token_idx').on(table.token),
+    index('magic_links_email_idx').on(table.email),
+  ]
+);
+
 // ─── Waiting List ────────────────────────────────────────────────────────────
 export const waitingList = pgTable('waiting_list', {
   id: serial('id').primaryKey(),
@@ -622,6 +641,8 @@ export type LessonAttachment = typeof lessonAttachments.$inferSelect;
 export type NewLessonAttachment = typeof lessonAttachments.$inferInsert;
 export type CourseProgress = typeof courseProgress.$inferSelect;
 export type NewCourseProgress = typeof courseProgress.$inferInsert;
+export type MagicLink = typeof magicLinks.$inferSelect;
+export type NewMagicLink = typeof magicLinks.$inferInsert;
 export type WaitingListEntry = typeof waitingList.$inferSelect;
 export type NewWaitingListEntry = typeof waitingList.$inferInsert;
 

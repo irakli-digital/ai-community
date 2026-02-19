@@ -81,6 +81,22 @@ export function subscriptionConfirmationEmail(params: { name?: string }) {
   };
 }
 
+// ─── Magic Link ─────────────────────────────────────────────────────────────
+
+export function magicLinkEmail(params: { token: string; redirectUrl: string }) {
+  const magicUrl = `${BASE_URL}/auth/magic?token=${params.token}`;
+  return {
+    subject: 'Your access link — Agentic Tribe',
+    html: wrap(`
+      <h1>Continue reading on Agentic Tribe</h1>
+      <p>Click the button below to access the full article. This link expires in 15 minutes.</p>
+      <a href="${magicUrl}" class="btn">Open Article</a>
+      <p style="font-size: 13px; color: #9ca3af; margin-top: 24px;">If you didn't request this link, you can safely ignore this email.</p>
+    `),
+    text: `Continue reading on Agentic Tribe\n\nClick the link below to access the full article:\n${magicUrl}\n\nThis link expires in 15 minutes.`,
+  };
+}
+
 // ─── Subscription Cancellation ──────────────────────────────────────────────
 
 export function subscriptionCancellationEmail(params: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -8,6 +8,8 @@ import {
   Check,
   ClipboardCopy,
   Heart,
+  Loader2,
+  Mail,
   Sparkles,
   MessageCircle,
   Pencil,
@@ -17,6 +19,7 @@ import {
   Trash2,
   ExternalLink,
 } from 'lucide-react';
+import { isInAppWebview } from '@/lib/utils/webview';
 import { Button } from '@/components/ui/button';
 import { t } from '@/lib/i18n/ka';
 import { cn } from '@/lib/utils';
@@ -192,6 +195,50 @@ export function PostDetailClient({
   const [copied, setCopied] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
+  // Webview detection
+  const [isWebview, setIsWebview] = useState(false);
+  const [magicEmail, setMagicEmail] = useState('');
+  const [magicState, setMagicState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [magicError, setMagicError] = useState('');
+  const [canResend, setCanResend] = useState(false);
+
+  useEffect(() => {
+    setIsWebview(isInAppWebview(navigator.userAgent));
+  }, []);
+
+  useEffect(() => {
+    if (magicState === 'sent') {
+      const timer = setTimeout(() => setCanResend(true), 30000);
+      return () => clearTimeout(timer);
+    }
+    setCanResend(false);
+  }, [magicState]);
+
+  const handleMagicLink = useCallback(async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!magicEmail.trim()) return;
+    setMagicState('sending');
+    setMagicError('');
+    try {
+      const currentUrl = window.location.pathname;
+      const res = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: magicEmail.trim(), redirectUrl: currentUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMagicError(data.error || 'Something went wrong.');
+        setMagicState('error');
+        return;
+      }
+      setMagicState('sent');
+    } catch {
+      setMagicError('Network error. Please try again.');
+      setMagicState('error');
+    }
+  }, [magicEmail]);
+
   const isGuest = userId === null;
   const postUrl = typeof window !== 'undefined'
     ? `${window.location.origin}${getPostUrl(post)}`
@@ -356,7 +403,76 @@ export function PostDetailClient({
         )}
 
         {/* Paywall overlay for guests */}
-        {isGuest && (
+        {isGuest && isWebview && (
+          <div className="-mt-8 flex flex-col items-center rounded-2xl border border-primary/20 bg-card/70 backdrop-blur-xl px-6 py-10 text-center">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground">
+              {t('paywall.webview.title')}
+            </h3>
+            <p className="mt-3 max-w-md text-sm text-muted-foreground">
+              {t('paywall.description')}
+            </p>
+
+            {magicState === 'sent' ? (
+              <div className="mt-6 w-full max-w-sm">
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                  <p className="font-semibold text-foreground">{t('paywall.webview.sent')}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {t('paywall.webview.sentDescription').replace('{email}', magicEmail)}
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center justify-center gap-4">
+                  <button
+                    type="button"
+                    disabled={!canResend}
+                    onClick={() => handleMagicLink()}
+                    className={cn(
+                      'text-sm font-medium transition-colors',
+                      canResend ? 'text-primary hover:underline' : 'text-muted-foreground/50'
+                    )}
+                  >
+                    {t('paywall.webview.resend')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setMagicState('idle'); setMagicEmail(''); }}
+                    className="text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {t('paywall.webview.tryDifferent')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleMagicLink} className="mt-6 flex w-full max-w-sm flex-col gap-3">
+                <input
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={magicEmail}
+                  onChange={(e) => setMagicEmail(e.target.value)}
+                  placeholder={t('paywall.webview.emailPlaceholder')}
+                  className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+                />
+                {magicError && <p className="text-sm text-destructive">{magicError}</p>}
+                <Button
+                  type="submit"
+                  disabled={magicState === 'sending'}
+                  className="rounded-full px-8 shadow-lg transition-shadow hover:shadow-[0_0_24px_rgba(198,99,54,0.35)]"
+                >
+                  {magicState === 'sending' ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    t('paywall.webview.submit')
+                  )}
+                </Button>
+              </form>
+            )}
+          </div>
+        )}
+
+        {isGuest && !isWebview && (
           <div className="-mt-8 flex flex-col items-center rounded-2xl border border-primary/20 bg-card/70 backdrop-blur-xl px-6 py-10 text-center">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
               <Sparkles className="h-5 w-5 text-primary" />
