@@ -1,70 +1,34 @@
-import { redirect } from 'next/navigation';
-import { eq, and, isNull, sql } from 'drizzle-orm';
-import { db } from '@/lib/db/drizzle';
-import { magicLinks, users, activityLogs, ActivityType } from '@/lib/db/schema';
-import { setSession } from '@/lib/auth/session';
 import { MagicRegistrationForm } from './registration-form';
 
 interface Props {
-  searchParams: Promise<{ token?: string }>;
+  searchParams: Promise<{ error?: string; email?: string; redirectUrl?: string }>;
 }
 
 export default async function MagicLinkPage({ searchParams }: Props) {
-  const { token } = await searchParams;
+  const { error, email, redirectUrl } = await searchParams;
 
-  if (!token) {
-    return <ErrorState message="Invalid magic link." />;
-  }
-
-  // Look up the magic link
-  const [magicLink] = await db
-    .select()
-    .from(magicLinks)
-    .where(eq(magicLinks.token, token))
-    .limit(1);
-
-  if (!magicLink) {
-    return <ErrorState message="Invalid magic link." />;
-  }
-
-  if (magicLink.usedAt) {
-    return <ErrorState message="This link has already been used." />;
-  }
-
-  if (new Date() > magicLink.expiresAt) {
+  // Error states from the verify route handler
+  if (error === 'expired') {
     return <ErrorState message="This link has expired. Please try again." />;
   }
-
-  // Mark token as used
-  await db
-    .update(magicLinks)
-    .set({ usedAt: new Date() })
-    .where(eq(magicLinks.id, magicLink.id));
-
-  // Check if user exists (re-check at verification time)
-  const [existingUser] = await db
-    .select()
-    .from(users)
-    .where(and(eq(users.email, magicLink.email), isNull(users.deletedAt)))
-    .limit(1);
-
-  if (existingUser) {
-    // Existing user: create session and redirect
-    await setSession({ id: existingUser.id, role: existingUser.role });
-    await db.insert(activityLogs).values({
-      userId: existingUser.id,
-      action: ActivityType.SIGN_IN,
-    });
-    redirect(magicLink.redirectUrl);
+  if (error === 'used') {
+    return <ErrorState message="This link has already been used." />;
+  }
+  if (error === 'invalid' || (!email && !error)) {
+    return <ErrorState message="Invalid magic link." />;
   }
 
   // New user: show registration form
-  return (
-    <MagicRegistrationForm
-      email={magicLink.email}
-      redirectUrl={magicLink.redirectUrl}
-    />
-  );
+  if (email && redirectUrl) {
+    return (
+      <MagicRegistrationForm
+        email={email}
+        redirectUrl={redirectUrl}
+      />
+    );
+  }
+
+  return <ErrorState message="Invalid magic link." />;
 }
 
 function ErrorState({ message }: { message: string }) {

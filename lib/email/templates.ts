@@ -91,7 +91,7 @@ export function subscriptionConfirmationEmail(params: { name?: string }) {
 // ─── Magic Link ─────────────────────────────────────────────────────────────
 
 export function magicLinkEmail(params: { token: string; redirectUrl: string }) {
-  const magicUrl = `${BASE_URL}/auth/magic?token=${params.token}`;
+  const magicUrl = `${BASE_URL}/api/auth/magic-link/verify?token=${params.token}`;
   return {
     subject: 'Your access link — Agentic Tribe',
     html: wrap(`
