@@ -5,7 +5,6 @@ import { useActionState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Loader2, ExternalLink } from 'lucide-react';
 import { signIn, signUp } from './actions';
 import { ActionState } from '@/lib/auth/middleware';
@@ -71,95 +70,57 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
 
           {mode === 'signup' && (
             <>
-              <div>
-                <Label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-foreground"
-                >
-                  Name
-                </Label>
-                <div className="mt-1">
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    autoComplete="given-name"
-                    required
-                    maxLength={100}
-                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
-                    placeholder="Enter your name"
-                  />
-                </div>
-              </div>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="given-name"
+                required
+                maxLength={100}
+                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
+                placeholder="Enter your name"
+              />
 
-              <div>
-                <Label
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-foreground"
-                >
-                  Last Name
-                </Label>
-                <div className="mt-1">
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    autoComplete="family-name"
-                    required
-                    maxLength={100}
-                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
-                    placeholder="Enter your last name"
-                  />
-                </div>
-              </div>
+              <Input
+                id="lastName"
+                name="lastName"
+                type="text"
+                autoComplete="family-name"
+                required
+                maxLength={100}
+                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
+                placeholder="Enter your last name"
+              />
             </>
           )}
 
-          <div>
-            <Label
-              htmlFor="email"
-              className="block text-sm font-medium text-foreground"
-            >
-              {t('auth.email')}
-            </Label>
-            <div className="mt-1">
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                defaultValue={state.email}
-                required
-                maxLength={50}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
-                placeholder={t('auth.emailPlaceholder')}
-              />
-            </div>
-          </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            defaultValue={state.email}
+            required
+            maxLength={50}
+            className="appearance-none rounded-md relative block w-full px-3 py-3 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
+            placeholder={t('auth.emailPlaceholder')}
+          />
 
           <div>
-            <Label
-              htmlFor="password"
-              className="block text-sm font-medium text-foreground"
-            >
-              {t('auth.password')}
-            </Label>
-            <div className="mt-1">
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete={
-                  mode === 'signin' ? 'current-password' : 'new-password'
-                }
-                defaultValue={state.password}
-                required
-                minLength={8}
-                maxLength={100}
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
-                placeholder={t('auth.passwordPlaceholder')}
-              />
-            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete={
+                mode === 'signin' ? 'current-password' : 'new-password'
+              }
+              defaultValue={state.password}
+              required
+              minLength={8}
+              maxLength={100}
+              className="appearance-none rounded-md relative block w-full px-3 py-3 border border-border placeholder-muted-foreground text-foreground bg-secondary focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
+              placeholder={t('auth.passwordPlaceholder')}
+            />
             {mode === 'signin' && (
               <div className="mt-1.5 text-right">
                 <Link

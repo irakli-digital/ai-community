@@ -94,7 +94,7 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
                 autoComplete="given-name"
                 required
                 maxLength={100}
-                className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+                className="w-full rounded-md border border-border bg-secondary px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
                 placeholder="Name"
               />
             </div>
@@ -105,7 +105,7 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
                 autoComplete="family-name"
                 required
                 maxLength={100}
-                className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+                className="w-full rounded-md border border-border bg-secondary px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
                 placeholder="Last Name"
               />
             </div>
@@ -119,7 +119,7 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
             autoComplete="email"
             required
             maxLength={50}
-            className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+            className="w-full rounded-md border border-border bg-secondary px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
             placeholder={t('auth.emailPlaceholder')}
           />
         </div>
@@ -132,7 +132,7 @@ function AuthForm({ defaultMode }: { defaultMode: 'signin' | 'signup' }) {
             required
             minLength={8}
             maxLength={100}
-            className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+            className="w-full rounded-md border border-border bg-secondary px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
             placeholder={t('auth.passwordPlaceholder')}
           />
           {mode === 'signin' && (

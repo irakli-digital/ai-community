@@ -76,7 +76,7 @@ export function ResetPasswordForm({ email }: Props) {
               required
               minLength={8}
               maxLength={100}
-              className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+              className="w-full rounded-md border border-border bg-secondary px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
               placeholder={t('auth.newPassword')}
             />
           </div>
@@ -88,7 +88,7 @@ export function ResetPasswordForm({ email }: Props) {
               required
               minLength={8}
               maxLength={100}
-              className="w-full rounded-md border border-border bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+              className="w-full rounded-md border border-border bg-secondary px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring"
               placeholder={t('auth.confirmPassword')}
             />
           </div>
