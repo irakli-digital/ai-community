@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
   cookieStore.delete('google_oauth_state');
 
   if (!savedState || savedState !== state) {
-    return NextResponse.redirect(`${baseUrl}/sign-in`);
+    console.error('[Google OAuth] State mismatch - savedState:', savedState ? 'present' : 'MISSING', 'state:', state ? 'present' : 'MISSING');
+    return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-state-error`);
   }
 
   try {

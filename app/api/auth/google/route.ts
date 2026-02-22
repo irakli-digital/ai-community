@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   cookieStore.set('google_oauth_state', state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: 60 * 10, // 10 minutes
     path: '/',
   });
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     cookieStore.set('google_oauth_return_to', returnTo, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 60 * 10,
       path: '/',
     });
