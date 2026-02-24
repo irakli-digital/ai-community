@@ -30,7 +30,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   return (
     <div className="rich-prose">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkGithubAlerts, remarkMark]}
+        remarkPlugins={[remarkGfm, [remarkGithubAlerts, { markers: ['TIP', 'NOTE', 'IMPORTANT', 'WARNING', 'CAUTION', 'PROMO'] }], remarkMark]}
         rehypePlugins={[
           rehypeRaw,
           [rehypeSanitize, sanitizeSchema],

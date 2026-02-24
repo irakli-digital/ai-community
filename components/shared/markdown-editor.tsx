@@ -188,6 +188,7 @@ export function MarkdownEditor({
       { type: 'WARNING', label: 'Warning' },
       { type: 'CAUTION', label: 'Caution' },
       { type: 'IMPORTANT', label: 'Important' },
+      { type: 'PROMO', label: 'Promo' },
     ],
     []
   );
@@ -403,7 +404,7 @@ export function MarkdownEditor({
             {debouncedValue ? (
               <div className="rich-prose">
                 <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkGithubAlerts, remarkMark]}
+                  remarkPlugins={[remarkGfm, [remarkGithubAlerts, { markers: ['TIP', 'NOTE', 'IMPORTANT', 'WARNING', 'CAUTION', 'PROMO'] }], remarkMark]}
                   rehypePlugins={[rehypeRaw]}
                 >
                   {debouncedValue}

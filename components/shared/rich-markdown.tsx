@@ -25,7 +25,7 @@ export function RichMarkdown({
 
   const markdown = (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkGithubAlerts]}
+      remarkPlugins={[remarkGfm, [remarkGithubAlerts, { markers: ['TIP', 'NOTE', 'IMPORTANT', 'WARNING', 'CAUTION', 'PROMO'] }]]}
       rehypePlugins={[
         [
           rehypeShiki,
