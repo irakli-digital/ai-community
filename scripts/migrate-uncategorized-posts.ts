@@ -29,12 +29,13 @@ async function main() {
   }
 
   // Update all posts with no category
-  const result = await db
+  const updated = await db
     .update(posts)
     .set({ categoryId: general.id })
-    .where(isNull(posts.categoryId));
+    .where(isNull(posts.categoryId))
+    .returning({ id: posts.id });
 
-  console.log(`Updated ${result.rowCount ?? 0} uncategorized post(s) → general`);
+  console.log(`Updated ${updated.length} uncategorized post(s) → general`);
   process.exit(0);
 }
 
