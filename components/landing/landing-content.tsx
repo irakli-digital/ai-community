@@ -176,7 +176,7 @@ export function LandingContent({
                 return (
                   <Link
                     key={post.id}
-                    href={post.categorySlug ? `/community/post/${post.categorySlug}/${post.slug}` : `/community/post/uncategorized/${post.slug}`}
+                    href={post.categorySlug ? `/community/post/${post.categorySlug}/${post.slug}` : `/community/post/general/${post.slug}`}
                     className="group flex flex-col rounded-lg border border-border bg-card overflow-hidden transition-shadow hover:shadow-md"
                   >
                     {post.featuredImageUrl && (

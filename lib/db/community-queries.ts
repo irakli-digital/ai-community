@@ -22,6 +22,40 @@ import {
   not,
 } from 'drizzle-orm';
 
+// ─── Default Category ────────────────────────────────────────────────────────
+
+const GENERAL_CATEGORY = { name: 'General', slug: 'general', color: '#6B7280' };
+
+/**
+ * Returns the "general" category, creating it if it doesn't exist yet.
+ */
+export async function getOrCreateGeneralCategory(): Promise<{ id: number; slug: string }> {
+  const [existing] = await db
+    .select({ id: categories.id, slug: categories.slug })
+    .from(categories)
+    .where(eq(categories.slug, GENERAL_CATEGORY.slug))
+    .limit(1);
+
+  if (existing) return existing;
+
+  const [created] = await db
+    .insert(categories)
+    .values(GENERAL_CATEGORY)
+    .onConflictDoNothing()
+    .returning({ id: categories.id, slug: categories.slug });
+
+  // Race condition: another request may have inserted it
+  if (created) return created;
+
+  const [raced] = await db
+    .select({ id: categories.id, slug: categories.slug })
+    .from(categories)
+    .where(eq(categories.slug, GENERAL_CATEGORY.slug))
+    .limit(1);
+
+  return raced!;
+}
+
 // ─── Feed types ─────────────────────────────────────────────────────────────
 
 export type FeedPost = {
@@ -608,6 +642,7 @@ export async function getPostBySlugs(
   postSlug: string,
   userId?: number | null
 ): Promise<PostDetail | null> {
+  // Legacy "uncategorized" URLs: match posts with no category
   const isUncategorized = categorySlug === 'uncategorized';
 
   const conditions = [
@@ -615,7 +650,9 @@ export async function getPostBySlugs(
     isNull(posts.deletedAt),
   ];
 
-  if (!isUncategorized) {
+  if (isUncategorized) {
+    conditions.push(isNull(posts.categoryId));
+  } else {
     conditions.push(eq(categories.slug, categorySlug));
   }
 

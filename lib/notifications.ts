@@ -114,7 +114,7 @@ export async function notifyPostLiked(params: {
   const linkUrl = params.postSlug
     ? params.categorySlug
       ? `/community/post/${params.categorySlug}/${params.postSlug}`
-      : `/community/post/uncategorized/${params.postSlug}`
+      : `/community/post/general/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.postAuthorId,
@@ -137,7 +137,7 @@ export async function notifyCommentLiked(params: {
   const linkUrl = params.postSlug
     ? params.categorySlug
       ? `/community/post/${params.categorySlug}/${params.postSlug}`
-      : `/community/post/uncategorized/${params.postSlug}`
+      : `/community/post/general/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.commentAuthorId,
@@ -160,7 +160,7 @@ export async function notifyPostCommented(params: {
   const linkUrl = params.postSlug
     ? params.categorySlug
       ? `/community/post/${params.categorySlug}/${params.postSlug}`
-      : `/community/post/uncategorized/${params.postSlug}`
+      : `/community/post/general/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.postAuthorId,
@@ -182,7 +182,7 @@ export async function notifyCommentReplied(params: {
   const linkUrl = params.postSlug
     ? params.categorySlug
       ? `/community/post/${params.categorySlug}/${params.postSlug}`
-      : `/community/post/uncategorized/${params.postSlug}`
+      : `/community/post/general/${params.postSlug}`
     : `/community/${params.postId}`;
   await createNotification({
     userId: params.commentAuthorId,

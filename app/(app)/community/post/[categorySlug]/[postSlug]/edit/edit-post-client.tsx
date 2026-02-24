@@ -53,7 +53,7 @@ export function EditPostClient({
   const backUrl = getPostUrl({ slug: initialSlug, categorySlug: initialCategorySlug });
 
   // Get current category slug for URL preview
-  const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? initialCategorySlug ?? 'uncategorized';
+  const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? initialCategorySlug ?? 'general';
 
   async function handleSave(isDraft: boolean) {
     if (!title.trim() || !content.trim()) return;

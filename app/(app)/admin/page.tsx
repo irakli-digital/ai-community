@@ -341,7 +341,7 @@ export default async function AdminPage() {
                     View
                   </Link>
                   <Link
-                    href={`/community/post/${post.categorySlug || 'uncategorized'}/${post.slug}/edit`}
+                    href={`/community/post/${post.categorySlug || 'general'}/${post.slug}/edit`}
                     className="text-xs text-primary hover:text-primary/80 transition-colors"
                   >
                     Edit

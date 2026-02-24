@@ -3,8 +3,8 @@ export function getPostUrl(post: {
   categorySlug: string | null;
 }): string {
   if (!post.categorySlug) {
-    // Fallback for posts without a category
-    return `/community/post/uncategorized/${post.slug}`;
+    // Fallback for posts without a category — route via "general"
+    return `/community/post/general/${post.slug}`;
   }
   return `/community/post/${post.categorySlug}/${post.slug}`;
 }

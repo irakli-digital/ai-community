@@ -7,6 +7,7 @@ import { eq, and, desc, isNull, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { generateUniquePostSlug } from '@/lib/utils/slugify-server';
 import { getPostUrl } from '@/lib/utils/post-url';
+import { getOrCreateGeneralCategory } from '@/lib/db/community-queries';
 import { isRateLimited, getClientIp } from '@/lib/auth/rate-limit';
 import {
   authenticateRequest,
@@ -292,7 +293,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Resolve category
+  // Resolve category (default to "general" when none provided)
   let categoryId: number | null = null;
   let resolvedCategorySlug: string | null = null;
   if (categorySlug) {
@@ -305,6 +306,10 @@ export async function POST(request: NextRequest) {
     }
     categoryId = cat.id;
     resolvedCategorySlug = cat.slug;
+  } else {
+    const general = await getOrCreateGeneralCategory();
+    categoryId = general.id;
+    resolvedCategorySlug = general.slug;
   }
 
   // Handle image upload

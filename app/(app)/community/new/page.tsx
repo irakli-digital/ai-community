@@ -42,7 +42,7 @@ export default function NewPostPage() {
   }, [title, slugManuallyEdited]);
 
   // Get current category slug for URL preview
-  const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? 'uncategorized';
+  const currentCatSlug = categories.find((c) => c.id === categoryId)?.slug ?? 'general';
 
   async function handleSave(isDraft: boolean) {
     if (!title.trim() || !content.trim()) return;

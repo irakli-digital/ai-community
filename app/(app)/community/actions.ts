@@ -26,6 +26,7 @@ import { generateUniquePostSlug } from '@/lib/utils/slugify-server';
 import { getPostUrl } from '@/lib/utils/post-url';
 import { isPrivateIP } from '@/lib/utils/network';
 import { categories } from '@/lib/db/schema';
+import { getOrCreateGeneralCategory } from '@/lib/db/community-queries';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -127,11 +128,18 @@ export async function createPost(input: z.infer<typeof createPostSchema>) {
     ? await generateUniquePostSlug(data.slug)
     : await generateUniquePostSlug(data.title);
 
+  // Default to "general" category when none provided
+  let resolvedCategoryId = data.categoryId ?? null;
+  if (!resolvedCategoryId) {
+    const general = await getOrCreateGeneralCategory();
+    resolvedCategoryId = general.id;
+  }
+
   const [post] = await db
     .insert(posts)
     .values({
       authorId: user.id,
-      categoryId: data.categoryId ?? null,
+      categoryId: resolvedCategoryId,
       title: data.title,
       slug,
       content: data.content,
