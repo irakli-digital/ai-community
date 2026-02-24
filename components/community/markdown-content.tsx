@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkGithubAlerts from 'remark-github-alerts';
+import { remarkGithubAlertsConfig } from '@/lib/markdown-config';
 import remarkMark from '@/lib/remark-mark';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
@@ -30,7 +30,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   return (
     <div className="rich-prose">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, [remarkGithubAlerts, { markers: ['TIP', 'NOTE', 'IMPORTANT', 'WARNING', 'CAUTION', 'PROMO'] }], remarkMark]}
+        remarkPlugins={[remarkGfm, remarkGithubAlertsConfig, remarkMark]}
         rehypePlugins={[
           rehypeRaw,
           [rehypeSanitize, sanitizeSchema],

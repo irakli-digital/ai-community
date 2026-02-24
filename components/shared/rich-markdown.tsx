@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkGithubAlerts from 'remark-github-alerts';
+import { remarkGithubAlertsConfig } from '@/lib/markdown-config';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeShiki from '@shikijs/rehype';
@@ -25,7 +25,7 @@ export function RichMarkdown({
 
   const markdown = (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm, [remarkGithubAlerts, { markers: ['TIP', 'NOTE', 'IMPORTANT', 'WARNING', 'CAUTION', 'PROMO'] }]]}
+      remarkPlugins={[remarkGfm, remarkGithubAlertsConfig]}
       rehypePlugins={[
         [
           rehypeShiki,
