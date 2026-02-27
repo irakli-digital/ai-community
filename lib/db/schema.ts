@@ -392,6 +392,7 @@ export const surveys = pgTable(
     index('surveys_created_by_idx').on(table.createdBy),
     index('surveys_is_published_idx').on(table.isPublished),
     index('surveys_created_at_idx').on(table.createdAt),
+    uniqueIndex('surveys_slug_idx').on(table.slug),
   ]
 );
 

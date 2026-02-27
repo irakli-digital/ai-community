@@ -28,6 +28,24 @@ export async function getSurveys() {
     .orderBy(desc(surveys.createdAt));
 }
 
+export async function getSurveyBySlug(slug: string) {
+  const [survey] = await db
+    .select()
+    .from(surveys)
+    .where(eq(surveys.slug, slug))
+    .limit(1);
+
+  if (!survey) return null;
+
+  const steps = await db
+    .select()
+    .from(surveySteps)
+    .where(eq(surveySteps.surveyId, survey.id))
+    .orderBy(asc(surveySteps.stepNumber));
+
+  return { ...survey, steps };
+}
+
 export async function getSurveyById(surveyId: number) {
   const [survey] = await db
     .select()
