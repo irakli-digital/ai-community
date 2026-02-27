@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Heart,
   UserPlus,
+  Megaphone,
 } from 'lucide-react';
 import { db } from '@/lib/db/drizzle';
 import { users, posts, comments, postLikes, commentLikes, subscriptions, categories } from '@/lib/db/schema';
@@ -173,6 +174,12 @@ const adminLinks = [
     icon: BookOpen,
     title: 'Courses',
     desc: 'Manage courses, sections, and lessons',
+  },
+  {
+    href: '/admin/banners',
+    icon: Megaphone,
+    title: 'Banners',
+    desc: 'Manage sidebar promotional banners',
   },
   {
     href: '/admin/community-settings',
