@@ -3,6 +3,8 @@ import { getLatestPosts } from '@/lib/db/community-queries';
 import { t } from '@/lib/i18n/ka';
 import { LandingContent } from '@/components/landing/landing-content';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LandingPage() {
   const [settings, memberCount, onlineCount, latestPosts] = await Promise.all([
     getCommunitySettings(),
