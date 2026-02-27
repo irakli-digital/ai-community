@@ -154,6 +154,7 @@ export async function GET(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      path: '/',
     });
     response.cookies.delete('google_oauth_state');
     response.cookies.delete('google_oauth_return_to');
