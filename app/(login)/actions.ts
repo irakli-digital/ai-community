@@ -51,6 +51,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const hdrs = await headers();
   const ip = getClientIp(hdrs);
   if (isRateLimited(`signin:${ip}`)) {
+    console.log('[Auth] Rate limited sign-in attempt from IP:', ip);
     return {
       error: 'Too many attempts. Please try again later.',
       email: data.email,
@@ -63,10 +64,11 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const userResult = await db
     .select()
     .from(users)
-    .where(eq(users.email, email))
+    .where(sql`LOWER(${users.email}) = LOWER(${email})`)
     .limit(1);
 
   if (userResult.length === 0) {
+    console.log('[Auth] Sign-in failed: user not found for email:', email);
     return {
       error: 'Invalid email or password.',
       email,
@@ -78,6 +80,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   // OAuth-only users have no password
   if (!foundUser.passwordHash) {
+    console.log('[Auth] Sign-in failed: OAuth-only account for email:', email);
     return {
       error: 'This account uses Google sign-in. Please use the Google button.',
       email,
@@ -91,12 +94,15 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   );
 
   if (!isPasswordValid) {
+    console.log('[Auth] Sign-in failed: invalid password for email:', email);
     return {
       error: 'Invalid email or password.',
       email,
       password: '',
     };
   }
+
+  console.log('[Auth] Sign-in success for user:', foundUser.id, email);
 
   await Promise.all([
     setSession({ id: foundUser.id, role: foundUser.role }),
@@ -124,6 +130,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const hdrs = await headers();
   const ip = getClientIp(hdrs);
   if (isRateLimited(`signup:${ip}`)) {
+    console.log('[Auth] Rate limited sign-up attempt from IP:', ip);
     return {
       error: 'Too many attempts. Please try again later.',
       email: data.email,
@@ -136,7 +143,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const existingUser = await db
     .select()
     .from(users)
-    .where(eq(users.email, email))
+    .where(sql`LOWER(${users.email}) = LOWER(${email})`)
     .limit(1);
 
   if (existingUser.length > 0) {
@@ -158,7 +165,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const newUser: NewUser = {
     name,
     lastName,
-    email,
+    email: email.toLowerCase(),
     passwordHash,
     role: isFirstUser ? 'admin' : 'member',
   };
@@ -172,6 +179,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
       password: '',
     };
   }
+
+  console.log('[Auth] Sign-up success for user:', createdUser.id, email);
 
   await Promise.all([
     logActivity(createdUser.id, ActivityType.SIGN_UP),

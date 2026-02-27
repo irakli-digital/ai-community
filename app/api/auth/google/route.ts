@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { isRateLimited, getClientIp } from '@/lib/auth/rate-limit';
 
 export async function GET(request: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -10,13 +11,22 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Rate limit by IP
+  const ip = getClientIp(request.headers);
+  if (isRateLimited(`oauth-init:${ip}`)) {
+    console.log('[Auth] Rate limited OAuth initiation from IP:', ip);
+    return NextResponse.redirect(
+      new URL('/sign-in?message=rate-limited', request.url)
+    );
+  }
+
   // Generate CSRF state
   const state = crypto.randomUUID();
   const cookieStore = await cookies();
   cookieStore.set('google_oauth_state', state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    sameSite: 'lax',
     maxAge: 60 * 10, // 10 minutes
     path: '/',
   });
@@ -27,7 +37,7 @@ export async function GET(request: NextRequest) {
     cookieStore.set('google_oauth_return_to', returnTo, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: 'lax',
       maxAge: 60 * 10,
       path: '/',
     });

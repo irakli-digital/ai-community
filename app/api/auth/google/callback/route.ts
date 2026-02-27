@@ -6,6 +6,7 @@ import { users, activityLogs, ActivityType } from '@/lib/db/schema';
 import { signToken } from '@/lib/auth/session';
 import { sendEmailAsync } from '@/lib/email/mailgun';
 import { welcomeEmail } from '@/lib/email/templates';
+import { isRateLimited, getClientIp } from '@/lib/auth/rate-limit';
 
 interface GoogleUserInfo {
   id: string;
@@ -23,13 +24,22 @@ export async function GET(request: NextRequest) {
 
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
+  // Rate limit by IP
+  const ip = getClientIp(request.headers);
+  if (isRateLimited(`oauth:${ip}`)) {
+    console.log('[Auth] Rate limited OAuth callback from IP:', ip);
+    return NextResponse.redirect(`${baseUrl}/sign-in?message=rate-limited`);
+  }
+
   // User denied consent or other Google error
   if (error) {
-    return NextResponse.redirect(`${baseUrl}/sign-in`);
+    console.log('[Auth] Google OAuth denied or errored:', error);
+    return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-failed`);
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(`${baseUrl}/sign-in`);
+    console.log('[Auth] Google OAuth callback missing code or state');
+    return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-failed`);
   }
 
   // Verify CSRF state
@@ -37,7 +47,7 @@ export async function GET(request: NextRequest) {
   const savedState = cookieStore.get('google_oauth_state')?.value;
 
   if (!savedState || savedState !== state) {
-    console.error('[Google OAuth] State mismatch - savedState:', savedState ? 'present' : 'MISSING', 'state:', state ? 'present' : 'MISSING');
+    console.log('[Auth] Google OAuth state mismatch - savedState:', savedState ? 'present' : 'MISSING', 'state:', state ? 'present' : 'MISSING');
     return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-state-error`);
   }
 
@@ -56,8 +66,8 @@ export async function GET(request: NextRequest) {
     });
 
     if (!tokenResponse.ok) {
-      console.error('[Google OAuth] Token exchange failed:', await tokenResponse.text());
-      return NextResponse.redirect(`${baseUrl}/sign-in`);
+      console.log('[Auth] Google OAuth token exchange failed:', await tokenResponse.text());
+      return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-failed`);
     }
 
     const tokens = await tokenResponse.json();
@@ -69,21 +79,23 @@ export async function GET(request: NextRequest) {
     );
 
     if (!profileResponse.ok) {
-      console.error('[Google OAuth] Profile fetch failed:', await profileResponse.text());
-      return NextResponse.redirect(`${baseUrl}/sign-in`);
+      console.log('[Auth] Google OAuth profile fetch failed:', await profileResponse.text());
+      return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-failed`);
     }
 
     const profile: GoogleUserInfo = await profileResponse.json();
 
     if (!profile.email) {
-      return NextResponse.redirect(`${baseUrl}/sign-in`);
+      console.log('[Auth] Google OAuth profile missing email');
+      return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-failed`);
     }
 
-    // Look up existing user by email
+    // Look up existing user by email (case-insensitive)
+    const normalizedEmail = profile.email.toLowerCase();
     const existingUsers = await db
       .select()
       .from(users)
-      .where(eq(users.email, profile.email))
+      .where(sql`LOWER(${users.email}) = ${normalizedEmail}`)
       .limit(1);
 
     let user;
@@ -115,7 +127,7 @@ export async function GET(request: NextRequest) {
         .values({
           name: profile.given_name || '',
           lastName: profile.family_name || '',
-          email: profile.email,
+          email: normalizedEmail,
           googleId: profile.id,
           passwordHash: null,
           avatarUrl: profile.picture || null,
@@ -144,16 +156,15 @@ export async function GET(request: NextRequest) {
       expires: expires.toISOString(),
     });
 
-    // Redirect to the page the user was on, or /community as fallback
+    // Redirect via client-side auth-callback page to avoid server redirect race condition
     const returnTo = cookieStore.get('google_oauth_return_to')?.value;
-    const redirectTo = returnTo && returnTo.startsWith('/') ? returnTo : '/community';
+    const finalDestination = returnTo && returnTo.startsWith('/') ? returnTo : '/community';
 
-    // Debug: log what we're doing
-    console.log('[Google OAuth] Setting session for user:', user.id, user.email, 'redirectTo:', redirectTo);
-    console.log('[Google OAuth] Token length:', token.length, 'secure:', process.env.NODE_ENV === 'production');
+    console.log('[Auth] Google OAuth success for user:', user.id, user.email);
 
-    const redirectUrl = new URL(redirectTo, baseUrl);
-    const response = NextResponse.redirect(redirectUrl);
+    const callbackUrl = new URL('/auth-callback', baseUrl);
+    callbackUrl.searchParams.set('returnTo', finalDestination);
+    const response = NextResponse.redirect(callbackUrl);
     response.cookies.set('session', token, {
       expires,
       httpOnly: true,
@@ -163,12 +174,10 @@ export async function GET(request: NextRequest) {
     });
     response.cookies.delete('google_oauth_state');
     response.cookies.delete('google_oauth_return_to');
-    
-    // Debug: log Set-Cookie header
-    console.log('[Google OAuth] Response headers:', Object.fromEntries(response.headers.entries()));
+
     return response;
   } catch (error) {
-    console.error('[Google OAuth] Callback error:', error);
-    return NextResponse.redirect(`${baseUrl}/sign-in`);
+    console.error('[Auth] Google OAuth callback error:', error);
+    return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-failed`);
   }
 }
