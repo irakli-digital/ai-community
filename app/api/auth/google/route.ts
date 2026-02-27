@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { isRateLimited, getClientIp } from '@/lib/auth/rate-limit';
 
 export async function GET(request: NextRequest) {
@@ -22,26 +21,8 @@ export async function GET(request: NextRequest) {
 
   // Generate CSRF state
   const state = crypto.randomUUID();
-  const cookieStore = await cookies();
-  cookieStore.set('google_oauth_state', state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 10, // 10 minutes
-    path: '/',
-  });
-
-  // Store return URL so callback can redirect back to the original page
-  const returnTo = request.nextUrl.searchParams.get('returnTo');
-  if (returnTo) {
-    cookieStore.set('google_oauth_return_to', returnTo, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 10,
-      path: '/',
-    });
-  }
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieFlags = `HttpOnly; SameSite=Lax; Path=/; Max-Age=600${isProduction ? '; Secure' : ''}`;
 
   const redirectUri = `${process.env.BASE_URL}/api/auth/google/callback`;
 
@@ -55,7 +36,18 @@ export async function GET(request: NextRequest) {
     prompt: 'select_account',
   });
 
-  return NextResponse.redirect(
-    `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
-  );
+  const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+
+  // Build redirect response and set cookies directly on it
+  // (cookies().set() is silently dropped on NextResponse.redirect() in standalone mode)
+  const response = NextResponse.redirect(googleUrl);
+
+  response.headers.append('Set-Cookie', `google_oauth_state=${state}; ${cookieFlags}`);
+
+  const returnTo = request.nextUrl.searchParams.get('returnTo');
+  if (returnTo) {
+    response.headers.append('Set-Cookie', `google_oauth_return_to=${encodeURIComponent(returnTo)}; ${cookieFlags}`);
+  }
+
+  return response;
 }
