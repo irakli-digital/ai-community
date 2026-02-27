@@ -373,6 +373,87 @@ export const waitingList = pgTable('waiting_list', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// ─── Surveys ────────────────────────────────────────────────────────────────
+export const surveys = pgTable(
+  'surveys',
+  {
+    id: serial('id').primaryKey(),
+    title: varchar('title', { length: 300 }).notNull(),
+    description: text('description'),
+    isPublished: boolean('is_published').notNull().default(false),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('surveys_created_by_idx').on(table.createdBy),
+    index('surveys_is_published_idx').on(table.isPublished),
+    index('surveys_created_at_idx').on(table.createdAt),
+  ]
+);
+
+// ─── Survey Steps ───────────────────────────────────────────────────────────
+export const surveySteps = pgTable(
+  'survey_steps',
+  {
+    id: serial('id').primaryKey(),
+    surveyId: integer('survey_id')
+      .notNull()
+      .references(() => surveys.id, { onDelete: 'cascade' }),
+    stepNumber: integer('step_number').notNull(),
+    questionType: varchar('question_type', { length: 30 }).notNull(), // 'text' | 'single_choice' | 'multiple_choice' | 'rating'
+    label: text('label').notNull(),
+    options: text('options'), // JSON string for choice-based questions
+    isRequired: boolean('is_required').notNull().default(true),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('survey_steps_survey_id_idx').on(table.surveyId),
+    index('survey_steps_sort_idx').on(table.surveyId, table.stepNumber),
+  ]
+);
+
+// ─── Survey Responses ───────────────────────────────────────────────────────
+export const surveyResponses = pgTable(
+  'survey_responses',
+  {
+    id: serial('id').primaryKey(),
+    surveyId: integer('survey_id')
+      .notNull()
+      .references(() => surveys.id, { onDelete: 'cascade' }),
+    respondentName: varchar('respondent_name', { length: 200 }),
+    respondentEmail: varchar('respondent_email', { length: 255 }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('survey_responses_survey_id_idx').on(table.surveyId),
+    index('survey_responses_created_at_idx').on(table.createdAt),
+  ]
+);
+
+// ─── Survey Answers ─────────────────────────────────────────────────────────
+export const surveyAnswers = pgTable(
+  'survey_answers',
+  {
+    id: serial('id').primaryKey(),
+    responseId: integer('response_id')
+      .notNull()
+      .references(() => surveyResponses.id, { onDelete: 'cascade' }),
+    stepId: integer('step_id')
+      .notNull()
+      .references(() => surveySteps.id, { onDelete: 'cascade' }),
+    value: text('value').notNull(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('survey_answers_response_id_idx').on(table.responseId),
+    index('survey_answers_step_id_idx').on(table.stepId),
+  ]
+);
+
 // ─── Relations ──────────────────────────────────────────────────────────────
 export const usersRelations = relations(users, ({ one, many }) => ({
   subscription: one(subscriptions, {
@@ -608,6 +689,46 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+// ─── Survey Relations ────────────────────────────────────────────────────────
+export const surveysRelations = relations(surveys, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [surveys.createdBy],
+    references: [users.id],
+  }),
+  steps: many(surveySteps),
+  responses: many(surveyResponses),
+}));
+
+export const surveyStepsRelations = relations(surveySteps, ({ one, many }) => ({
+  survey: one(surveys, {
+    fields: [surveySteps.surveyId],
+    references: [surveys.id],
+  }),
+  answers: many(surveyAnswers),
+}));
+
+export const surveyResponsesRelations = relations(
+  surveyResponses,
+  ({ one, many }) => ({
+    survey: one(surveys, {
+      fields: [surveyResponses.surveyId],
+      references: [surveys.id],
+    }),
+    answers: many(surveyAnswers),
+  })
+);
+
+export const surveyAnswersRelations = relations(surveyAnswers, ({ one }) => ({
+  response: one(surveyResponses, {
+    fields: [surveyAnswers.responseId],
+    references: [surveyResponses.id],
+  }),
+  step: one(surveySteps, {
+    fields: [surveyAnswers.stepId],
+    references: [surveySteps.id],
+  }),
+}));
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
@@ -646,6 +767,14 @@ export type MagicLink = typeof magicLinks.$inferSelect;
 export type NewMagicLink = typeof magicLinks.$inferInsert;
 export type WaitingListEntry = typeof waitingList.$inferSelect;
 export type NewWaitingListEntry = typeof waitingList.$inferInsert;
+export type Survey = typeof surveys.$inferSelect;
+export type NewSurvey = typeof surveys.$inferInsert;
+export type SurveyStep = typeof surveySteps.$inferSelect;
+export type NewSurveyStep = typeof surveySteps.$inferInsert;
+export type SurveyResponse = typeof surveyResponses.$inferSelect;
+export type NewSurveyResponse = typeof surveyResponses.$inferInsert;
+export type SurveyAnswer = typeof surveyAnswers.$inferSelect;
+export type NewSurveyAnswer = typeof surveyAnswers.$inferInsert;
 
 // ─── Activity Types ─────────────────────────────────────────────────────────
 export enum ActivityType {
