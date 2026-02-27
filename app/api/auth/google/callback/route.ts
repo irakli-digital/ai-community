@@ -162,20 +162,21 @@ export async function GET(request: NextRequest) {
 
     console.log('[Auth] Google OAuth success for user:', user.id, user.email);
 
-    const callbackUrl = new URL('/auth-callback', baseUrl);
-    callbackUrl.searchParams.set('returnTo', finalDestination);
-    const response = NextResponse.redirect(callbackUrl);
-    response.cookies.set('session', token, {
-      expires,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-    });
-    response.cookies.delete('google_oauth_state');
-    response.cookies.delete('google_oauth_return_to');
+    // Return HTML page with Set-Cookie header — NextResponse.redirect() drops cookies
+    // in Next.js standalone mode. This approach guarantees the cookie is set.
+    const cookieValue = `session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+    const clearState = `google_oauth_state=; Path=/; HttpOnly; Max-Age=0`;
+    const clearReturn = `google_oauth_return_to=; Path=/; HttpOnly; Max-Age=0`;
 
-    return response;
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Signing in...</title></head><body><script>window.location.href="${finalDestination}";</script><p>Redirecting...</p></body></html>`;
+
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Set-Cookie': [cookieValue, clearState, clearReturn].join(', '),
+      },
+    });
   } catch (error) {
     console.error('[Auth] Google OAuth callback error:', error);
     return NextResponse.redirect(`${baseUrl}/sign-in?message=oauth-failed`);
