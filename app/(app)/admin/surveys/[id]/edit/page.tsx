@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition, useCallback } from 'react';
+import { useState, useEffect, useTransition, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,16 @@ type StepDraft = {
   isRequired: boolean;
 };
 
+type StepErrors = {
+  label?: string;
+  options?: string;
+};
+
+type ValidationErrors = {
+  title?: string;
+  steps: Record<number, StepErrors>;
+};
+
 export default function EditSurveyPage() {
   const params = useParams();
   const surveyId = Number(params.id);
@@ -48,6 +58,8 @@ export default function EditSurveyPage() {
   const [isPublished, setIsPublished] = useState(false);
   const [steps, setSteps] = useState<StepDraft[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({ steps: {} });
+  const formRef = useRef<HTMLDivElement>(null);
 
   const loadData = useCallback(async () => {
     const data = await getAdminSurvey(surveyId);
@@ -136,9 +148,54 @@ export default function EditSurveyPage() {
     );
   }
 
+  // ─── Validation ──────────────────────────────────────────────────
+
+  function validate(): boolean {
+    const next: ValidationErrors = { steps: {} };
+    let valid = true;
+
+    if (!title.trim()) {
+      next.title = 'Title is required';
+      valid = false;
+    }
+
+    steps.forEach((step, idx) => {
+      const stepErr: StepErrors = {};
+
+      if (!step.label.trim()) {
+        stepErr.label = 'Question is required';
+        valid = false;
+      }
+
+      if (hasChoiceOptions(step.questionType)) {
+        const hasNonEmpty = step.options.some((o) => o.trim());
+        if (!hasNonEmpty) {
+          stepErr.options = 'At least one non-empty option is required';
+          valid = false;
+        }
+      }
+
+      if (Object.keys(stepErr).length > 0) {
+        next.steps[idx] = stepErr;
+      }
+    });
+
+    setErrors(next);
+
+    if (!valid) {
+      requestAnimationFrame(() => {
+        const firstError = formRef.current?.querySelector('[data-error="true"]');
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+
+    return valid;
+  }
+
   // ─── Save ─────────────────────────────────────────────────────────
 
   async function handleSave() {
+    if (!validate()) return;
     startTransition(async () => {
       await updateSurvey({
         id: surveyId,
@@ -183,7 +240,7 @@ export default function EditSurveyPage() {
     type === 'single_choice' || type === 'multi_choice';
 
   return (
-    <div className="space-y-6">
+    <div ref={formRef} className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -231,13 +288,20 @@ export default function EditSurveyPage() {
           <CardTitle>Survey Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
+          <div data-error={!!errors.title || undefined}>
             <label className="text-sm font-medium">Title *</label>
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (errors.title) setErrors((prev) => ({ ...prev, title: undefined }));
+              }}
               placeholder="Survey title"
+              className={errors.title ? 'border-red-500' : ''}
             />
+            {errors.title && (
+              <p className="mt-1 text-xs text-red-500">{errors.title}</p>
+            )}
           </div>
           <div>
             <label className="text-sm font-medium">Description</label>
@@ -302,13 +366,26 @@ export default function EditSurveyPage() {
               </div>
 
               {/* Question */}
-              <div>
+              <div data-error={!!errors.steps[idx]?.label || undefined}>
                 <label className="text-xs font-medium">Question *</label>
                 <Input
                   value={step.label}
-                  onChange={(e) => updateStep(idx, { label: e.target.value })}
+                  onChange={(e) => {
+                    updateStep(idx, { label: e.target.value });
+                    if (errors.steps[idx]?.label) {
+                      setErrors((prev) => {
+                        const next = { ...prev, steps: { ...prev.steps } };
+                        next.steps[idx] = { ...next.steps[idx], label: undefined };
+                        return next;
+                      });
+                    }
+                  }}
                   placeholder="Enter your question..."
+                  className={errors.steps[idx]?.label ? 'border-red-500' : ''}
                 />
+                {errors.steps[idx]?.label && (
+                  <p className="mt-1 text-xs text-red-500">{errors.steps[idx].label}</p>
+                )}
               </div>
 
               {/* Required toggle */}
@@ -332,17 +409,24 @@ export default function EditSurveyPage() {
 
               {/* Options for choice types */}
               {hasChoiceOptions(step.questionType) && (
-                <div className="space-y-2">
+                <div className="space-y-2" data-error={!!errors.steps[idx]?.options || undefined}>
                   <label className="text-xs font-medium">Options</label>
                   {step.options.map((opt, optIdx) => (
                     <div key={optIdx} className="flex items-center gap-2">
                       <Input
                         value={opt}
-                        onChange={(e) =>
-                          updateOption(idx, optIdx, e.target.value)
-                        }
+                        onChange={(e) => {
+                          updateOption(idx, optIdx, e.target.value);
+                          if (errors.steps[idx]?.options) {
+                            setErrors((prev) => {
+                              const next = { ...prev, steps: { ...prev.steps } };
+                              next.steps[idx] = { ...next.steps[idx], options: undefined };
+                              return next;
+                            });
+                          }
+                        }}
                         placeholder={`Option ${optIdx + 1}`}
-                        className="flex-1"
+                        className={`flex-1 ${errors.steps[idx]?.options ? 'border-red-500' : ''}`}
                       />
                       <Button
                         variant="ghost"
@@ -354,6 +438,9 @@ export default function EditSurveyPage() {
                       </Button>
                     </div>
                   ))}
+                  {errors.steps[idx]?.options && (
+                    <p className="text-xs text-red-500">{errors.steps[idx].options}</p>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -400,7 +487,7 @@ export default function EditSurveyPage() {
 
       {/* Save Button */}
       <div className="flex gap-2">
-        <Button onClick={handleSave} disabled={isPending || !title}>
+        <Button onClick={handleSave} disabled={isPending}>
           <Save className="mr-1 h-4 w-4" />
           {isPending ? t('common.loading') : t('common.save')}
         </Button>
