@@ -48,6 +48,7 @@ export async function getSurveyById(surveyId: number) {
 
 export async function createSurvey(data: {
   title: string;
+  slug?: string;
   description?: string;
   isPublished?: boolean;
   createdBy: number;
@@ -63,6 +64,7 @@ export async function createSurvey(data: {
     .insert(surveys)
     .values({
       title: data.title,
+      slug: data.slug,
       description: data.description,
       isPublished: data.isPublished ?? false,
       createdBy: data.createdBy,

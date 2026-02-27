@@ -379,6 +379,7 @@ export const surveys = pgTable(
   {
     id: serial('id').primaryKey(),
     title: varchar('title', { length: 300 }).notNull(),
+    slug: varchar('slug', { length: 350 }).unique(),
     description: text('description'),
     isPublished: boolean('is_published').notNull().default(false),
     createdBy: integer('created_by')
