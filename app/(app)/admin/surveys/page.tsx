@@ -63,10 +63,21 @@ export default function AdminSurveysPage() {
     });
   }
 
-  function handleCopyLink(slug: string | null) {
+  async function handleCopyLink(slug: string | null) {
     if (!slug) return;
     const url = `${window.location.origin}/survey/${slug}`;
-    navigator.clipboard.writeText(url);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
   }
 
   return (

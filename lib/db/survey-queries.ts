@@ -5,7 +5,7 @@ import {
   surveyResponses,
   surveyAnswers,
 } from './schema';
-import { eq, desc, asc, sql } from 'drizzle-orm';
+import { eq, desc, asc, sql, inArray } from 'drizzle-orm';
 
 // ─── Surveys ────────────────────────────────────────────────────────────────
 
@@ -91,6 +91,11 @@ export async function createSurvey(data: {
     .returning();
 
   if (data.steps && data.steps.length > 0) {
+    const stepNumbers = data.steps.map((s) => s.stepNumber);
+    if (new Set(stepNumbers).size !== stepNumbers.length) {
+      throw new Error('Duplicate step numbers are not allowed');
+    }
+
     await db.insert(surveySteps).values(
       data.steps.map((step) => ({
         surveyId: survey.id,
@@ -159,26 +164,28 @@ export async function createSurveyResponse(data: {
   respondentEmail?: string;
   answers: { stepId: number; value: string }[];
 }) {
-  const [response] = await db
-    .insert(surveyResponses)
-    .values({
-      surveyId: data.surveyId,
-      respondentName: data.respondentName,
-      respondentEmail: data.respondentEmail,
-    })
-    .returning();
+  return await db.transaction(async (tx) => {
+    const [response] = await tx
+      .insert(surveyResponses)
+      .values({
+        surveyId: data.surveyId,
+        respondentName: data.respondentName,
+        respondentEmail: data.respondentEmail,
+      })
+      .returning();
 
-  if (data.answers.length > 0) {
-    await db.insert(surveyAnswers).values(
-      data.answers.map((answer) => ({
-        responseId: response.id,
-        stepId: answer.stepId,
-        value: answer.value,
-      }))
-    );
-  }
+    if (data.answers.length > 0) {
+      await tx.insert(surveyAnswers).values(
+        data.answers.map((answer) => ({
+          responseId: response.id,
+          stepId: answer.stepId,
+          value: answer.value,
+        }))
+      );
+    }
 
-  return response;
+    return response;
+  });
 }
 
 export async function getSurveyResponses(surveyId: number) {
@@ -200,12 +207,7 @@ export async function getSurveyResponses(surveyId: number) {
       createdAt: surveyAnswers.createdAt,
     })
     .from(surveyAnswers)
-    .where(
-      sql`${surveyAnswers.responseId} IN (${sql.join(
-        responseIds.map((id) => sql`${id}`),
-        sql`, `
-      )})`
-    );
+    .where(inArray(surveyAnswers.responseId, responseIds));
 
   const answersByResponse = new Map<number, typeof allAnswers>();
   for (const answer of allAnswers) {

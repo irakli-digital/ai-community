@@ -25,7 +25,7 @@ const QUESTION_TYPES = [
   { value: 'text', label: 'Short Text' },
   { value: 'textarea', label: 'Long Text' },
   { value: 'single_choice', label: 'Single Choice' },
-  { value: 'multi_choice', label: 'Multiple Choice' },
+  { value: 'multiple_choice', label: 'Multiple Choice' },
   { value: 'email', label: 'Email' },
   { value: 'rating', label: 'Rating' },
   { value: 'yes_no', label: 'Yes / No' },
@@ -54,6 +54,7 @@ export default function EditSurveyPage() {
   const [isPending, startTransition] = useTransition();
 
   const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [steps, setSteps] = useState<StepDraft[]>([]);
@@ -71,7 +72,7 @@ export default function EditSurveyPage() {
       data.steps.map((s: SurveyStep) => ({
         questionType: s.questionType,
         label: s.label,
-        options: s.options ? JSON.parse(s.options) : [],
+        options: s.options ? (() => { try { return JSON.parse(s.options); } catch { return []; } })() : [],
         isRequired: s.isRequired,
       }))
     );
