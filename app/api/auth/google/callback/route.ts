@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { users, activityLogs, ActivityType } from '@/lib/db/schema';
-import { setSession } from '@/lib/auth/session';
+import { signToken } from '@/lib/auth/session';
 import { sendEmailAsync } from '@/lib/email/mailgun';
 import { welcomeEmail } from '@/lib/email/templates';
 
@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
   // Verify CSRF state
   const cookieStore = await cookies();
   const savedState = cookieStore.get('google_oauth_state')?.value;
-  cookieStore.delete('google_oauth_state');
 
   if (!savedState || savedState !== state) {
     console.error('[Google OAuth] State mismatch - savedState:', savedState ? 'present' : 'MISSING', 'state:', state ? 'present' : 'MISSING');
@@ -137,15 +136,28 @@ export async function GET(request: NextRequest) {
       sendEmailAsync({ to: user.email, ...emailTemplate });
     }
 
-    // Set JWT session
-    await setSession({ id: user.id, role: user.role });
+    // Build session token manually (cookies().set() is silently dropped
+    // when returning NextResponse.redirect() in Route Handlers)
+    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const token = await signToken({
+      user: { id: user.id, role: user.role },
+      expires: expires.toISOString(),
+    });
 
     // Redirect to the page the user was on, or /community as fallback
     const returnTo = cookieStore.get('google_oauth_return_to')?.value;
-    cookieStore.delete('google_oauth_return_to');
     const redirectTo = returnTo && returnTo.startsWith('/') ? returnTo : '/community';
 
-    return NextResponse.redirect(`${baseUrl}${redirectTo}`);
+    const response = NextResponse.redirect(`${baseUrl}${redirectTo}`);
+    response.cookies.set('session', token, {
+      expires,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+    response.cookies.delete('google_oauth_state');
+    response.cookies.delete('google_oauth_return_to');
+    return response;
   } catch (error) {
     console.error('[Google OAuth] Callback error:', error);
     return NextResponse.redirect(`${baseUrl}/sign-in`);
