@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { eq, and, gt, isNull } from 'drizzle-orm';
+import { and, isNull, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { users, magicLinks } from '@/lib/db/schema';
 import { sendEmail } from '@/lib/email/mailgun';
@@ -26,18 +26,19 @@ export async function POST(request: NextRequest) {
     const { email, redirectUrl } = parsed.data;
 
     // Rate limit: 3 requests per email per 10 minutes
-    if (isRateLimited(`magic:${email}`, { maxAttempts: 3, windowMs: 10 * 60 * 1000 })) {
+    if (isRateLimited(`magic:${email.toLowerCase()}`, { maxAttempts: 3, windowMs: 10 * 60 * 1000 })) {
+      console.log('[Auth] Rate limited magic link request for email:', email);
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
         { status: 429 }
       );
     }
 
-    // Check if user exists
+    // Check if user exists (case-insensitive)
     const existingUser = await db
       .select({ id: users.id })
       .from(users)
-      .where(and(eq(users.email, email), isNull(users.deletedAt)))
+      .where(and(sql`LOWER(${users.email}) = LOWER(${email})`, isNull(users.deletedAt)))
       .limit(1);
 
     const isNewUser = existingUser.length === 0;
@@ -47,8 +48,9 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
     // Insert magic link record
+    const normalizedEmail = email.toLowerCase();
     await db.insert(magicLinks).values({
-      email,
+      email: normalizedEmail,
       token,
       redirectUrl,
       isNewUser,
@@ -57,11 +59,12 @@ export async function POST(request: NextRequest) {
 
     // Send email
     const template = magicLinkEmail({ token, redirectUrl });
-    await sendEmail({ to: email, ...template });
+    await sendEmail({ to: normalizedEmail, ...template });
 
+    console.log('[Auth] Magic link sent to:', normalizedEmail);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[MagicLink] Error:', error);
+    console.error('[Auth] Magic link error:', error);
     return NextResponse.json(
       { error: 'Something went wrong. Please try again.' },
       { status: 500 }

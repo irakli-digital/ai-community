@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { eq, sql, isNull, and } from 'drizzle-orm';
+import { sql, isNull, and } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { users, activityLogs, ActivityType } from '@/lib/db/schema';
 import { hashPassword, setSession } from '@/lib/auth/session';
@@ -28,11 +28,11 @@ export async function POST(request: NextRequest) {
 
     const { email, name, lastName, password } = parsed.data;
 
-    // Check user doesn't already exist
+    // Check user doesn't already exist (case-insensitive)
     const existing = await db
       .select({ id: users.id })
       .from(users)
-      .where(and(eq(users.email, email), isNull(users.deletedAt)))
+      .where(and(sql`LOWER(${users.email}) = LOWER(${email})`, isNull(users.deletedAt)))
       .limit(1);
 
     if (existing.length > 0) {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       .values({
         name,
         lastName,
-        email,
+        email: email.toLowerCase(),
         passwordHash,
         role: 'member',
       })
@@ -61,6 +61,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    console.log('[Auth] Magic link registration success for user:', createdUser.id, email);
 
     await Promise.all([
       setSession({ id: createdUser.id, role: createdUser.role }),
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[MagicLink Register] Error:', error);
+    console.error('[Auth] Magic link register error:', error);
     return NextResponse.json(
       { error: 'Something went wrong. Please try again.' },
       { status: 500 }

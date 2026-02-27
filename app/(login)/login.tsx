@@ -38,6 +38,26 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             {t('auth.resetPassword.success')}
           </div>
         )}
+        {message === 'oauth-state-error' && (
+          <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">
+            Authentication failed due to a security check. Please try again.
+          </div>
+        )}
+        {message === 'oauth-failed' && (
+          <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">
+            Google sign-in failed. Please try again.
+          </div>
+        )}
+        {message === 'magic-link-expired' && (
+          <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">
+            Your magic link has expired. Please request a new one.
+          </div>
+        )}
+        {message === 'rate-limited' && (
+          <div className="mb-4 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">
+            Too many attempts. Please try again later.
+          </div>
+        )}
         {!isInAppBrowser() && (
         <>
         <a

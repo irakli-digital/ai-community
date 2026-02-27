@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token');
 
   if (!token) {
+    console.log('[Auth] Password reset verify: missing token');
     return redirectTo('/auth/reset-password?error=invalid');
   }
 
@@ -23,14 +24,17 @@ export async function GET(request: NextRequest) {
     .limit(1);
 
   if (!magicLink || magicLink.type !== 'password_reset') {
+    console.log('[Auth] Password reset verify: invalid token');
     return redirectTo('/auth/reset-password?error=invalid');
   }
 
   if (magicLink.usedAt) {
+    console.log('[Auth] Password reset verify: token already used');
     return redirectTo('/auth/reset-password?error=used');
   }
 
   if (new Date() > magicLink.expiresAt) {
+    console.log('[Auth] Password reset verify: token expired for email:', magicLink.email);
     return redirectTo('/auth/reset-password?error=expired');
   }
 
@@ -39,6 +43,8 @@ export async function GET(request: NextRequest) {
     .update(magicLinks)
     .set({ usedAt: new Date() })
     .where(eq(magicLinks.id, magicLink.id));
+
+  console.log('[Auth] Password reset token verified for email:', magicLink.email);
 
   // Redirect to the reset form with the email
   const params = new URLSearchParams({ email: magicLink.email });
