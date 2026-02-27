@@ -148,7 +148,12 @@ export async function GET(request: NextRequest) {
     const returnTo = cookieStore.get('google_oauth_return_to')?.value;
     const redirectTo = returnTo && returnTo.startsWith('/') ? returnTo : '/community';
 
-    const response = NextResponse.redirect(`${baseUrl}${redirectTo}`);
+    // Debug: log what we're doing
+    console.log('[Google OAuth] Setting session for user:', user.id, user.email, 'redirectTo:', redirectTo);
+    console.log('[Google OAuth] Token length:', token.length, 'secure:', process.env.NODE_ENV === 'production');
+
+    const redirectUrl = new URL(redirectTo, baseUrl);
+    const response = NextResponse.redirect(redirectUrl);
     response.cookies.set('session', token, {
       expires,
       httpOnly: true,
@@ -158,6 +163,9 @@ export async function GET(request: NextRequest) {
     });
     response.cookies.delete('google_oauth_state');
     response.cookies.delete('google_oauth_return_to');
+    
+    // Debug: log Set-Cookie header
+    console.log('[Google OAuth] Response headers:', Object.fromEntries(response.headers.entries()));
     return response;
   } catch (error) {
     console.error('[Google OAuth] Callback error:', error);
