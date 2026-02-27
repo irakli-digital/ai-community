@@ -691,6 +691,27 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+// ─── Sidebar Banners ────────────────────────────────────────────────────────
+export const sidebarBanners = pgTable(
+  'sidebar_banners',
+  {
+    id: serial('id').primaryKey(),
+    title: varchar('title', { length: 300 }),
+    subtitle: text('subtitle'),
+    imageUrl: text('image_url'),
+    linkUrl: text('link_url'),
+    showButton: boolean('show_button').notNull().default(false),
+    buttonText: varchar('button_text', { length: 100 }).notNull().default('Learn More'),
+    isActive: boolean('is_active').notNull().default(false),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('sidebar_banners_is_active_sort_idx').on(table.isActive, table.sortOrder),
+  ]
+);
+
 // ─── Survey Relations ────────────────────────────────────────────────────────
 export const surveysRelations = relations(surveys, ({ one, many }) => ({
   creator: one(users, {
@@ -777,6 +798,8 @@ export type SurveyResponse = typeof surveyResponses.$inferSelect;
 export type NewSurveyResponse = typeof surveyResponses.$inferInsert;
 export type SurveyAnswer = typeof surveyAnswers.$inferSelect;
 export type NewSurveyAnswer = typeof surveyAnswers.$inferInsert;
+export type SidebarBanner = typeof sidebarBanners.$inferSelect;
+export type NewSidebarBanner = typeof sidebarBanners.$inferInsert;
 
 // ─── Activity Types ─────────────────────────────────────────────────────────
 export enum ActivityType {

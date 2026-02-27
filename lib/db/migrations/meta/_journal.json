@@ -99,6 +99,13 @@
       "when": 1771519303878,
       "tag": "0013_wealthy_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1772200485589,
+      "tag": "0014_futuristic_juggernaut",
+      "breakpoints": true
     }
   ]
 }

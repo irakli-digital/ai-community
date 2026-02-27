@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Users, Globe } from 'lucide-react';
 import { LevelBadge } from '@/components/members/level-badge';
+import { SidebarBanners } from '@/components/community/sidebar-banners';
 import { t } from '@/lib/i18n/ka';
 
 interface CommunityInfo {
@@ -118,6 +119,9 @@ export function CommunitySidebar({
           </div>
         </div>
       )}
+
+      {/* Promotional banners */}
+      <SidebarBanners />
     </aside>
   );
 }
