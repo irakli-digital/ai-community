@@ -24,8 +24,9 @@ export async function GET(request: NextRequest) {
 
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
-  // Rate limit by IP
-  const ip = getClientIp(request.headers);
+  // Rate limit by IP — truncate to first IP and 45 chars (varchar limit)
+  const rawIp = getClientIp(request.headers);
+  const ip = (rawIp?.split(',')[0]?.trim() || '').slice(0, 45);
   if (isRateLimited(`oauth:${ip}`)) {
     console.log('[Auth] Rate limited OAuth callback from IP:', ip);
     return NextResponse.redirect(`${baseUrl}/sign-in?message=rate-limited`);
@@ -113,7 +114,7 @@ export async function GET(request: NextRequest) {
       await db.insert(activityLogs).values({
         userId: user.id,
         action: ActivityType.SIGN_IN,
-        ipAddress: request.headers.get('x-forwarded-for') || '',
+        ipAddress: ip,
       });
     } else {
       // New user — admin bootstrap logic
@@ -140,7 +141,7 @@ export async function GET(request: NextRequest) {
       await db.insert(activityLogs).values({
         userId: user.id,
         action: ActivityType.SIGN_UP,
-        ipAddress: request.headers.get('x-forwarded-for') || '',
+        ipAddress: ip,
       });
 
       // Fire-and-forget welcome email
