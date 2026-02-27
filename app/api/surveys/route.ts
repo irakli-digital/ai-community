@@ -5,6 +5,7 @@ import { getSurveys, createSurvey } from '@/lib/db/survey-queries';
 
 const createSurveySchema = z.object({
   title: z.string().min(1).max(300),
+  slug: z.string().min(1).max(300),
   description: z.string().max(5000).optional(),
   isPublished: z.boolean().optional(),
   steps: z

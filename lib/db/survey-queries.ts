@@ -28,6 +28,24 @@ export async function getSurveys() {
     .orderBy(desc(surveys.createdAt));
 }
 
+export async function getSurveyBySlug(slug: string) {
+  const [survey] = await db
+    .select()
+    .from(surveys)
+    .where(eq(surveys.slug, slug))
+    .limit(1);
+
+  if (!survey) return null;
+
+  const steps = await db
+    .select()
+    .from(surveySteps)
+    .where(eq(surveySteps.surveyId, survey.id))
+    .orderBy(asc(surveySteps.stepNumber));
+
+  return { ...survey, steps };
+}
+
 export async function getSurveyById(surveyId: number) {
   const [survey] = await db
     .select()
@@ -48,6 +66,7 @@ export async function getSurveyById(surveyId: number) {
 
 export async function createSurvey(data: {
   title: string;
+  slug: string;
   description?: string;
   isPublished?: boolean;
   createdBy: number;
@@ -63,6 +82,7 @@ export async function createSurvey(data: {
     .insert(surveys)
     .values({
       title: data.title,
+      slug: data.slug,
       description: data.description,
       isPublished: data.isPublished ?? false,
       createdBy: data.createdBy,

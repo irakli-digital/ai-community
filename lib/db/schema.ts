@@ -379,6 +379,7 @@ export const surveys = pgTable(
   {
     id: serial('id').primaryKey(),
     title: varchar('title', { length: 300 }).notNull(),
+    slug: varchar('slug', { length: 300 }).notNull().unique(),
     description: text('description'),
     isPublished: boolean('is_published').notNull().default(false),
     createdBy: integer('created_by')
@@ -391,6 +392,7 @@ export const surveys = pgTable(
     index('surveys_created_by_idx').on(table.createdBy),
     index('surveys_is_published_idx').on(table.isPublished),
     index('surveys_created_at_idx').on(table.createdAt),
+    uniqueIndex('surveys_slug_idx').on(table.slug),
   ]
 );
 
