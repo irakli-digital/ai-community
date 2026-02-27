@@ -11,6 +11,7 @@ import {
   deleteSurvey as dbDeleteSurvey,
   getSurveyResponses as dbGetSurveyResponses,
 } from '@/lib/db/survey-queries';
+import { generateUniqueSurveySlug } from '@/lib/utils/slugify-server';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -48,9 +49,11 @@ export async function createSurvey(
 ) {
   const user = await requireAdmin();
   const data = createSurveySchema.parse(input);
+  const slug = await generateUniqueSurveySlug(data.title);
 
   const survey = await dbCreateSurvey({
     title: data.title,
+    slug,
     description: data.description,
     createdBy: user.id,
   });

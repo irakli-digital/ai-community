@@ -10,9 +10,9 @@ export default async function SurveyPage({ params }: Props) {
   const { slug } = await params;
   const survey = await getSurveyBySlug(slug);
 
-  if (!survey || !survey.isPublished) {
+  if (!survey || !survey.isPublished || !survey.slug) {
     notFound();
   }
 
-  return <SurveyClient survey={survey} />;
+  return <SurveyClient survey={{ ...survey, slug: survey.slug }} />;
 }

@@ -14,6 +14,7 @@ export async function getSurveys() {
     .select({
       id: surveys.id,
       title: surveys.title,
+      slug: surveys.slug,
       description: surveys.description,
       isPublished: surveys.isPublished,
       createdBy: surveys.createdBy,

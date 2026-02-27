@@ -25,6 +25,7 @@ import Link from 'next/link';
 type SurveyRow = {
   id: number;
   title: string;
+  slug: string | null;
   description: string | null;
   isPublished: boolean;
   createdBy: number;
@@ -62,8 +63,9 @@ export default function AdminSurveysPage() {
     });
   }
 
-  function handleCopyLink(id: number) {
-    const url = `${window.location.origin}/surveys/${id}`;
+  function handleCopyLink(slug: string | null) {
+    if (!slug) return;
+    const url = `${window.location.origin}/survey/${slug}`;
     navigator.clipboard.writeText(url);
   }
 
@@ -109,14 +111,20 @@ export default function AdminSurveysPage() {
                     {survey.responsesCount} responses ·{' '}
                     {new Date(survey.createdAt).toLocaleDateString()}
                   </p>
+                  {survey.isPublished && survey.slug && (
+                    <p className="text-xs text-blue-600">
+                      /survey/{survey.slug}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleCopyLink(survey.id)}
+                  onClick={() => handleCopyLink(survey.slug)}
                   title="Copy public link"
+                  disabled={!survey.slug}
                 >
                   <Link2 className="h-4 w-4" />
                 </Button>
