@@ -380,7 +380,7 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="Type your answer..."
-      className="h-12 border-0 border-b-2 border-muted bg-transparent text-lg focus-visible:border-primary focus-visible:ring-0"
+      className="h-12 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-lg focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
     />
   );
 }
@@ -413,7 +413,7 @@ function TextareaInput({
         }}
         placeholder="Type your answer..."
         rows={4}
-        className="w-full resize-none rounded-md border-0 border-b-2 border-muted bg-transparent px-3 py-2 text-lg text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+        className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-lg text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
       />
       <p className="mt-1 text-xs text-muted-foreground">
         <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-xs">Cmd</kbd> +{' '}
@@ -442,7 +442,7 @@ function EmailInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder="name@example.com"
-      className="h-12 border-0 border-b-2 border-muted bg-transparent text-lg focus-visible:border-primary focus-visible:ring-0"
+      className="h-12 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-lg focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
     />
   );
 }
