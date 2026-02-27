@@ -392,7 +392,6 @@ export const surveys = pgTable(
     index('surveys_created_by_idx').on(table.createdBy),
     index('surveys_is_published_idx').on(table.isPublished),
     index('surveys_created_at_idx').on(table.createdAt),
-    uniqueIndex('surveys_slug_idx').on(table.slug),
   ]
 );
 
@@ -405,7 +404,7 @@ export const surveySteps = pgTable(
       .notNull()
       .references(() => surveys.id, { onDelete: 'cascade' }),
     stepNumber: integer('step_number').notNull(),
-    questionType: varchar('question_type', { length: 30 }).notNull(), // 'text' | 'single_choice' | 'multiple_choice' | 'rating'
+    questionType: varchar('question_type', { length: 30 }).notNull(),
     label: text('label').notNull(),
     options: text('options'), // JSON string for choice-based questions
     isRequired: boolean('is_required').notNull().default(true),

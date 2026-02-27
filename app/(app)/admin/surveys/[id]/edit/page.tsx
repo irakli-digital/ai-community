@@ -91,7 +91,7 @@ export default function EditSurveyPage() {
       {
         questionType: type,
         label: '',
-        options: type === 'single_choice' || type === 'multi_choice' ? [''] : [],
+        options: type === 'single_choice' || type === 'multiple_choice' ? [''] : [],
         isRequired: true,
       },
     ]);
@@ -238,7 +238,7 @@ export default function EditSurveyPage() {
   }
 
   const hasChoiceOptions = (type: string) =>
-    type === 'single_choice' || type === 'multi_choice';
+    type === 'single_choice' || type === 'multiple_choice';
 
   return (
     <div ref={formRef} className="space-y-6">

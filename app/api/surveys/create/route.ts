@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { authenticateRequest } from '@/app/api/v1/_lib/helpers';
 import { createSurvey } from '@/lib/db/survey-queries';
 
 const VALID_STEP_TYPES = [
   'text',
   'textarea',
   'single_choice',
-  'multi_choice',
+  'multiple_choice',
   'email',
   'rating',
   'yes_no',
 ] as const;
 
-const CHOICE_TYPES: string[] = ['single_choice', 'multi_choice'];
+const CHOICE_TYPES: readonly string[] = ['single_choice', 'multiple_choice'];
 
 const stepSchema = z
   .object({
@@ -51,21 +52,7 @@ function generateSlug(title: string): string {
   return `${base}-${suffix}`;
 }
 
-function authenticateRequest(request: NextRequest): boolean {
-  const apiKey = process.env.SURVEY_API_KEY;
-  if (!apiKey) return false;
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) return false;
-
-  const token = authHeader.slice(7);
-
-  const tokenBuffer = Buffer.from(token);
-  const keyBuffer = Buffer.from(apiKey);
-
-  if (tokenBuffer.length !== keyBuffer.length) return false;
-  return crypto.timingSafeEqual(tokenBuffer, keyBuffer);
-}
+const MAX_SLUG_RETRIES = 3;
 
 export async function POST(request: NextRequest) {
   if (!authenticateRequest(request)) {
@@ -91,31 +78,54 @@ export async function POST(request: NextRequest) {
   }
 
   const { title, description, steps, publish } = parsed.data;
-  const slug = generateSlug(title);
   const createdBy = parseInt(process.env.API_AUTHOR_USER_ID || '1', 10);
 
-  const survey = await createSurvey({
-    title,
-    slug,
-    description,
-    isPublished: publish,
-    createdBy,
-    steps: steps.map((step, index) => ({
-      stepNumber: index + 1,
-      questionType: step.type,
-      label: step.question,
-      options: step.options ? JSON.stringify(step.options) : undefined,
-      isRequired: step.required,
-    })),
-  });
+  let survey = null;
+  for (let attempt = 0; attempt < MAX_SLUG_RETRIES; attempt++) {
+    const slug = generateSlug(title);
+    try {
+      survey = await createSurvey({
+        title,
+        slug,
+        description,
+        isPublished: publish,
+        createdBy,
+        steps: steps.map((step, index) => ({
+          stepNumber: index + 1,
+          questionType: step.type,
+          label: step.question,
+          options: step.options ? JSON.stringify(step.options) : undefined,
+          isRequired: step.required,
+        })),
+      });
+      break;
+    } catch (err) {
+      const isUniqueViolation =
+        err instanceof Error && err.message.includes('unique');
+      if (isUniqueViolation && attempt < MAX_SLUG_RETRIES - 1) {
+        continue;
+      }
+      return NextResponse.json(
+        { error: 'Failed to create survey.' },
+        { status: 500 }
+      );
+    }
+  }
+
+  if (!survey) {
+    return NextResponse.json(
+      { error: 'Failed to create survey.' },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json(
     {
-      id: survey!.id,
-      title: survey!.title,
-      slug: survey!.slug,
-      url: `/survey/${survey!.slug}`,
-      status: survey!.isPublished ? 'published' : 'draft',
+      id: survey.id,
+      title: survey.title,
+      slug: survey.slug,
+      url: `/survey/${survey.slug}`,
+      status: survey.isPublished ? 'published' : 'draft',
       stepsCount: steps.length,
     },
     { status: 201 }

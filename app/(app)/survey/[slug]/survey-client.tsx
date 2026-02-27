@@ -104,7 +104,7 @@ export function SurveyClient({ survey }: SurveyClientProps) {
 
     // Email validation
     if (step.questionType === 'email' && current[step.id]) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(current[step.id])) {
         setError('Please enter a valid email address.');
         return;
@@ -311,7 +311,7 @@ function StepRenderer({
             }}
           />
         )}
-        {step.questionType === 'multi_choice' && (
+        {step.questionType === 'multiple_choice' && (
           <MultiChoice options={step.options} value={value} onChange={onChange} />
         )}
         {step.questionType === 'rating' && (
@@ -395,6 +395,7 @@ function TextareaInput({
   onSubmit: () => void;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
   useEffect(() => {
     ref.current?.focus();
   }, []);
@@ -416,7 +417,7 @@ function TextareaInput({
         className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-lg text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
       />
       <p className="mt-1 text-xs text-muted-foreground">
-        <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-xs">Cmd</kbd> +{' '}
+        <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{isMac ? 'Cmd' : 'Ctrl'}</kbd> +{' '}
         <kbd className="rounded bg-muted px-1 py-0.5 font-mono text-xs">Enter</kbd> to continue
       </p>
     </div>
@@ -460,10 +461,10 @@ function SingleChoice({
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= items.length) {
+      const code = e.key.toLowerCase().charCodeAt(0) - 97; // a=0, b=1, ...
+      if (e.key.length === 1 && code >= 0 && code < items.length) {
         e.preventDefault();
-        onChange(items[num - 1]);
+        onChange(items[code]);
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -471,10 +472,12 @@ function SingleChoice({
   }, [items, onChange]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" role="radiogroup">
       {items.map((item, i) => (
         <button
           key={i}
+          role="radio"
+          aria-checked={value === item}
           onClick={() => onChange(item)}
           className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-left text-base transition-all ${
             value === item
@@ -502,14 +505,23 @@ function MultiChoice({
   onChange: (v: string) => void;
 }) {
   const items: string[] = parseOptions(options);
-  const selected: string[] = value ? JSON.parse(value) : [];
+  let selected: string[];
+  try {
+    const parsed = value ? JSON.parse(value) : [];
+    selected = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    selected = [];
+  }
 
-  const toggle = (item: string) => {
-    const next = selected.includes(item)
-      ? selected.filter((s) => s !== item)
-      : [...selected, item];
-    onChange(JSON.stringify(next));
-  };
+  const toggle = useCallback(
+    (item: string) => {
+      const next = selected.includes(item)
+        ? selected.filter((s) => s !== item)
+        : [...selected, item];
+      onChange(JSON.stringify(next));
+    },
+    [selected, onChange]
+  );
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -521,15 +533,17 @@ function MultiChoice({
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [items, selected]);
+  }, [items, toggle]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" role="group">
       {items.map((item, i) => {
         const isSelected = selected.includes(item);
         return (
           <button
             key={i}
+            role="checkbox"
+            aria-checked={isSelected}
             onClick={() => toggle(item)}
             className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-left text-base transition-all ${
               isSelected
@@ -582,10 +596,12 @@ function RatingInput({
   }, [onChange]);
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" role="radiogroup">
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
+          role="radio"
+          aria-checked={current === n}
           onClick={() => onChange(String(n))}
           onMouseEnter={() => setHovered(n)}
           onMouseLeave={() => setHovered(null)}
@@ -624,10 +640,12 @@ function YesNoInput({
   }, [onChange]);
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3" role="radiogroup">
       {['Yes', 'No'].map((option) => (
         <button
           key={option}
+          role="radio"
+          aria-checked={value === option}
           onClick={() => onChange(option)}
           className={`flex h-16 flex-1 items-center justify-center rounded-lg border text-lg font-medium transition-all ${
             value === option
