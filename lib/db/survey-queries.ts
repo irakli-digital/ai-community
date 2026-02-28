@@ -2,6 +2,7 @@ import { db } from './drizzle';
 import {
   surveys,
   surveySteps,
+  surveySections,
   surveyResponses,
   surveyAnswers,
 } from './schema';
@@ -38,13 +39,19 @@ export async function getSurveyBySlug(slug: string) {
 
   if (!survey) return null;
 
+  const sections = await db
+    .select()
+    .from(surveySections)
+    .where(eq(surveySections.surveyId, survey.id))
+    .orderBy(asc(surveySections.sortOrder));
+
   const steps = await db
     .select()
     .from(surveySteps)
     .where(eq(surveySteps.surveyId, survey.id))
     .orderBy(asc(surveySteps.stepNumber));
 
-  return { ...survey, steps };
+  return { ...survey, sections, steps };
 }
 
 export async function getSurveyById(surveyId: number) {
@@ -56,13 +63,19 @@ export async function getSurveyById(surveyId: number) {
 
   if (!survey) return null;
 
+  const sections = await db
+    .select()
+    .from(surveySections)
+    .where(eq(surveySections.surveyId, surveyId))
+    .orderBy(asc(surveySections.sortOrder));
+
   const steps = await db
     .select()
     .from(surveySteps)
     .where(eq(surveySteps.surveyId, surveyId))
     .orderBy(asc(surveySteps.stepNumber));
 
-  return { ...survey, steps };
+  return { ...survey, sections, steps };
 }
 
 export async function createSurvey(data: {
@@ -71,12 +84,27 @@ export async function createSurvey(data: {
   description?: string;
   isPublished?: boolean;
   createdBy: number;
+  sections?: {
+    title: string;
+    description?: string;
+    sortOrder: number;
+    showIntermediateResults?: boolean;
+    continueButtonText?: string;
+    steps?: {
+      stepNumber: number;
+      questionType: string;
+      label: string;
+      options?: string;
+      isRequired?: boolean;
+    }[];
+  }[];
   steps?: {
     stepNumber: number;
     questionType: string;
     label: string;
     options?: string;
     isRequired?: boolean;
+    sectionId?: number;
   }[];
 }) {
   const [survey] = await db
@@ -90,6 +118,39 @@ export async function createSurvey(data: {
     })
     .returning();
 
+  // Insert sections and their steps
+  if (data.sections && data.sections.length > 0) {
+    let globalStepNumber = 1;
+    for (const section of data.sections) {
+      const [insertedSection] = await db
+        .insert(surveySections)
+        .values({
+          surveyId: survey.id,
+          title: section.title,
+          description: section.description,
+          sortOrder: section.sortOrder,
+          showIntermediateResults: section.showIntermediateResults ?? false,
+          continueButtonText: section.continueButtonText,
+        })
+        .returning();
+
+      if (section.steps && section.steps.length > 0) {
+        await db.insert(surveySteps).values(
+          section.steps.map((step) => ({
+            surveyId: survey.id,
+            sectionId: insertedSection.id,
+            stepNumber: step.stepNumber || globalStepNumber++,
+            questionType: step.questionType,
+            label: step.label,
+            options: step.options,
+            isRequired: step.isRequired ?? true,
+          }))
+        );
+      }
+    }
+  }
+
+  // Insert standalone steps (no section)
   if (data.steps && data.steps.length > 0) {
     const stepNumbers = data.steps.map((s) => s.stepNumber);
     if (new Set(stepNumbers).size !== stepNumbers.length) {
@@ -99,6 +160,7 @@ export async function createSurvey(data: {
     await db.insert(surveySteps).values(
       data.steps.map((step) => ({
         surveyId: survey.id,
+        sectionId: step.sectionId ?? null,
         stepNumber: step.stepNumber,
         questionType: step.questionType,
         label: step.label,
@@ -117,12 +179,20 @@ export async function updateSurvey(
     title?: string;
     description?: string;
     isPublished?: boolean;
+    sections?: {
+      title: string;
+      description?: string;
+      sortOrder: number;
+      showIntermediateResults?: boolean;
+      continueButtonText?: string;
+    }[];
     steps?: {
       stepNumber: number;
       questionType: string;
       label: string;
       options?: string;
       isRequired?: boolean;
+      sectionIndex?: number; // index into the sections array for linking
     }[];
   }
 ) {
@@ -133,7 +203,55 @@ export async function updateSurvey(
 
   await db.update(surveys).set(updateFields).where(eq(surveys.id, surveyId));
 
-  if (data.steps !== undefined) {
+  if (data.sections !== undefined) {
+    // Delete existing sections (cascade deletes steps with sectionId)
+    await db
+      .delete(surveySections)
+      .where(eq(surveySections.surveyId, surveyId));
+
+    // Also delete all steps (they'll be re-inserted)
+    if (data.steps !== undefined) {
+      await db.delete(surveySteps).where(eq(surveySteps.surveyId, surveyId));
+    }
+
+    // Insert new sections
+    const insertedSections: { id: number }[] = [];
+    for (const section of data.sections) {
+      const [inserted] = await db
+        .insert(surveySections)
+        .values({
+          surveyId,
+          title: section.title,
+          description: section.description,
+          sortOrder: section.sortOrder,
+          showIntermediateResults: section.showIntermediateResults ?? false,
+          continueButtonText: section.continueButtonText,
+        })
+        .returning({ id: surveySections.id });
+      insertedSections.push(inserted);
+    }
+
+    // Insert steps with section references
+    if (data.steps !== undefined && data.steps.length > 0) {
+      await db.insert(surveySteps).values(
+        data.steps.map((step) => ({
+          surveyId,
+          sectionId:
+            step.sectionIndex !== undefined &&
+            step.sectionIndex >= 0 &&
+            step.sectionIndex < insertedSections.length
+              ? insertedSections[step.sectionIndex].id
+              : null,
+          stepNumber: step.stepNumber,
+          questionType: step.questionType,
+          label: step.label,
+          options: step.options,
+          isRequired: step.isRequired ?? true,
+        }))
+      );
+    }
+  } else if (data.steps !== undefined) {
+    // No sections change, just replace steps
     await db.delete(surveySteps).where(eq(surveySteps.surveyId, surveyId));
     if (data.steps.length > 0) {
       await db.insert(surveySteps).values(
@@ -154,6 +272,67 @@ export async function updateSurvey(
 
 export async function deleteSurvey(surveyId: number) {
   await db.delete(surveys).where(eq(surveys.id, surveyId));
+}
+
+// ─── Sections CRUD ──────────────────────────────────────────────────────────
+
+export async function getSurveySections(surveyId: number) {
+  return await db
+    .select()
+    .from(surveySections)
+    .where(eq(surveySections.surveyId, surveyId))
+    .orderBy(asc(surveySections.sortOrder));
+}
+
+export async function createSurveySection(data: {
+  surveyId: number;
+  title: string;
+  description?: string;
+  sortOrder: number;
+  showIntermediateResults?: boolean;
+  continueButtonText?: string;
+}) {
+  const [section] = await db
+    .insert(surveySections)
+    .values({
+      surveyId: data.surveyId,
+      title: data.title,
+      description: data.description,
+      sortOrder: data.sortOrder,
+      showIntermediateResults: data.showIntermediateResults ?? false,
+      continueButtonText: data.continueButtonText,
+    })
+    .returning();
+  return section;
+}
+
+export async function updateSurveySection(
+  sectionId: number,
+  data: {
+    title?: string;
+    description?: string;
+    sortOrder?: number;
+    showIntermediateResults?: boolean;
+    continueButtonText?: string;
+  }
+) {
+  const updateFields: Record<string, unknown> = { updatedAt: new Date() };
+  if (data.title !== undefined) updateFields.title = data.title;
+  if (data.description !== undefined) updateFields.description = data.description;
+  if (data.sortOrder !== undefined) updateFields.sortOrder = data.sortOrder;
+  if (data.showIntermediateResults !== undefined)
+    updateFields.showIntermediateResults = data.showIntermediateResults;
+  if (data.continueButtonText !== undefined)
+    updateFields.continueButtonText = data.continueButtonText;
+
+  await db
+    .update(surveySections)
+    .set(updateFields)
+    .where(eq(surveySections.id, sectionId));
+}
+
+export async function deleteSurveySection(sectionId: number) {
+  await db.delete(surveySections).where(eq(surveySections.id, sectionId));
 }
 
 // ─── Responses ──────────────────────────────────────────────────────────────

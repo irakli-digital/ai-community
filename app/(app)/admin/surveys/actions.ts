@@ -64,10 +64,19 @@ export async function createSurvey(
 
 // ─── Update Survey ──────────────────────────────────────────────────────────
 
+const sectionSchema = z.object({
+  title: z.string().min(1).max(300),
+  description: z.string().max(5000).optional(),
+  sortOrder: z.number(),
+  showIntermediateResults: z.boolean().optional(),
+  continueButtonText: z.string().max(200).optional(),
+});
+
 const updateSurveySchema = z.object({
   id: z.number(),
   title: z.string().min(1).max(300),
   description: z.string().max(5000).optional(),
+  sections: z.array(sectionSchema).optional(),
   steps: z
     .array(
       z.object({
@@ -76,6 +85,7 @@ const updateSurveySchema = z.object({
         label: z.string().min(1),
         options: z.string().optional(),
         isRequired: z.boolean().optional(),
+        sectionIndex: z.number().optional(),
       })
     )
     .optional(),
@@ -90,6 +100,7 @@ export async function updateSurvey(
   await dbUpdateSurvey(data.id, {
     title: data.title,
     description: data.description,
+    sections: data.sections,
     steps: data.steps,
   });
 

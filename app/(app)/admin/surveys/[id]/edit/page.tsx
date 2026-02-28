@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { t } from '@/lib/i18n/ka';
 import { getAdminSurvey, updateSurvey, togglePublish } from '../../actions';
-import type { SurveyStep } from '@/lib/db/schema';
+import type { SurveyStep, SurveySection } from '@/lib/db/schema';
 import {
   ArrowLeft,
   Plus,
@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
   Link2,
+  Layers,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -31,11 +32,19 @@ const QUESTION_TYPES = [
   { value: 'yes_no', label: 'Yes / No' },
 ] as const;
 
+type SectionDraft = {
+  title: string;
+  description: string;
+  showIntermediateResults: boolean;
+  continueButtonText: string;
+};
+
 type StepDraft = {
   questionType: string;
   label: string;
   options: string[];
   isRequired: boolean;
+  sectionIndex: number | null; // index into sections array, null = no section
 };
 
 type StepErrors = {
@@ -43,8 +52,13 @@ type StepErrors = {
   options?: string;
 };
 
+type SectionErrors = {
+  title?: string;
+};
+
 type ValidationErrors = {
   title?: string;
+  sections: Record<number, SectionErrors>;
   steps: Record<number, StepErrors>;
 };
 
@@ -57,9 +71,13 @@ export default function EditSurveyPage() {
   const [slug, setSlug] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [isPublished, setIsPublished] = useState(false);
+  const [sections, setSections] = useState<SectionDraft[]>([]);
   const [steps, setSteps] = useState<StepDraft[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [errors, setErrors] = useState<ValidationErrors>({ steps: {} });
+  const [errors, setErrors] = useState<ValidationErrors>({
+    sections: {},
+    steps: {},
+  });
   const formRef = useRef<HTMLDivElement>(null);
 
   const loadData = useCallback(async () => {
@@ -68,12 +86,37 @@ export default function EditSurveyPage() {
     setTitle(data.title);
     setDescription(data.description ?? '');
     setIsPublished(data.isPublished);
+
+    // Build section index map: sectionId -> index in sections array
+    const sectionIdToIndex = new Map<number, number>();
+    const loadedSections: SectionDraft[] = (data.sections ?? []).map(
+      (s: SurveySection, idx: number) => {
+        sectionIdToIndex.set(s.id, idx);
+        return {
+          title: s.title,
+          description: s.description ?? '',
+          showIntermediateResults: s.showIntermediateResults,
+          continueButtonText: s.continueButtonText ?? '',
+        };
+      }
+    );
+    setSections(loadedSections);
+
     setSteps(
       data.steps.map((s: SurveyStep) => ({
         questionType: s.questionType,
         label: s.label,
-        options: s.options ? (() => { try { return JSON.parse(s.options); } catch { return []; } })() : [],
+        options: s.options
+          ? (() => {
+              try {
+                return JSON.parse(s.options);
+              } catch {
+                return [];
+              }
+            })()
+          : [],
         isRequired: s.isRequired,
+        sectionIndex: s.sectionId ? (sectionIdToIndex.get(s.sectionId) ?? null) : null,
       }))
     );
     setLoaded(true);
@@ -83,6 +126,59 @@ export default function EditSurveyPage() {
     loadData();
   }, [loadData]);
 
+  // ─── Section management ────────────────────────────────────────────
+
+  function addSection() {
+    setSections((prev) => [
+      ...prev,
+      {
+        title: '',
+        description: '',
+        showIntermediateResults: false,
+        continueButtonText: '',
+      },
+    ]);
+  }
+
+  function removeSection(idx: number) {
+    if (!confirm('Remove this section? Steps assigned to it will become unassigned.'))
+      return;
+    // Unassign steps from removed section and adjust indexes
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (s.sectionIndex === idx) return { ...s, sectionIndex: null };
+        if (s.sectionIndex !== null && s.sectionIndex > idx)
+          return { ...s, sectionIndex: s.sectionIndex - 1 };
+        return s;
+      })
+    );
+    setSections((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function updateSection(idx: number, patch: Partial<SectionDraft>) {
+    setSections((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, ...patch } : s))
+    );
+  }
+
+  function moveSection(idx: number, direction: -1 | 1) {
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= sections.length) return;
+    setSections((prev) => {
+      const next = [...prev];
+      [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+      return next;
+    });
+    // Update step sectionIndex references
+    setSteps((prev) =>
+      prev.map((s) => {
+        if (s.sectionIndex === idx) return { ...s, sectionIndex: newIdx };
+        if (s.sectionIndex === newIdx) return { ...s, sectionIndex: idx };
+        return s;
+      })
+    );
+  }
+
   // ─── Step management ──────────────────────────────────────────────
 
   function addStep(type: string) {
@@ -91,8 +187,10 @@ export default function EditSurveyPage() {
       {
         questionType: type,
         label: '',
-        options: type === 'single_choice' || type === 'multiple_choice' ? [''] : [],
+        options:
+          type === 'single_choice' || type === 'multiple_choice' ? [''] : [],
         isRequired: true,
+        sectionIndex: null,
       },
     ]);
   }
@@ -152,13 +250,24 @@ export default function EditSurveyPage() {
   // ─── Validation ──────────────────────────────────────────────────
 
   function validate(): boolean {
-    const next: ValidationErrors = { steps: {} };
+    const next: ValidationErrors = { sections: {}, steps: {} };
     let valid = true;
 
     if (!title.trim()) {
       next.title = 'Title is required';
       valid = false;
     }
+
+    sections.forEach((section, idx) => {
+      const sectionErr: SectionErrors = {};
+      if (!section.title.trim()) {
+        sectionErr.title = 'Section title is required';
+        valid = false;
+      }
+      if (Object.keys(sectionErr).length > 0) {
+        next.sections[idx] = sectionErr;
+      }
+    });
 
     steps.forEach((step, idx) => {
       const stepErr: StepErrors = {};
@@ -185,7 +294,9 @@ export default function EditSurveyPage() {
 
     if (!valid) {
       requestAnimationFrame(() => {
-        const firstError = formRef.current?.querySelector('[data-error="true"]');
+        const firstError = formRef.current?.querySelector(
+          '[data-error="true"]'
+        );
         firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     }
@@ -202,6 +313,16 @@ export default function EditSurveyPage() {
         id: surveyId,
         title,
         description: description || undefined,
+        sections:
+          sections.length > 0
+            ? sections.map((s, i) => ({
+                title: s.title,
+                description: s.description || undefined,
+                sortOrder: i,
+                showIntermediateResults: s.showIntermediateResults,
+                continueButtonText: s.continueButtonText || undefined,
+              }))
+            : undefined,
         steps: steps.map((s, i) => ({
           stepNumber: i + 1,
           questionType: s.questionType,
@@ -211,6 +332,7 @@ export default function EditSurveyPage() {
               ? JSON.stringify(s.options.filter((o) => o.trim()))
               : undefined,
           isRequired: s.isRequired,
+          sectionIndex: s.sectionIndex ?? undefined,
         })),
       });
       await loadData();
@@ -295,7 +417,8 @@ export default function EditSurveyPage() {
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
-                if (errors.title) setErrors((prev) => ({ ...prev, title: undefined }));
+                if (errors.title)
+                  setErrors((prev) => ({ ...prev, title: undefined }));
               }}
               placeholder="Survey title"
               className={errors.title ? 'border-red-500' : ''}
@@ -317,6 +440,155 @@ export default function EditSurveyPage() {
         </CardContent>
       </Card>
 
+      {/* Sections Editor */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">
+            <Layers className="mr-2 inline-block h-5 w-5" />
+            Sections
+          </h2>
+          <Button variant="outline" size="sm" onClick={addSection}>
+            <Plus className="mr-1 h-3 w-3" />
+            Add Section
+          </Button>
+        </div>
+
+        {sections.length === 0 && (
+          <p className="py-2 text-center text-sm text-muted-foreground">
+            No sections. Steps will be displayed as a flat list. Add a section
+            to group questions into layers.
+          </p>
+        )}
+
+        {sections.map((section, idx) => (
+          <Card
+            key={idx}
+            className="border-l-4 border-l-primary/60"
+          >
+            <CardContent className="space-y-3 py-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Section {idx + 1}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => moveSection(idx, -1)}
+                    disabled={idx === 0 || isPending}
+                    title="Move up"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => moveSection(idx, 1)}
+                    disabled={idx === sections.length - 1 || isPending}
+                    title="Move down"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeSection(idx)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </div>
+
+              <div data-error={!!errors.sections[idx]?.title || undefined}>
+                <label className="text-xs font-medium">Section Title *</label>
+                <Input
+                  value={section.title}
+                  onChange={(e) => {
+                    updateSection(idx, { title: e.target.value });
+                    if (errors.sections[idx]?.title) {
+                      setErrors((prev) => {
+                        const next = {
+                          ...prev,
+                          sections: { ...prev.sections },
+                        };
+                        next.sections[idx] = {
+                          ...next.sections[idx],
+                          title: undefined,
+                        };
+                        return next;
+                      });
+                    }
+                  }}
+                  placeholder="e.g. Layer 1: Core Index"
+                  className={
+                    errors.sections[idx]?.title ? 'border-red-500' : ''
+                  }
+                />
+                {errors.sections[idx]?.title && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.sections[idx].title}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-medium">
+                  Section Description
+                </label>
+                <textarea
+                  value={section.description}
+                  onChange={(e) =>
+                    updateSection(idx, { description: e.target.value })
+                  }
+                  placeholder="Optional description shown before section questions..."
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                  rows={2}
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`intermediate-${idx}`}
+                    checked={section.showIntermediateResults}
+                    onChange={(e) =>
+                      updateSection(idx, {
+                        showIntermediateResults: e.target.checked,
+                      })
+                    }
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
+                  />
+                  <label
+                    htmlFor={`intermediate-${idx}`}
+                    className="text-sm font-medium"
+                  >
+                    Show intermediate results screen
+                  </label>
+                </div>
+              </div>
+
+              {section.showIntermediateResults && (
+                <div>
+                  <label className="text-xs font-medium">
+                    Continue Button Text
+                  </label>
+                  <Input
+                    value={section.continueButtonText}
+                    onChange={(e) =>
+                      updateSection(idx, {
+                        continueButtonText: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. Get Full AI & Agentic Readiness Score"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {/* Steps Editor */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -336,6 +608,12 @@ export default function EditSurveyPage() {
                     {QUESTION_TYPES.find((q) => q.value === step.questionType)
                       ?.label ?? step.questionType}
                   </span>
+                  {step.sectionIndex !== null &&
+                    sections[step.sectionIndex] && (
+                      <span className="rounded bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                        {sections[step.sectionIndex].title || `Section ${step.sectionIndex + 1}`}
+                      </span>
+                    )}
                 </div>
                 <div className="flex gap-1">
                   <Button
@@ -376,7 +654,10 @@ export default function EditSurveyPage() {
                     if (errors.steps[idx]?.label) {
                       setErrors((prev) => {
                         const next = { ...prev, steps: { ...prev.steps } };
-                        next.steps[idx] = { ...next.steps[idx], label: undefined };
+                        next.steps[idx] = {
+                          ...next.steps[idx],
+                          label: undefined,
+                        };
                         return next;
                       });
                     }
@@ -385,32 +666,63 @@ export default function EditSurveyPage() {
                   className={errors.steps[idx]?.label ? 'border-red-500' : ''}
                 />
                 {errors.steps[idx]?.label && (
-                  <p className="mt-1 text-xs text-red-500">{errors.steps[idx].label}</p>
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.steps[idx].label}
+                  </p>
                 )}
               </div>
 
-              {/* Required toggle */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`required-${idx}`}
-                  checked={step.isRequired}
-                  onChange={(e) =>
-                    updateStep(idx, { isRequired: e.target.checked })
-                  }
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
-                />
-                <label
-                  htmlFor={`required-${idx}`}
-                  className="text-sm font-medium"
-                >
-                  Required
-                </label>
+              {/* Section assignment + Required toggle */}
+              <div className="flex flex-wrap items-center gap-4">
+                {sections.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium">Section:</label>
+                    <select
+                      value={step.sectionIndex ?? ''}
+                      onChange={(e) =>
+                        updateStep(idx, {
+                          sectionIndex:
+                            e.target.value === ''
+                              ? null
+                              : parseInt(e.target.value, 10),
+                        })
+                      }
+                      className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                    >
+                      <option value="">No section</option>
+                      {sections.map((sec, si) => (
+                        <option key={si} value={si}>
+                          {sec.title || `Section ${si + 1}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`required-${idx}`}
+                    checked={step.isRequired}
+                    onChange={(e) =>
+                      updateStep(idx, { isRequired: e.target.checked })
+                    }
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
+                  />
+                  <label
+                    htmlFor={`required-${idx}`}
+                    className="text-sm font-medium"
+                  >
+                    Required
+                  </label>
+                </div>
               </div>
 
               {/* Options for choice types */}
               {hasChoiceOptions(step.questionType) && (
-                <div className="space-y-2" data-error={!!errors.steps[idx]?.options || undefined}>
+                <div
+                  className="space-y-2"
+                  data-error={!!errors.steps[idx]?.options || undefined}
+                >
                   <label className="text-xs font-medium">Options</label>
                   {step.options.map((opt, optIdx) => (
                     <div key={optIdx} className="flex items-center gap-2">
@@ -420,8 +732,14 @@ export default function EditSurveyPage() {
                           updateOption(idx, optIdx, e.target.value);
                           if (errors.steps[idx]?.options) {
                             setErrors((prev) => {
-                              const next = { ...prev, steps: { ...prev.steps } };
-                              next.steps[idx] = { ...next.steps[idx], options: undefined };
+                              const next = {
+                                ...prev,
+                                steps: { ...prev.steps },
+                              };
+                              next.steps[idx] = {
+                                ...next.steps[idx],
+                                options: undefined,
+                              };
                               return next;
                             });
                           }
@@ -440,7 +758,9 @@ export default function EditSurveyPage() {
                     </div>
                   ))}
                   {errors.steps[idx]?.options && (
-                    <p className="text-xs text-red-500">{errors.steps[idx].options}</p>
+                    <p className="text-xs text-red-500">
+                      {errors.steps[idx].options}
+                    </p>
                   )}
                   <Button
                     variant="ghost"

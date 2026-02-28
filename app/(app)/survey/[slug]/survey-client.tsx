@@ -1,17 +1,30 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 type Step = {
   id: number;
   surveyId: number;
+  sectionId: number | null;
   stepNumber: number;
   questionType: string;
   label: string;
   options: string | null;
   isRequired: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type Section = {
+  id: number;
+  surveyId: number;
+  title: string;
+  description: string | null;
+  sortOrder: number;
+  showIntermediateResults: boolean;
+  continueButtonText: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -25,6 +38,7 @@ type Survey = {
   createdBy: number;
   createdAt: Date;
   updatedAt: Date;
+  sections: Section[];
   steps: Step[];
 };
 
@@ -32,11 +46,17 @@ type SurveyClientProps = {
   survey: Survey;
 };
 
-// -1 = welcome, 0..n-1 = steps, n = submitting/thank-you
+// Represents what we show at each "position" in the survey flow
+type FlowItem =
+  | { type: 'section_header'; section: Section }
+  | { type: 'step'; step: Step; sectionId: number | null }
+  | { type: 'intermediate'; section: Section };
+
+// -1 = welcome, 0..n-1 = flow items, n = submitting/thank-you
 const WELCOME = -1;
 
 export function SurveyClient({ survey }: SurveyClientProps) {
-  const [currentStep, setCurrentStep] = useState(WELCOME);
+  const [currentIndex, setCurrentIndex] = useState(WELCOME);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const answersRef = useRef(answers);
   answersRef.current = answers;
@@ -45,92 +65,187 @@ export function SurveyClient({ survey }: SurveyClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [direction, setDirection] = useState<'up' | 'down'>('up');
 
-  const totalSteps = survey.steps.length;
-  const isWelcome = currentStep === WELCOME;
-  const isLastStep = currentStep === totalSteps - 1;
-  const step = !isWelcome && currentStep < totalSteps ? survey.steps[currentStep] : null;
+  // Build the flow: section headers, steps, and intermediate screens
+  const flow = useMemo(() => {
+    const items: FlowItem[] = [];
+    const hasSections = survey.sections.length > 0;
 
-  const progress = isWelcome ? 0 : Math.round(((currentStep + 1) / totalSteps) * 100);
+    if (!hasSections) {
+      // No sections — flat list of steps
+      for (const step of survey.steps) {
+        items.push({ type: 'step', step, sectionId: null });
+      }
+      return items;
+    }
 
-  const submitSurvey = useCallback(async () => {
-    setSubmitting(true);
-    setError(null);
+    // Group steps by sectionId
+    const stepsBySection = new Map<number | null, Step[]>();
+    for (const step of survey.steps) {
+      const key = step.sectionId;
+      const existing = stepsBySection.get(key) ?? [];
+      existing.push(step);
+      stepsBySection.set(key, existing);
+    }
 
-    const current = answersRef.current;
-    const payload = {
-      answers: survey.steps
-        .filter((s) => current[s.id] !== undefined && current[s.id] !== '')
-        .map((s) => ({
-          stepId: s.id,
-          value: current[s.id],
-        })),
-    };
+    // Steps without a section go first
+    const unsectionedSteps = stepsBySection.get(null) ?? [];
+    for (const step of unsectionedSteps) {
+      items.push({ type: 'step', step, sectionId: null });
+    }
 
-    try {
-      const res = await fetch(`/api/surveys/${survey.id}/respond`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+    // Sections in sortOrder, each with header → steps → optional intermediate
+    const sortedSections = [...survey.sections].sort(
+      (a, b) => a.sortOrder - b.sortOrder
+    );
+    for (const section of sortedSections) {
+      items.push({ type: 'section_header', section });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to submit survey.');
+      const sectionSteps = stepsBySection.get(section.id) ?? [];
+      for (const step of sectionSteps) {
+        items.push({ type: 'step', step, sectionId: section.id });
       }
 
-      setSubmitted(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
-    } finally {
-      setSubmitting(false);
+      if (section.showIntermediateResults) {
+        items.push({ type: 'intermediate', section });
+      }
     }
+
+    return items;
   }, [survey]);
+
+  // Count only actual steps for progress
+  const totalQuestions = flow.filter((f) => f.type === 'step').length;
+  const questionsAnswered = flow
+    .slice(0, currentIndex + 1)
+    .filter((f) => f.type === 'step').length;
+  const progress =
+    currentIndex === WELCOME
+      ? 0
+      : Math.round((questionsAnswered / totalQuestions) * 100);
+
+  const isWelcome = currentIndex === WELCOME;
+  const currentItem = !isWelcome && currentIndex < flow.length ? flow[currentIndex] : null;
+  const isLastFlowItem = currentIndex === flow.length - 1;
+
+  // Find the next step item to determine if this is the last question
+  const isLastQuestion = useMemo(() => {
+    if (!currentItem || currentItem.type !== 'step') return false;
+    for (let i = currentIndex + 1; i < flow.length; i++) {
+      if (flow[i].type === 'step') return false;
+    }
+    return true;
+  }, [currentItem, currentIndex, flow]);
+
+  const submitSurvey = useCallback(
+    async (stepsToSubmit?: Step[]) => {
+      setSubmitting(true);
+      setError(null);
+
+      const current = answersRef.current;
+      const relevantSteps = stepsToSubmit || survey.steps;
+      const payload = {
+        answers: relevantSteps
+          .filter((s) => current[s.id] !== undefined && current[s.id] !== '')
+          .map((s) => ({
+            stepId: s.id,
+            value: current[s.id],
+          })),
+      };
+
+      try {
+        const res = await fetch(`/api/surveys/${survey.id}/respond`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to submit survey.');
+        }
+
+        if (!stepsToSubmit) {
+          setSubmitted(true);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [survey]
+  );
 
   const goNext = useCallback(() => {
     if (isWelcome) {
       setDirection('up');
-      setCurrentStep(0);
+      setCurrentIndex(0);
       return;
     }
-    if (!step) return;
+    if (!currentItem) return;
 
-    const current = answersRef.current;
+    if (currentItem.type === 'step') {
+      const { step } = currentItem;
+      const current = answersRef.current;
 
-    // Validate required
-    if (step.isRequired && !current[step.id]?.trim()) {
-      setError('This question is required.');
-      return;
-    }
-
-    // Email validation
-    if (step.questionType === 'email' && current[step.id]) {
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!emailRegex.test(current[step.id])) {
-        setError('Please enter a valid email address.');
+      // Validate required
+      if (step.isRequired && !current[step.id]?.trim()) {
+        setError('This question is required.');
         return;
+      }
+
+      // Email validation
+      if (step.questionType === 'email' && current[step.id]) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(current[step.id])) {
+          setError('Please enter a valid email address.');
+          return;
+        }
       }
     }
 
     setError(null);
 
-    if (isLastStep) {
+    if (isLastFlowItem) {
       submitSurvey();
     } else {
       setDirection('up');
-      setCurrentStep((s) => s + 1);
+      setCurrentIndex((s) => s + 1);
     }
-  }, [isWelcome, step, isLastStep, submitSurvey]);
+  }, [isWelcome, currentItem, isLastFlowItem, submitSurvey]);
 
   const goBack = useCallback(() => {
-    if (isWelcome || currentStep === 0) return;
+    if (isWelcome || currentIndex === 0) return;
     setError(null);
     setDirection('down');
-    setCurrentStep((s) => s - 1);
-  }, [isWelcome, currentStep]);
+    setCurrentIndex((s) => s - 1);
+  }, [isWelcome, currentIndex]);
 
   const setAnswer = useCallback((stepId: number, value: string) => {
     setError(null);
     setAnswers((prev) => ({ ...prev, [stepId]: value }));
+  }, []);
+
+  // Handle partial submit from intermediate screen
+  const handlePartialSubmit = useCallback(
+    (sectionId: number) => {
+      // Collect steps up to and including this section
+      const stepsToSubmit: Step[] = [];
+      for (const item of flow) {
+        if (item.type === 'step') stepsToSubmit.push(item.step);
+        if (item.type === 'intermediate' && item.section.id === sectionId) break;
+      }
+      submitSurvey(stepsToSubmit).then(() => {
+        setSubmitted(true);
+      });
+    },
+    [flow, submitSurvey]
+  );
+
+  const handleContinueFromIntermediate = useCallback(() => {
+    setError(null);
+    setDirection('up');
+    setCurrentIndex((s) => s + 1);
   }, []);
 
   // Keyboard shortcuts
@@ -138,9 +253,29 @@ export function SurveyClient({ survey }: SurveyClientProps) {
     const handleKey = (e: KeyboardEvent) => {
       if (submitted || submitting) return;
 
+      // Don't intercept Enter for intermediate or section_header screens
+      if (
+        currentItem &&
+        (currentItem.type === 'intermediate' || currentItem.type === 'section_header')
+      ) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (currentItem.type === 'section_header') {
+            goNext();
+          } else {
+            handleContinueFromIntermediate();
+          }
+        }
+        return;
+      }
+
       if (e.key === 'Enter' && !e.shiftKey) {
         // Don't submit on Enter inside textarea
-        if (step?.questionType === 'textarea') return;
+        if (
+          currentItem?.type === 'step' &&
+          currentItem.step.questionType === 'textarea'
+        )
+          return;
         e.preventDefault();
         goNext();
       }
@@ -148,7 +283,7 @@ export function SurveyClient({ survey }: SurveyClientProps) {
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [goNext, submitted, submitting, step]);
+  }, [goNext, submitted, submitting, currentItem, handleContinueFromIntermediate]);
 
   if (submitted) {
     return (
@@ -179,7 +314,7 @@ export function SurveyClient({ survey }: SurveyClientProps) {
       )}
 
       {/* Back button */}
-      {!isWelcome && currentStep > 0 && (
+      {!isWelcome && currentIndex > 0 && (
         <button
           onClick={goBack}
           className="absolute left-4 top-5 z-10 flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -209,14 +344,32 @@ export function SurveyClient({ survey }: SurveyClientProps) {
               description={survey.description}
               onStart={goNext}
             />
-          ) : step ? (
+          ) : currentItem?.type === 'section_header' ? (
+            <SectionHeaderScreen
+              key={`section-${currentItem.section.id}`}
+              section={currentItem.section}
+              onContinue={goNext}
+              direction={direction}
+            />
+          ) : currentItem?.type === 'intermediate' ? (
+            <IntermediateScreen
+              key={`intermediate-${currentItem.section.id}`}
+              section={currentItem.section}
+              onContinue={handleContinueFromIntermediate}
+              onSubmitPartial={() =>
+                handlePartialSubmit(currentItem.section.id)
+              }
+              submitting={submitting}
+              direction={direction}
+            />
+          ) : currentItem?.type === 'step' ? (
             <StepRenderer
-              key={step.id}
-              step={step}
-              value={answers[step.id] || ''}
-              onChange={(val) => setAnswer(step.id, val)}
+              key={currentItem.step.id}
+              step={currentItem.step}
+              value={answers[currentItem.step.id] || ''}
+              onChange={(val) => setAnswer(currentItem.step.id, val)}
               onNext={goNext}
-              isLast={isLastStep}
+              isLast={isLastQuestion}
               submitting={submitting}
               error={error}
               direction={direction}
@@ -253,6 +406,123 @@ function WelcomeScreen({
       <p className="mt-4 text-xs text-muted-foreground">
         press <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">Enter</kbd>
       </p>
+    </div>
+  );
+}
+
+/* ─── Section Header Screen ─────────────────────────────────────────────── */
+
+function SectionHeaderScreen({
+  section,
+  onContinue,
+  direction,
+}: {
+  section: Section;
+  onContinue: () => void;
+  direction: 'up' | 'down';
+}) {
+  const animClass =
+    direction === 'up'
+      ? 'animate-in fade-in slide-in-from-bottom-6 duration-400'
+      : 'animate-in fade-in slide-in-from-top-6 duration-400';
+
+  return (
+    <div className={`${animClass} text-center`}>
+      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+        </svg>
+      </div>
+      <h2 className="mb-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        {section.title}
+      </h2>
+      {section.description && (
+        <p className="mb-8 text-lg text-muted-foreground">
+          {section.description}
+        </p>
+      )}
+      <Button onClick={onContinue} size="lg" className="px-8 text-base">
+        Continue
+      </Button>
+      <p className="mt-4 text-xs text-muted-foreground">
+        press{' '}
+        <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+          Enter
+        </kbd>
+      </p>
+    </div>
+  );
+}
+
+/* ─── Intermediate Results Screen ───────────────────────────────────────── */
+
+function IntermediateScreen({
+  section,
+  onContinue,
+  onSubmitPartial,
+  submitting,
+  direction,
+}: {
+  section: Section;
+  onContinue: () => void;
+  onSubmitPartial: () => void;
+  submitting: boolean;
+  direction: 'up' | 'down';
+}) {
+  const animClass =
+    direction === 'up'
+      ? 'animate-in fade-in slide-in-from-bottom-6 duration-400'
+      : 'animate-in fade-in slide-in-from-top-6 duration-400';
+
+  return (
+    <div className={`${animClass} text-center`}>
+      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 text-green-500">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      <h2 className="mb-3 text-2xl font-bold text-foreground sm:text-3xl">
+        {section.title} — Complete!
+      </h2>
+      <p className="mb-8 text-muted-foreground">
+        You can submit your responses so far, or continue to the next section
+        for more detailed results.
+      </p>
+      <div className="flex flex-col items-center gap-3">
+        <Button
+          onClick={onContinue}
+          size="lg"
+          className="px-8 text-base"
+          disabled={submitting}
+        >
+          {section.continueButtonText || 'Continue to Next Section'}
+        </Button>
+        <button
+          onClick={onSubmitPartial}
+          disabled={submitting}
+          className="text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        >
+          {submitting ? 'Submitting...' : 'Submit responses so far'}
+        </button>
+      </div>
     </div>
   );
 }
