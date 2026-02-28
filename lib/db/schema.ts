@@ -395,6 +395,30 @@ export const surveys = pgTable(
   ]
 );
 
+// ─── Survey Sections ────────────────────────────────────────────────────────
+export const surveySections = pgTable(
+  'survey_sections',
+  {
+    id: serial('id').primaryKey(),
+    surveyId: integer('survey_id')
+      .notNull()
+      .references(() => surveys.id, { onDelete: 'cascade' }),
+    title: varchar('title', { length: 300 }).notNull(),
+    description: text('description'),
+    sortOrder: integer('sort_order').notNull().default(0),
+    showIntermediateResults: boolean('show_intermediate_results')
+      .notNull()
+      .default(false),
+    continueButtonText: varchar('continue_button_text', { length: 200 }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('survey_sections_survey_id_idx').on(table.surveyId),
+    index('survey_sections_sort_idx').on(table.surveyId, table.sortOrder),
+  ]
+);
+
 // ─── Survey Steps ───────────────────────────────────────────────────────────
 export const surveySteps = pgTable(
   'survey_steps',
@@ -403,6 +427,9 @@ export const surveySteps = pgTable(
     surveyId: integer('survey_id')
       .notNull()
       .references(() => surveys.id, { onDelete: 'cascade' }),
+    sectionId: integer('section_id').references(() => surveySections.id, {
+      onDelete: 'cascade',
+    }),
     stepNumber: integer('step_number').notNull(),
     questionType: varchar('question_type', { length: 30 }).notNull(),
     label: text('label').notNull(),
@@ -413,6 +440,7 @@ export const surveySteps = pgTable(
   },
   (table) => [
     index('survey_steps_survey_id_idx').on(table.surveyId),
+    index('survey_steps_section_id_idx').on(table.sectionId),
     index('survey_steps_sort_idx').on(table.surveyId, table.stepNumber),
   ]
 );
@@ -717,14 +745,30 @@ export const surveysRelations = relations(surveys, ({ one, many }) => ({
     fields: [surveys.createdBy],
     references: [users.id],
   }),
+  sections: many(surveySections),
   steps: many(surveySteps),
   responses: many(surveyResponses),
 }));
+
+export const surveySectionsRelations = relations(
+  surveySections,
+  ({ one, many }) => ({
+    survey: one(surveys, {
+      fields: [surveySections.surveyId],
+      references: [surveys.id],
+    }),
+    steps: many(surveySteps),
+  })
+);
 
 export const surveyStepsRelations = relations(surveySteps, ({ one, many }) => ({
   survey: one(surveys, {
     fields: [surveySteps.surveyId],
     references: [surveys.id],
+  }),
+  section: one(surveySections, {
+    fields: [surveySteps.sectionId],
+    references: [surveySections.id],
   }),
   answers: many(surveyAnswers),
 }));
@@ -791,6 +835,8 @@ export type WaitingListEntry = typeof waitingList.$inferSelect;
 export type NewWaitingListEntry = typeof waitingList.$inferInsert;
 export type Survey = typeof surveys.$inferSelect;
 export type NewSurvey = typeof surveys.$inferInsert;
+export type SurveySection = typeof surveySections.$inferSelect;
+export type NewSurveySection = typeof surveySections.$inferInsert;
 export type SurveyStep = typeof surveySteps.$inferSelect;
 export type NewSurveyStep = typeof surveySteps.$inferInsert;
 export type SurveyResponse = typeof surveyResponses.$inferSelect;

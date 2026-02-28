@@ -14,6 +14,7 @@ const respondSchema = z.object({
       })
     )
     .min(1),
+  partial: z.boolean().optional().default(false),
 });
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -63,6 +64,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    const isPartial = parsed.data.partial;
+
     // Validate that all stepIds belong to this survey
     const validStepIds = new Set(survey.steps.map((s) => s.id));
     for (const answer of parsed.data.answers) {
@@ -74,14 +77,36 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Check required steps are answered
-    const answeredStepIds = new Set(parsed.data.answers.map((a) => a.stepId));
-    for (const step of survey.steps) {
-      if (step.isRequired && !answeredStepIds.has(step.id)) {
-        return NextResponse.json(
-          { error: `Step "${step.label}" is required.` },
-          { status: 400 }
-        );
+    // Check required steps are answered (only for submitted stepIds, not partial)
+    if (!isPartial) {
+      const answeredStepIds = new Set(parsed.data.answers.map((a) => a.stepId));
+      for (const step of survey.steps) {
+        if (step.isRequired && !answeredStepIds.has(step.id)) {
+          return NextResponse.json(
+            { error: `Step "${step.label}" is required.` },
+            { status: 400 }
+          );
+        }
+      }
+    } else {
+      // For partial, only validate required steps that were included in submission
+      const submittedStepIds = new Set(parsed.data.answers.map((a) => a.stepId));
+      const answeredStepIds = new Set(
+        parsed.data.answers
+          .filter((a) => a.value.trim() !== '')
+          .map((a) => a.stepId)
+      );
+      for (const step of survey.steps) {
+        if (
+          step.isRequired &&
+          submittedStepIds.has(step.id) &&
+          !answeredStepIds.has(step.id)
+        ) {
+          return NextResponse.json(
+            { error: `Step "${step.label}" is required.` },
+            { status: 400 }
+          );
+        }
       }
     }
 

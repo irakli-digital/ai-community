@@ -33,12 +33,29 @@ const stepSchema = z
     { message: 'Choice-type steps require a non-empty options array' }
   );
 
+const sectionSchema = z.object({
+  title: z.string().min(1).max(300),
+  description: z.string().max(5000).optional(),
+  showIntermediateResults: z.boolean().optional().default(false),
+  continueButtonText: z.string().max(200).optional(),
+  steps: z.array(stepSchema).min(1),
+});
+
 const createSurveySchema = z.object({
   title: z.string().min(1).max(300),
   description: z.string().max(5000).optional(),
-  steps: z.array(stepSchema).min(1),
+  sections: z.array(sectionSchema).optional(),
+  steps: z.array(stepSchema).min(1).optional(),
   publish: z.boolean().optional().default(false),
-});
+}).refine(
+  (data) => {
+    // Must have at least sections or steps
+    const hasSections = data.sections && data.sections.length > 0;
+    const hasSteps = data.steps && data.steps.length > 0;
+    return hasSections || hasSteps;
+  },
+  { message: 'Survey must have at least one section with steps, or standalone steps' }
+);
 
 function generateSlug(title: string): string {
   const base = title
@@ -77,27 +94,60 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { title, description, steps, publish } = parsed.data;
+  const { title, description, sections, steps, publish } = parsed.data;
   const createdBy = parseInt(process.env.API_AUTHOR_USER_ID || '1', 10);
 
   let survey = null;
+  let totalStepsCount = 0;
+
   for (let attempt = 0; attempt < MAX_SLUG_RETRIES; attempt++) {
     const slug = generateSlug(title);
     try {
-      survey = await createSurvey({
-        title,
-        slug,
-        description,
-        isPublished: publish,
-        createdBy,
-        steps: steps.map((step, index) => ({
-          stepNumber: index + 1,
-          questionType: step.type,
-          label: step.question,
-          options: step.options ? JSON.stringify(step.options) : undefined,
-          isRequired: step.required,
-        })),
-      });
+      if (sections && sections.length > 0) {
+        // Create with sections
+        let stepNumber = 1;
+        const sectionData = sections.map((section, idx) => ({
+          title: section.title,
+          description: section.description,
+          sortOrder: idx,
+          showIntermediateResults: section.showIntermediateResults,
+          continueButtonText: section.continueButtonText,
+          steps: section.steps.map((step) => ({
+            stepNumber: stepNumber++,
+            questionType: step.type,
+            label: step.question,
+            options: step.options ? JSON.stringify(step.options) : undefined,
+            isRequired: step.required,
+          })),
+        }));
+        totalStepsCount = stepNumber - 1;
+
+        survey = await createSurvey({
+          title,
+          slug,
+          description,
+          isPublished: publish,
+          createdBy,
+          sections: sectionData,
+        });
+      } else if (steps && steps.length > 0) {
+        // Create with flat steps (backward compatible)
+        totalStepsCount = steps.length;
+        survey = await createSurvey({
+          title,
+          slug,
+          description,
+          isPublished: publish,
+          createdBy,
+          steps: steps.map((step, index) => ({
+            stepNumber: index + 1,
+            questionType: step.type,
+            label: step.question,
+            options: step.options ? JSON.stringify(step.options) : undefined,
+            isRequired: step.required,
+          })),
+        });
+      }
       break;
     } catch (err) {
       const isUniqueViolation =
@@ -126,7 +176,8 @@ export async function POST(request: NextRequest) {
       slug: survey.slug,
       url: `/survey/${survey.slug}`,
       status: survey.isPublished ? 'published' : 'draft',
-      stepsCount: steps.length,
+      stepsCount: totalStepsCount,
+      sectionsCount: sections?.length ?? 0,
     },
     { status: 201 }
   );

@@ -14,5 +14,9 @@ export default async function SurveyPage({ params }: Props) {
     notFound();
   }
 
-  return <SurveyClient survey={{ ...survey, slug: survey.slug }} />;
+  return (
+    <SurveyClient
+      survey={{ ...survey, slug: survey.slug, sections: survey.sections }}
+    />
+  );
 }
