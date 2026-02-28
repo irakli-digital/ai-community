@@ -455,6 +455,9 @@ export const surveyResponses = pgTable(
       .references(() => surveys.id, { onDelete: 'cascade' }),
     respondentName: varchar('respondent_name', { length: 200 }),
     respondentEmail: varchar('respondent_email', { length: 255 }),
+    scoreTotal: integer('score_total'),
+    scoreBreakdown: text('score_breakdown'), // JSON string of subscore results
+    category: varchar('category', { length: 100 }),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [
@@ -480,6 +483,62 @@ export const surveyAnswers = pgTable(
   (table) => [
     index('survey_answers_response_id_idx').on(table.responseId),
     index('survey_answers_step_id_idx').on(table.stepId),
+  ]
+);
+
+// ─── Survey Score Config (subscores) ────────────────────────────────────────
+export const surveyScoreConfig = pgTable(
+  'survey_score_config',
+  {
+    id: serial('id').primaryKey(),
+    surveyId: integer('survey_id')
+      .notNull()
+      .references(() => surveys.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 100 }).notNull(),
+    stepIds: text('step_ids').notNull(), // JSON array of step IDs
+    maxPoints: integer('max_points').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('survey_score_config_survey_id_idx').on(table.surveyId),
+  ]
+);
+
+// ─── Survey Answer Weights ──────────────────────────────────────────────────
+export const surveyAnswerWeights = pgTable(
+  'survey_answer_weights',
+  {
+    id: serial('id').primaryKey(),
+    stepId: integer('step_id')
+      .notNull()
+      .references(() => surveySteps.id, { onDelete: 'cascade' }),
+    answerValue: text('answer_value').notNull(),
+    points: integer('points').notNull().default(0),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  (table) => [
+    index('survey_answer_weights_step_id_idx').on(table.stepId),
+  ]
+);
+
+// ─── Survey Category Thresholds ─────────────────────────────────────────────
+export const surveyCategoryThresholds = pgTable(
+  'survey_category_thresholds',
+  {
+    id: serial('id').primaryKey(),
+    surveyId: integer('survey_id')
+      .notNull()
+      .references(() => surveys.id, { onDelete: 'cascade' }),
+    minScore: integer('min_score').notNull(),
+    maxScore: integer('max_score').notNull(),
+    label: varchar('label', { length: 100 }).notNull(),
+    description: text('description'),
+    sortOrder: integer('sort_order').notNull().default(0),
+  },
+  (table) => [
+    index('survey_category_thresholds_survey_id_idx').on(table.surveyId),
   ]
 );
 
@@ -748,6 +807,8 @@ export const surveysRelations = relations(surveys, ({ one, many }) => ({
   sections: many(surveySections),
   steps: many(surveySteps),
   responses: many(surveyResponses),
+  scoreConfigs: many(surveyScoreConfig),
+  categoryThresholds: many(surveyCategoryThresholds),
 }));
 
 export const surveySectionsRelations = relations(
@@ -771,6 +832,7 @@ export const surveyStepsRelations = relations(surveySteps, ({ one, many }) => ({
     references: [surveySections.id],
   }),
   answers: many(surveyAnswers),
+  weights: many(surveyAnswerWeights),
 }));
 
 export const surveyResponsesRelations = relations(
@@ -794,6 +856,36 @@ export const surveyAnswersRelations = relations(surveyAnswers, ({ one }) => ({
     references: [surveySteps.id],
   }),
 }));
+
+export const surveyScoreConfigRelations = relations(
+  surveyScoreConfig,
+  ({ one }) => ({
+    survey: one(surveys, {
+      fields: [surveyScoreConfig.surveyId],
+      references: [surveys.id],
+    }),
+  })
+);
+
+export const surveyAnswerWeightsRelations = relations(
+  surveyAnswerWeights,
+  ({ one }) => ({
+    step: one(surveySteps, {
+      fields: [surveyAnswerWeights.stepId],
+      references: [surveySteps.id],
+    }),
+  })
+);
+
+export const surveyCategoryThresholdsRelations = relations(
+  surveyCategoryThresholds,
+  ({ one }) => ({
+    survey: one(surveys, {
+      fields: [surveyCategoryThresholds.surveyId],
+      references: [surveys.id],
+    }),
+  })
+);
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 export type Notification = typeof notifications.$inferSelect;
@@ -845,6 +937,12 @@ export type SurveyAnswer = typeof surveyAnswers.$inferSelect;
 export type NewSurveyAnswer = typeof surveyAnswers.$inferInsert;
 export type SidebarBanner = typeof sidebarBanners.$inferSelect;
 export type NewSidebarBanner = typeof sidebarBanners.$inferInsert;
+export type SurveyScoreConfig = typeof surveyScoreConfig.$inferSelect;
+export type NewSurveyScoreConfig = typeof surveyScoreConfig.$inferInsert;
+export type SurveyAnswerWeight = typeof surveyAnswerWeights.$inferSelect;
+export type NewSurveyAnswerWeight = typeof surveyAnswerWeights.$inferInsert;
+export type SurveyCategoryThreshold = typeof surveyCategoryThresholds.$inferSelect;
+export type NewSurveyCategoryThreshold = typeof surveyCategoryThresholds.$inferInsert;
 
 // ─── Activity Types ─────────────────────────────────────────────────────────
 export enum ActivityType {
