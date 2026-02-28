@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getSurveyById, createSurveyResponse } from '@/lib/db/survey-queries';
+import { getSurveyById, createSurveyResponse, updateResponseScores } from '@/lib/db/survey-queries';
+import { calculateScores } from '@/lib/db/survey-scoring';
 import { isRateLimited, getClientIp } from '@/lib/auth/rate-limit';
 
 const respondSchema = z.object({
@@ -110,14 +111,27 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    await createSurveyResponse({
+    const response = await createSurveyResponse({
       surveyId,
       respondentName: parsed.data.respondentName,
       respondentEmail: parsed.data.respondentEmail || undefined,
       answers: parsed.data.answers,
     });
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    // Calculate and save scores (no-op if no scoring config exists)
+    const scores = await calculateScores(surveyId, parsed.data.answers);
+    if (scores.subscores.length > 0 || scores.total > 0) {
+      await updateResponseScores(response.id, {
+        scoreTotal: scores.total,
+        scoreBreakdown: JSON.stringify(scores.subscores),
+        category: scores.category?.label ?? null,
+      });
+    }
+
+    return NextResponse.json(
+      { success: true, scores: scores.subscores.length > 0 ? scores : undefined },
+      { status: 201 }
+    );
   } catch {
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }

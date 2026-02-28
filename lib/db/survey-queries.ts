@@ -5,8 +5,11 @@ import {
   surveySections,
   surveyResponses,
   surveyAnswers,
+  surveyScoreConfig,
+  surveyAnswerWeights,
+  surveyCategoryThresholds,
 } from './schema';
-import { eq, desc, asc, sql, inArray } from 'drizzle-orm';
+import { eq, desc, asc, sql, inArray, and } from 'drizzle-orm';
 
 // ─── Surveys ────────────────────────────────────────────────────────────────
 
@@ -399,4 +402,171 @@ export async function getSurveyResponses(surveyId: number) {
     ...r,
     answers: answersByResponse.get(r.id) ?? [],
   }));
+}
+
+export async function updateResponseScores(
+  responseId: number,
+  data: {
+    scoreTotal: number;
+    scoreBreakdown: string;
+    category: string | null;
+  }
+) {
+  await db
+    .update(surveyResponses)
+    .set({
+      scoreTotal: data.scoreTotal,
+      scoreBreakdown: data.scoreBreakdown,
+      category: data.category,
+    })
+    .where(eq(surveyResponses.id, responseId));
+}
+
+// ─── Score Config CRUD ──────────────────────────────────────────────────────
+
+export async function getSurveyScoreConfig(surveyId: number) {
+  return await db
+    .select()
+    .from(surveyScoreConfig)
+    .where(eq(surveyScoreConfig.surveyId, surveyId))
+    .orderBy(asc(surveyScoreConfig.sortOrder));
+}
+
+export async function upsertScoreConfig(
+  surveyId: number,
+  name: string,
+  stepIds: number[],
+  maxPoints: number,
+  sortOrder?: number
+) {
+  const existing = await db
+    .select()
+    .from(surveyScoreConfig)
+    .where(
+      and(
+        eq(surveyScoreConfig.surveyId, surveyId),
+        eq(surveyScoreConfig.name, name)
+      )
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db
+      .update(surveyScoreConfig)
+      .set({
+        stepIds: JSON.stringify(stepIds),
+        maxPoints,
+        sortOrder: sortOrder ?? existing[0].sortOrder,
+        updatedAt: new Date(),
+      })
+      .where(eq(surveyScoreConfig.id, existing[0].id));
+    return { ...existing[0], stepIds: JSON.stringify(stepIds), maxPoints };
+  }
+
+  const [created] = await db
+    .insert(surveyScoreConfig)
+    .values({
+      surveyId,
+      name,
+      stepIds: JSON.stringify(stepIds),
+      maxPoints,
+      sortOrder: sortOrder ?? 0,
+    })
+    .returning();
+  return created;
+}
+
+// ─── Answer Weights CRUD ────────────────────────────────────────────────────
+
+export async function getAnswerWeights(surveyId: number) {
+  const stepIds = await db
+    .select({ id: surveySteps.id })
+    .from(surveySteps)
+    .where(eq(surveySteps.surveyId, surveyId));
+
+  if (stepIds.length === 0) return [];
+
+  return await db
+    .select()
+    .from(surveyAnswerWeights)
+    .where(
+      inArray(
+        surveyAnswerWeights.stepId,
+        stepIds.map((s) => s.id)
+      )
+    );
+}
+
+export async function upsertAnswerWeight(
+  stepId: number,
+  answerValue: string,
+  points: number
+) {
+  const existing = await db
+    .select()
+    .from(surveyAnswerWeights)
+    .where(
+      and(
+        eq(surveyAnswerWeights.stepId, stepId),
+        eq(surveyAnswerWeights.answerValue, answerValue)
+      )
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db
+      .update(surveyAnswerWeights)
+      .set({ points })
+      .where(eq(surveyAnswerWeights.id, existing[0].id));
+    return { ...existing[0], points };
+  }
+
+  const [created] = await db
+    .insert(surveyAnswerWeights)
+    .values({ stepId, answerValue, points })
+    .returning();
+  return created;
+}
+
+// ─── Category Thresholds CRUD ───────────────────────────────────────────────
+
+export async function getCategoryThresholds(surveyId: number) {
+  return await db
+    .select()
+    .from(surveyCategoryThresholds)
+    .where(eq(surveyCategoryThresholds.surveyId, surveyId))
+    .orderBy(asc(surveyCategoryThresholds.sortOrder));
+}
+
+export async function upsertCategoryThreshold(
+  surveyId: number,
+  minScore: number,
+  maxScore: number,
+  label: string,
+  description?: string
+) {
+  const existing = await db
+    .select()
+    .from(surveyCategoryThresholds)
+    .where(
+      and(
+        eq(surveyCategoryThresholds.surveyId, surveyId),
+        eq(surveyCategoryThresholds.label, label)
+      )
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db
+      .update(surveyCategoryThresholds)
+      .set({ minScore, maxScore, description })
+      .where(eq(surveyCategoryThresholds.id, existing[0].id));
+    return { ...existing[0], minScore, maxScore, description };
+  }
+
+  const [created] = await db
+    .insert(surveyCategoryThresholds)
+    .values({ surveyId, minScore, maxScore, label, description })
+    .returning();
+  return created;
 }
